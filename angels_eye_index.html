@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Angel's Eye — Rituals of the World · Tour 2027</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --gold:#C9A84C;--gold-dim:#8B6914;--obsidian:#0A0A0F;--ink:#12121A;--surface:#1A1A26;--surface2:#22222F;--surface3:#2A2A3A;
+      --border:#2E2E42;--border2:#3A3A52;--text1:#F0EDE6;--text2:#A8A5B0;--text3:#6B6880;
+      --green:#4BC896;--red:#C84B4B;--blue:#4B8BC8;--purple:#8B4BC8;
+    }
+    body{background:var(--obsidian);color:var(--text1);font-family:'Georgia',serif;min-height:100vh;overflow:hidden}
+    .app{display:flex;flex-direction:column;height:100vh}
+    .header{background:var(--ink);border-bottom:1px solid var(--border);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-eye{width:28px;height:28px;border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .logo-eye::after{content:'';width:8px;height:8px;background:var(--gold);border-radius:50%}
+    .logo-text{font-size:13px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase}
+    .logo-sub{font-size:9px;color:var(--text3);letter-spacing:.25em;text-transform:uppercase;font-family:sans-serif}
+    .header-right{display:flex;align-items:center;gap:1rem}
+    .hstat{text-align:center}
+    .hstat-val{font-size:15px;color:var(--gold)}
+    .hstat-label{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;font-family:sans-serif}
+    .add-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;background:var(--gold-dim);border:none;border-radius:3px;color:#0A0A0F;font-family:sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;cursor:pointer;transition:.15s;text-transform:uppercase}
+    .add-btn:hover{background:var(--gold)}
+    .nav{background:var(--ink);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;flex-shrink:0}
+    .nav::-webkit-scrollbar{height:2px}
+    .nav-tab{padding:0 1rem;height:40px;display:flex;align-items:center;gap:5px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:sans-serif;transition:.15s}
+    .nav-tab:hover{color:var(--text2)}
+    .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+    .nav-tab i{font-size:13px}
+    .main{flex:1;display:flex;overflow:hidden}
+    .sidebar{width:260px;background:var(--ink);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column}
+    .sidebar::-webkit-scrollbar{width:3px}
+    .sidebar::-webkit-scrollbar-thumb{background:var(--border)}
+    .content{flex:1;overflow-y:auto;background:var(--obsidian)}
+    .content::-webkit-scrollbar{width:5px}
+    .content::-webkit-scrollbar-thumb{background:var(--border2)}
+    .sidebar-section{padding:.6rem .875rem .4rem;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--text3);font-family:sans-serif;flex-shrink:0}
+    .act-item{padding:.45rem .875rem .45rem 1rem;cursor:pointer;border-left:2px solid transparent;display:flex;align-items:center;justify-content:space-between;gap:6px}
+    .act-item:hover{background:rgba(255,255,255,.025)}
+    .act-item.active{background:rgba(201,168,76,.05)}
+    .act-name{font-size:11px;color:var(--text2);font-family:sans-serif;line-height:1.3}
+    .act-badge{font-size:9px;background:var(--border);color:var(--text3);padding:1px 5px;border-radius:8px;font-family:sans-serif;flex-shrink:0}
+    .dest-item{padding:.3rem .875rem .3rem 1.75rem;cursor:pointer;display:flex;align-items:center;gap:6px}
+    .dest-item:hover{background:rgba(255,255,255,.018)}
+    .dest-item.active{background:rgba(201,168,76,.04)}
+    .dest-flag-sm{font-size:13px;line-height:1;flex-shrink:0}
+    .dest-info{flex:1;min-width:0}
+    .dest-city{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:sans-serif}
+    .dest-item.active .dest-city{color:var(--text1)}
+    .dest-meta{font-size:9px;color:var(--text3);font-family:sans-serif}
+    .dest-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+    .panel{padding:1.25rem}
+    .section-title{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);font-family:sans-serif;margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.25rem}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:.875rem}
+    .stat-val{font-size:26px;color:var(--gold);line-height:1}
+    .stat-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-top:3px;font-family:sans-serif}
+    .stat-sub{font-size:10px;color:var(--text2);margin-top:2px;font-family:sans-serif}
+    .profile-wrap{padding:1.25rem}
+    .profile-top{display:flex;gap:1rem;margin-bottom:1.25rem;align-items:flex-start}
+    .profile-flag-big{font-size:48px;line-height:1;flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+    .profile-meta{flex:1}
+    .profile-city{font-size:22px;color:var(--text1);letter-spacing:.02em}
+    .profile-country{font-size:11px;color:var(--text3);font-family:sans-serif;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem}
+    .profile-tags{display:flex;flex-wrap:wrap;gap:5px}
+    .tag{padding:2px 9px;border:1px solid var(--border2);border-radius:2px;font-size:9px;color:var(--text2);font-family:sans-serif;letter-spacing:.08em;text-transform:uppercase}
+    .tag.gold{border-color:var(--gold-dim);color:var(--gold)}
+    .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:.875rem}
+    .profile-block{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:.875rem}
+    .profile-block-full{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:.875rem;margin-bottom:.875rem}
+    .block-title{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);font-family:sans-serif;margin-bottom:.625rem}
+    .detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.28rem 0;border-bottom:1px solid rgba(46,46,66,.4);font-family:sans-serif;gap:.5rem}
+    .detail-row:last-child{border-bottom:none}
+    .detail-label{font-size:11px;color:var(--text3);flex-shrink:0}
+    .detail-val{font-size:11px;color:var(--text2);text-align:right}
+    .detail-val.gold{color:var(--gold)}
+    .detail-val.green{color:var(--green)}
+    .detail-val.red{color:var(--red)}
+    .paid-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px;border-radius:2px;font-family:sans-serif}
+    .paid-badge.yes{background:rgba(75,200,150,.15);color:var(--green)}
+    .paid-badge.no{background:rgba(200,75,75,.12);color:var(--red)}
+    .notes-box{font-size:12px;color:var(--text2);font-family:sans-serif;line-height:1.65;white-space:pre-wrap}
+    .todo-list{list-style:none;display:flex;flex-direction:column;gap:4px}
+    .todo-item{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--text2);font-family:sans-serif;line-height:1.4}
+    .todo-item::before{content:'◇';color:var(--gold-dim);font-size:9px;margin-top:2px;flex-shrink:0}
+    .event-pill{display:inline-flex;align-items:center;gap:6px;padding:.4rem .875rem;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:3px}
+    .route-table{width:100%;border-collapse:collapse;font-family:sans-serif;font-size:11px}
+    .route-table th{padding:.5rem .75rem;text-align:left;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-weight:400;background:var(--surface)}
+    .route-table td{padding:.5rem .75rem;border-bottom:1px solid rgba(46,46,66,.35);color:var(--text2);vertical-align:middle}
+    .route-table tr:hover td{background:rgba(255,255,255,.018);cursor:pointer}
+    .route-table tr.cancelled td{opacity:.45}
+    .wd-badge{font-size:9px;color:var(--text3);margin-left:3px}
+    .action-btn{padding:2px 8px;border:1px solid var(--border2);border-radius:2px;background:transparent;color:var(--text3);font-family:sans-serif;font-size:10px;cursor:pointer;transition:.15s}
+    .action-btn:hover{border-color:var(--border);color:var(--text2)}
+    .action-btn.del:hover{border-color:var(--red);color:var(--red)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto}
+    .modal{background:var(--ink);border:1px solid var(--border2);border-radius:4px;width:100%;max-width:680px;overflow:hidden;margin:auto}
+    .modal-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .modal-title{font-size:15px;color:var(--gold);letter-spacing:.05em}
+    .modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px}
+    .modal-close:hover{color:var(--text1)}
+    .modal-body{padding:1.25rem;display:flex;flex-direction:column;gap:1rem;max-height:calc(100vh - 140px);overflow-y:auto}
+    .modal-body::-webkit-scrollbar{width:4px}
+    .modal-body::-webkit-scrollbar-thumb{background:var(--border2)}
+    .modal-section{border:1px solid var(--border);border-radius:3px;overflow:hidden}
+    .modal-section-title{padding:.5rem .875rem;background:var(--surface);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);font-family:sans-serif;border-bottom:1px solid var(--border)}
+    .modal-fields{padding:.875rem;display:grid;gap:.625rem}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:.625rem}
+    .field-row.three{grid-template-columns:1fr 1fr 1fr}
+    .field-row.full{grid-template-columns:1fr}
+    .field-group{display:flex;flex-direction:column;gap:4px}
+    .field-label{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);font-family:sans-serif}
+    .field-input{background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:.4rem .625rem;color:var(--text1);font-family:sans-serif;font-size:12px;outline:none;width:100%}
+    .field-input:focus{border-color:var(--gold-dim)}
+    .field-input::placeholder{color:var(--text3)}
+    select.field-input option{background:var(--surface2)}
+    textarea.field-input{min-height:80px;resize:vertical;line-height:1.5}
+    .field-calc{font-size:10px;color:var(--text3);font-family:sans-serif;margin-top:2px;min-height:14px}
+    .field-calc.val{color:var(--gold)}
+    .modal-footer{padding:.875rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.625rem;justify-content:flex-end}
+    .btn-primary{padding:6px 18px;background:var(--gold-dim);border:none;border-radius:2px;color:#0A0A0F;font-family:sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;cursor:pointer;text-transform:uppercase}
+    .btn-primary:hover{background:var(--gold)}
+    .btn-ghost{padding:6px 14px;background:transparent;border:1px solid var(--border2);border-radius:2px;color:var(--text2);font-family:sans-serif;font-size:11px;cursor:pointer;text-transform:uppercase;letter-spacing:.08em}
+    .btn-ghost:hover{border-color:var(--border);color:var(--text1)}
+    .festival-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:8px}
+    .festival-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:.75rem;cursor:pointer;transition:.15s}
+    .festival-card:hover{background:var(--surface2)}
+    .f-type{font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-family:sans-serif;margin-bottom:3px}
+    .f-name{font-size:12px;color:var(--text1);margin-bottom:3px;font-family:sans-serif;line-height:1.3}
+    .f-loc{font-size:10px;color:var(--text3);font-family:sans-serif;margin-bottom:.4rem}
+    .f-date{font-size:10px;color:var(--gold);font-family:sans-serif}
+    .pdots{display:flex;gap:3px;margin-top:.4rem}
+    .pdot{width:5px;height:5px;border-radius:50%}
+    .bucket-item{display:flex;align-items:center;gap:.625rem;padding:.625rem .875rem;border-bottom:1px solid var(--border);cursor:pointer;font-family:sans-serif}
+    .bucket-item:hover{background:rgba(255,255,255,.018)}
+    .bcheck{width:16px;height:16px;border:1px solid var(--border2);border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .bcheck.done{background:var(--gold-dim);border-color:var(--gold)}
+    .bcheck.done::after{content:'✓';font-size:10px;color:var(--gold)}
+    .btext{font-size:11px;color:var(--text2);flex:1;line-height:1.4}
+    .btext.done{text-decoration:line-through;color:var(--text3)}
+    .bctry{font-size:9px;color:var(--text3)}
+    .ai-wrap{padding:1.25rem;display:flex;flex-direction:column;gap:.875rem}
+    .ai-suggestions{display:flex;flex-direction:column;gap:5px}
+    .ai-sug{padding:.5rem .75rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-size:11px;color:var(--text2);cursor:pointer;font-family:sans-serif;text-align:left;width:100%}
+    .ai-sug:hover{background:var(--surface2);color:var(--text1)}
+    .ai-msgs{display:flex;flex-direction:column;gap:.625rem;min-height:160px;max-height:260px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:.875rem}
+    .ai-msgs::-webkit-scrollbar{width:3px}
+    .ai-msgs::-webkit-scrollbar-thumb{background:var(--border2)}
+    .ai-msg{font-size:11px;line-height:1.6;font-family:sans-serif}
+    .ai-msg.user{color:var(--gold);text-align:right}
+    .ai-msg.ai{color:var(--text2)}
+    .ai-msg-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
+    .ai-row{display:flex;gap:6px;margin-top:.625rem}
+    .ai-inp{flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:3px;padding:.4rem .75rem;color:var(--text1);font-family:sans-serif;font-size:11px;outline:none}
+    .ai-inp:focus{border-color:var(--gold-dim)}
+    .ai-send{padding:.4rem .875rem;background:var(--gold-dim);border:none;border-radius:3px;color:#0A0A0F;font-family:sans-serif;font-size:11px;font-weight:600;cursor:pointer}
+    .ai-send:hover{background:var(--gold)}
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header">
+    <div class="logo">
+      <div class="logo-eye"></div>
+      <div>
+        <div class="logo-text">The Angel's Eye</div>
+        <div class="logo-sub">Rituals of the World · Tour 2027</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="hstat"><div class="hstat-val" id="hCountries">52</div><div class="hstat-label">Countries</div></div>
+      <div class="hstat"><div class="hstat-val" id="hDays">137</div><div class="hstat-label">Days</div></div>
+      <div class="hstat"><div class="hstat-val" id="hFests">17</div><div class="hstat-label">Festivals</div></div>
+      <button class="add-btn" onclick="openModal()"><i class="ti ti-plus"></i> Add Destination</button>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <div class="nav-tab active" onclick="switchTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Command</div>
+    <div class="nav-tab" onclick="switchTab('route',this)"><i class="ti ti-map-2"></i> Route</div>
+    <div class="nav-tab" onclick="switchTab('festivals',this)"><i class="ti ti-confetti"></i> Festivals</div>
+    <div class="nav-tab" onclick="switchTab('budget',this)"><i class="ti ti-chart-pie"></i> Budget</div>
+    <div class="nav-tab" onclick="switchTab('bucket',this)"><i class="ti ti-list-check"></i> Bucket List</div>
+    <div class="nav-tab" onclick="switchTab('ai',this)"><i class="ti ti-message-bolt"></i> AI Advisor</div>
+  </nav>
+
+  <div class="main">
+    <aside class="sidebar">
+      <div class="sidebar-section">Journey Acts</div>
+      <div id="actsList" style="flex:1;overflow-y:auto"></div>
+    </aside>
+    <main class="content" id="mainContent"></main>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add New Destination</div>
+      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="modal-section">
+        <div class="modal-section-title">Destination</div>
+        <div class="modal-fields">
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Act</label>
+              <select class="field-input" id="f_act">
+                <option value="act1">Act I — The Prelude</option>
+                <option value="act2">Act II — The Unleash</option>
+                <option value="act3">Act III — The Revelation</option>
+                <option value="act4">Act IV — Symbolic Death</option>
+                <option value="act5">Act V — Renaissance</option>
+                <option value="act6">Act VI — The Raise</option>
+                <option value="act7">Act VII — Final Act</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Status</label>
+              <select class="field-input" id="f_status">
+                <option value="planned">Planned</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="wishlist">Wishlist</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Country</label>
+              <input class="field-input" id="f_country" type="text" placeholder="e.g. Spain"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">City / Region</label>
+              <input class="field-input" id="f_city" type="text" placeholder="e.g. Barcelona"/>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Country Flag (emoji)</label>
+              <input class="field-input" id="f_flag" type="text" placeholder="🇪🇸"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Priority Score (1–5)</label>
+              <select class="field-input" id="f_priority">
+                <option value="5">★★★★★ Must do</option>
+                <option value="4">★★★★ High</option>
+                <option value="3" selected>★★★ Medium</option>
+                <option value="2">★★ Low</option>
+                <option value="1">★ Someday</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Dates &amp; Stay</div>
+        <div class="modal-fields">
+          <div class="field-row three">
+            <div class="field-group">
+              <label class="field-label">Arrival Date</label>
+              <input class="field-input" id="f_arrival" type="date" oninput="recalcDates()"/>
+              <div class="field-calc" id="f_arrival_wd"></div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Departure Date</label>
+              <input class="field-input" id="f_departure" type="date" oninput="recalcDates()"/>
+              <div class="field-calc" id="f_departure_wd"></div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Nights (or fill dates)</label>
+              <input class="field-input" id="f_nights" type="number" min="0" placeholder="auto" oninput="recalcFromNights()"/>
+              <div class="field-calc val" id="f_nights_calc"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Event / Festival / Experience</div>
+        <div class="modal-fields">
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Event Name</label>
+              <input class="field-input" id="f_event" type="text" placeholder="e.g. Running of the Bulls"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Event Date(s)</label>
+              <input class="field-input" id="f_event_date" type="text" placeholder="e.g. Jul 6–14, 2027"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Accommodation</div>
+        <div class="modal-fields">
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Hotel / Property Name</label>
+              <input class="field-input" id="f_hotel" type="text" placeholder="e.g. Hotel Noemi"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Booking Reference</label>
+              <input class="field-input" id="f_hotel_ref" type="text" placeholder="Booking #"/>
+            </div>
+          </div>
+          <div class="field-row three">
+            <div class="field-group">
+              <label class="field-label">Total Cost ($)</label>
+              <input class="field-input" id="f_cost" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcHotel()"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Persons sharing</label>
+              <input class="field-input" id="f_persons" type="number" min="1" value="2" oninput="recalcHotel()"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Amount Paid ($)</label>
+              <input class="field-input" id="f_paid" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcHotel()"/>
+            </div>
+          </div>
+          <div class="field-row three">
+            <div class="field-group">
+              <label class="field-label">Cost / Night</label>
+              <div class="field-calc val" id="f_cpn">—</div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Cost / Night / Person</label>
+              <div class="field-calc val" id="f_cpnpp">—</div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Balance Owed</label>
+              <div class="field-calc val" id="f_owed">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Transportation</div>
+        <div class="modal-fields">
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Mode</label>
+              <select class="field-input" id="f_mot">
+                <option value="">— None —</option>
+                <option value="Flight">✈ Flight</option>
+                <option value="Train">🚆 Train</option>
+                <option value="Ferry">⛴ Ferry</option>
+                <option value="Car Rental">🚗 Car Rental</option>
+                <option value="Bus">🚌 Bus</option>
+                <option value="Private Transfer">🚐 Private Transfer</option>
+                <option value="Cruise">🛳 Cruise</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Booking Number</label>
+              <input class="field-input" id="f_t_ref" type="text" placeholder="Confirmation #"/>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Departure Airport / Station</label>
+              <input class="field-input" id="f_t_dep_port" type="text" placeholder="e.g. ORD / Milano Centrale"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Arrival Airport / Port</label>
+              <input class="field-input" id="f_t_arr_port" type="text" placeholder="e.g. VCE / Venezia S.L."/>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Departure Date &amp; Hour</label>
+              <input class="field-input" id="f_t_dep_dt" type="datetime-local"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Arrival Date &amp; Hour</label>
+              <input class="field-input" id="f_t_arr_dt" type="datetime-local"/>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Connection Info</label>
+              <input class="field-input" id="f_t_connection" type="text" placeholder="e.g. Stop in ZRH 2h30m"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Transport Cost ($)</label>
+              <input class="field-input" id="f_t_cost" type="number" min="0" step="0.01" placeholder="0.00"/>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Transport Paid?</label>
+              <select class="field-input" id="f_t_paid">
+                <option value="no">Not paid yet</option>
+                <option value="partial">Partially paid</option>
+                <option value="yes">Fully paid</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Flight / Train Number</label>
+              <input class="field-input" id="f_t_num" type="text" placeholder="e.g. FR3921"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Notes, Memories &amp; Things To Do</div>
+        <div class="modal-fields">
+          <div class="field-row full">
+            <div class="field-group">
+              <label class="field-label">Notes, Memories &amp; Other Details</label>
+              <textarea class="field-input" id="f_notes" placeholder="Research, intel, memories, reflections, what to pack…" style="min-height:90px"></textarea>
+            </div>
+          </div>
+          <div class="field-row full">
+            <div class="field-group">
+              <label class="field-label">Things To Do (one per line)</label>
+              <textarea class="field-input" id="f_todo" placeholder="Visit the old medina&#10;Photograph sunrise from the rooftop&#10;Try the local tagine" style="min-height:90px"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveDestination()">Save Destination</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function wdStr(dateStr){if(!dateStr)return'';const d=new Date(dateStr+'T12:00:00');return WD[d.getDay()];}
+function formatDate(dateStr){if(!dateStr)return'';const d=new Date(dateStr+'T12:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+function daysBetween(a,b){if(!a||!b)return 0;const da=new Date(a+'T12:00:00'),db=new Date(b+'T12:00:00');return Math.round((db-da)/(1000*60*60*24));}
+function fmt$(n){return n!=null&&n!==''?'$'+parseFloat(n).toFixed(2):'—';}
+
+const ACTS_META=[
+  {id:'act1',name:'The Prelude',subtitle:'Excess, art, freedom, hedo, Æsthetic',color:'#C9A84C'},
+  {id:'act2',name:'The Unleash',subtitle:'Chaos, liberation, wildness, metal & community',color:'#C84B6B'},
+  {id:'act3',name:'The Revelation',subtitle:'Human, nature, roots, back to the dust',color:'#4BC896'},
+  {id:'act4',name:'Symbolic Death',subtitle:'Spiritual healing, deep life, introspection',color:'#8B4BC8'},
+  {id:'act5',name:'Renaissance',subtitle:'Mental clarity, slowness, Southeast Asia',color:'#4B8BC8'},
+  {id:'act6',name:'The Raise',subtitle:'Roots, the real meaning of life, Latin America',color:'#C8734B'},
+  {id:'act7',name:'Final Act',subtitle:'Return, transcendence, home',color:'#C8C84B'},
+];
+
+let DESTS=[
+  {id:'d1',act:'act1',country:'Switzerland',city:'St. Moritz',flag:'🇨🇭',arrival:'2027-01-22',departure:'2027-01-24',status:'confirmed',event:'Snow Polo World Cup St. Moritz 2027',event_date:'Jan 22–24, 2027',hotel:'Hotel Europa Suites St Moritz',hotel_ref:'',cost:1342.97,persons:2,paid:0,mot:'Flight',t_ref:'LX1234',t_dep_port:'ORD',t_arr_port:'ZRH',t_dep_dt:'2027-01-21T10:00',t_arr_dt:'2027-01-22T08:30',t_connection:'Direct',t_cost:850,t_paid:'yes',t_num:'LX7',notes:'Luxury alpine escape. Snow polo spectacle. Pack formal attire for events.',todo:'Attend Snow Polo World Cup\nDinner at Badrutt\'s Palace\nSki the Corviglia slopes\nPhotograph frozen lake at dawn',priority:5},
+  {id:'d2',act:'act1',country:'Switzerland',city:'Poschiavo',flag:'🇨🇭',arrival:'2027-01-24',departure:'2027-01-26',status:'confirmed',event:'',event_date:'',hotel:'Hotel Suisse, Swiss Alpine Charm',hotel_ref:'',cost:275,persons:2,paid:0,mot:'Train',t_ref:'',t_dep_port:'St. Moritz Station',t_arr_port:'Poschiavo Station',t_dep_dt:'2027-01-24T11:00',t_arr_dt:'2027-01-24T12:30',t_connection:'Bernina Express scenic route',t_cost:45,t_paid:'no',t_num:'RhB 950',notes:'Swiss alpine charm. Secret valley. Bernina Express is one of the most scenic train rides in the world.',todo:'Ride the Bernina Express\nExplore the old village center\nTry local Romansh cuisine',priority:4},
+  {id:'d3',act:'act1',country:'Italy',city:'Alps (Chalet al Foss)',flag:'🇮🇹',arrival:'2027-01-26',departure:'2027-01-28',status:'confirmed',event:'Chalet al Foss',event_date:'',hotel:'Chalet Al Foss',hotel_ref:'',cost:1285.36,persons:2,paid:0,mot:'Car Rental',t_ref:'',t_dep_port:'Poschiavo',t_arr_port:'Italian Alps',t_dep_dt:'2027-01-26T10:00',t_arr_dt:'2027-01-26T12:00',t_connection:'',t_cost:120,t_paid:'no',t_num:'',notes:'Mountain chalet bliss. Total seclusion in the Alps.',todo:'Ski the local slopes\nFireside evening with wine\nPhotograph the mountain at golden hour',priority:4},
+  {id:'d4',act:'act1',country:'Austria',city:'Ischgl / St. Anton',flag:'🇦🇹',arrival:'2027-01-28',departure:'2027-01-31',status:'planned',event:'',event_date:'',hotel:'',hotel_ref:'',cost:500,persons:2,paid:0,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'Premier ski resort. Legendary après-ski scene.',todo:'Ski Ischgl\nAprès-ski at Kitzloch\nExplore St. Anton village',priority:4},
+  {id:'d5',act:'act1',country:'Slovakia',city:'Bratislava',flag:'🇸🇰',arrival:'2027-01-31',departure:'2027-02-03',status:'planned',event:'',event_date:'',hotel:'',hotel_ref:'',cost:250,persons:2,paid:0,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'Underrated medieval capital with castle views over the Danube.',todo:'Bratislava Castle at sunset\nOld Town walking tour\nDanubia river cruise\nTry Slovak wine',priority:3},
+  {id:'d6',act:'act1',country:'Austria',city:'Vienna',flag:'🇦🇹',arrival:'2027-02-03',departure:'2027-02-05',status:'planned',event:'Vienna Opera Ball 2027',event_date:'Feb 4, 2027',hotel:'Pension Mozart',hotel_ref:'',cost:370,persons:2,paid:370,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'The pinnacle of European elegance. Black tie required for Opera Ball.',todo:'Vienna Opera Ball — black tie!\nKunsthistorisches Museum\nSchönbrunn Palace\nCafé Central for Melange',priority:5},
+  {id:'d7',act:'act1',country:'Italy',city:'Venice',flag:'🇮🇹',arrival:'2027-02-05',departure:'2027-02-10',status:'confirmed',event:'Venice Carnival',event_date:'Jan 31 – Feb 17, 2027',hotel:'Hotel Noemi',hotel_ref:'',cost:1311,persons:2,paid:0,mot:'Flight',t_ref:'',t_dep_port:'VIE',t_arr_port:'VCE',t_dep_dt:'2027-02-05T07:00',t_arr_dt:'2027-02-05T08:15',t_connection:'Direct',t_cost:180,t_paid:'no',t_num:'OS613',notes:'Masks, mystery, and water. Peak decadence. The most romantic city at its most theatrical.',todo:'Commission a custom Carnival mask\nPhoenix costume for the parade\nPhotograph Piazza San Marco at dawn\nGondola at night\nBacaro crawl — cicchetti and wine',priority:5},
+  {id:'d8',act:'act1',country:'Finland',city:'Rovaniemi',flag:'🇫🇮',arrival:'2027-02-17',departure:'2027-02-20',status:'confirmed',event:'Aurora Borealis — Lapland',event_date:'Feb 2027',hotel:'Arctic Pine City Suite',hotel_ref:'',cost:837.6,persons:2,paid:0,mot:'Flight',t_ref:'',t_dep_port:'VCE',t_arr_port:'RVN',t_dep_dt:'2027-02-17T06:00',t_arr_dt:'2027-02-17T13:00',t_connection:'Via HEL',t_cost:320,t_paid:'no',t_num:'AY1140',notes:'Northern Lights chase. Arctic wilderness. The sky will dance.',todo:'Aurora Borealis night hunt\nReindeer safari\nHusky sled\nSnowmobile at midnight',priority:5},
+  {id:'d9',act:'act1',country:'Finland',city:'Levi',flag:'🇫🇮',arrival:'2027-02-20',departure:'2027-02-21',status:'confirmed',event:'Aurora Borealis — Glass Igloo',event_date:'',hotel:'Northern Lights Ranch',hotel_ref:'',cost:839,persons:2,paid:0,mot:'Bus',t_ref:'',t_dep_port:'Rovaniemi',t_arr_port:'Levi',t_dep_dt:'2027-02-20T11:00',t_arr_dt:'2027-02-20T12:30',t_connection:'',t_cost:25,t_paid:'no',t_num:'',notes:'Glass igloo under the Aurora Borealis. One of the most magical nights of the journey.',todo:'Sleep under the Northern Lights in glass igloo\nPhotograph Aurora at 2am\nSauna by the frozen lake',priority:5},
+  {id:'d10',act:'act1',country:'Finland',city:'Saariselkä',flag:'🇫🇮',arrival:'2027-02-21',departure:'2027-02-23',status:'confirmed',event:'Aurora Borealis — Lapland',event_date:'',hotel:'Holiday Home Tunturikuksa',hotel_ref:'',cost:239.6,persons:2,paid:0,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'Finnish Lapland. Pure silence and light.',todo:'Urho Kekkonen National Park snowshoe\nFinnish sauna ritual\nPhotograph frozen tundra',priority:4},
+  {id:'d11',act:'act2',country:'Spain',city:'Madrid',flag:'🇪🇸',arrival:'2027-05-28',departure:'2027-06-01',status:'planned',event:'Festival Tomavistas',event_date:'May 2027',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'Flight',t_ref:'',t_dep_port:'ORD',t_arr_port:'MAD',t_dep_dt:'2027-05-27T22:00',t_arr_dt:'2027-05-28T13:00',t_connection:'Direct',t_cost:680,t_paid:'no',t_num:'',notes:'The adventure begins. Spain opens her arms.',todo:'Festival Tomavistas\nPrado Museum\nRetiro Park at sunset\nEl Rastro flea market Sunday\nChocolate con churros at 3am',priority:5},
+  {id:'d12',act:'act2',country:'Spain',city:'Pamplona',flag:'🇪🇸',arrival:'2027-07-04',departure:'2027-07-12',status:'planned',event:'San Fermín — Running of the Bulls',event_date:'Jul 6–14, 2027',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'The ultimate test of courage and madness. Arrive 2 days early for the opening ceremony.',todo:'Opening rocket ceremony Jul 6\nRun with the bulls — early morning Jul 7\nFlamenco peña visits\nTxakoli wine in the old city',priority:5},
+  {id:'d13',act:'act2',country:'France',city:'Cap d\'Agde',flag:'🇫🇷',arrival:'2027-07-15',departure:'2027-07-25',status:'planned',event:'Birthday Celebration + Naturist Village',event_date:'Jul 21, 2027',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'The most libertarian village on Earth. 40,000 residents in July. Mediterranean freedom.',todo:'Explore the naturist village\nBirthday dinner at the port\nBeach days\nNight at the Extravaganza club',priority:5},
+  {id:'d14',act:'act2',country:'Spain',city:'Barcelona',flag:'🇪🇸',arrival:'2027-08-13',departure:'2027-08-17',status:'planned',event:'Fiestas de Gracia',event_date:'Aug 15–21, 2027',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'Street art, architecture, the Mediterranean sea.',todo:'Fiestas de Gracia street festival\nSagrada Família at dusk\nPark Güell sunrise\nBarceloneta beach',priority:4},
+  {id:'d15',act:'act2',country:'Spain',city:'Buñol (La Tomatina)',flag:'🇪🇸',arrival:'2027-08-25',departure:'2027-08-25',status:'planned',event:'La Tomatina',event_date:'Aug 25, 2027',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'Bus',t_ref:'',t_dep_port:'Valencia',t_arr_port:'Buñol',t_dep_dt:'2027-08-25T07:00',t_arr_dt:'2027-08-25T08:00',t_connection:'',t_cost:15,t_paid:'no',t_num:'',notes:'The most absurd and joyful festival. Arrive early. Wear white.',todo:'Buy tickets in advance\nWear old white clothes\nArrive by 9am\nBring waterproof camera',priority:4},
+  {id:'d16',act:'act2',country:'Germany',city:'Munich',flag:'🇩🇪',arrival:'2027-09-18',departure:'2027-09-21',status:'planned',event:'Oktoberfest',event_date:'Sep–Oct 2027',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'Flight',t_ref:'',t_dep_port:'BCN',t_arr_port:'MUC',t_dep_dt:'2027-09-17T19:00',t_arr_dt:'2027-09-17T21:00',t_connection:'Direct',t_cost:95,t_paid:'no',t_num:'',notes:'The world\'s greatest beer festival. Book tent reservations months in advance.',todo:'Reserve a table inside the Hofbräu tent\nBuy a Dirndl / Lederhosen\nDrink a Masskrug\nNymphenburg Palace day trip',priority:5},
+  {id:'d17',act:'act3',country:'Egypt',city:'Cairo',flag:'🇪🇬',arrival:'2027-10-15',departure:'2027-10-20',status:'planned',event:'',event_date:'',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'Flight',t_ref:'',t_dep_port:'BUD',t_arr_port:'CAI',t_dep_dt:'2027-10-14T21:00',t_arr_dt:'2027-10-15T03:00',t_connection:'Direct',t_cost:340,t_paid:'no',t_num:'',notes:'Pyramids. Ancient civilization. Sensory overload of the highest order.',todo:'Pyramids of Giza at sunrise\nSphinx up close\nEgyptian Museum\nKhan el-Khalili souk\nNile dinner cruise',priority:5},
+  {id:'d18',act:'act3',country:'Benin',city:'Ouidah',flag:'🇧🇯',arrival:'2028-01-08',departure:'2028-01-18',status:'planned',event:'Festival Voodoo de Ouidah',event_date:'Jan 10, 2028',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'Flight',t_ref:'',t_dep_port:'',t_arr_port:'COO',t_dep_dt:'',t_arr_dt:'',t_connection:'Via ABJ or LOS',t_cost:0,t_paid:'no',t_num:'',notes:'The most spiritual festival in the world. Ancestor spirits, trance, ceremony.',todo:'Festival Voodoo Jan 10\nRoute des Esclaves\nSacred Forest of Kpasse\nTemple des Pythons\nDoor of No Return ceremony',priority:5},
+  {id:'d19',act:'act4',country:'India',city:'Mathura / Vrindavan / Barsana',flag:'🇮🇳',arrival:'2028-03-22',departure:'2028-03-25',status:'planned',event:'Holi — Festival of Colors',event_date:'Mar 22, 2028',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'The festival of colors. Pure joy explosion. Arrive in Vrindavan for the most authentic Holi.',todo:'Holi celebration in Vrindavan\nLathmar Holi in Barsana\nTemple of Banke Bihari\nWear white clothes',priority:5},
+  {id:'d20',act:'act4',country:'India',city:'Varanasi',flag:'🇮🇳',arrival:'2028-03-25',departure:'2028-03-30',status:'planned',event:'',event_date:'',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'Ghats of the Ganges. Life and death united. The oldest continuously inhabited city on Earth.',todo:'Ganga Aarti ceremony at dawn\nBoat on the Ganges at sunrise\nManikarnika burning ghat\nBanaras food walk\nSarnath day trip',priority:5},
+  {id:'d21',act:'act6',country:'Brazil',city:'Rio de Janeiro',flag:'🇧🇷',arrival:'2029-02-21',departure:'2029-03-05',status:'planned',event:'Rio Carnival',event_date:'February 2029',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'Flight',t_ref:'',t_dep_port:'',t_arr_port:'GIG',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'The greatest party on Earth. Samba schools, feathers, drums, and pure life force.',todo:'Sambadrome parade — get tickets for Setor 9\nBloco street carnival\nSugarloaf Mountain\nChrist the Redeemer sunrise\nLapa nightlife',priority:5},
+  {id:'d22',act:'act7',country:'USA',city:'Black Rock Desert, Nevada',flag:'🇺🇸',arrival:'2029-08-25',departure:'2029-09-01',status:'planned',event:'Burning Man',event_date:'August 2029',hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'The final ritual. Everything burns. Rebirth. The end and the beginning.',todo:'Build or join an art installation camp\nBurning of the Man ceremony\nSunrise meditation at the Temple\nDecorate the bike',priority:5},
+];
+
+const FESTIVALS=[
+  {name:'Snow Polo World Cup',loc:'St. Moritz, Switzerland',date:'Jan 22–24, 2027',priority:5,type:'Sport/Luxury',act:'act1'},
+  {name:'Vienna Opera Ball',loc:'Vienna, Austria',date:'Feb 4, 2027',priority:5,type:'Classical/Glamour',act:'act1'},
+  {name:'Venice Carnival',loc:'Venice, Italy',date:'Jan 31 – Feb 17, 2027',priority:5,type:'Cultural/Mythological',act:'act1'},
+  {name:'Aurora Borealis Lapland',loc:'Finland',date:'Feb 17–23, 2027',priority:5,type:'Nature/Mystical',act:'act1'},
+  {name:'Royal Ascot',loc:'London, UK',date:'June 2027',priority:4,type:'Sport/High Society',act:'act2'},
+  {name:'Festival Tomavistas',loc:'Madrid, Spain',date:'May 2027',priority:4,type:'Music/Indie',act:'act2'},
+  {name:'San Fermín — Running of Bulls',loc:'Pamplona, Spain',date:'Jul 6–14, 2027',priority:5,type:'Cultural/Danger',act:'act2'},
+  {name:'Birthday at Cap d\'Agde',loc:'Cap d\'Agde, France',date:'Jul 21, 2027',priority:5,type:'Lifestyle/Freedom',act:'act2'},
+  {name:'La Tomatina',loc:'Buñol, Spain',date:'Aug 25, 2027',priority:4,type:'Cultural/Absurd Joy',act:'act2'},
+  {name:'Fiestas de Gracia',loc:'Barcelona, Spain',date:'Aug 15–21, 2027',priority:4,type:'Cultural/Street Art',act:'act2'},
+  {name:'Oktoberfest',loc:'Munich, Germany',date:'Sep–Oct 2027',priority:5,type:'Cultural/Beer',act:'act2'},
+  {name:'Voodoo Festival de Ouidah',loc:'Ouidah, Benin',date:'Jan 10, 2028',priority:5,type:'Spiritual/Ancient',act:'act3'},
+  {name:'Holi — Festival of Colors',loc:'Vrindavan, India',date:'Mar 22, 2028',priority:5,type:'Spiritual/Joy',act:'act4'},
+  {name:'Día de los Muertos',loc:'Oaxaca, Mexico',date:'Nov 1–2',priority:5,type:'Cultural/Sacred',act:'act6'},
+  {name:'Rio Carnival',loc:'Rio de Janeiro, Brazil',date:'February 2029',priority:5,type:'Cultural/Sensual',act:'act6'},
+  {name:'70,000 Tons of Metal',loc:'Caribbean Cruise',date:'TBD',priority:4,type:'Music/Metal/Sea',act:'act6'},
+  {name:'Burning Man',loc:'Black Rock Desert, Nevada',date:'August 2029',priority:5,type:'Transformational/Art',act:'act7'},
+];
+
+const BUCKET=[
+  {text:'Watch sunrise over Venice in Carnival costume',country:'Italy',act:'act1',done:false},
+  {text:'Sleep in a glass igloo under Northern Lights',country:'Finland',act:'act1',done:true},
+  {text:'Watch a Snow Polo match in St. Moritz',country:'Switzerland',act:'act1',done:true},
+  {text:'Attend the Vienna Opera Ball in black tie',country:'Austria',act:'act1',done:false},
+  {text:'Run with the bulls in Pamplona at dawn',country:'Spain',act:'act2',done:false},
+  {text:'Dance through the night at Berghain, Berlin',country:'Germany',act:'act2',done:false},
+  {text:'Swim at Cap d\'Agde naturist village',country:'France',act:'act2',done:false},
+  {text:'Be covered in colors at Holi, Vrindavan',country:'India',act:'act4',done:false},
+  {text:'Bathe in the Ganges at dawn in Varanasi',country:'India',act:'act4',done:false},
+  {text:'Attend Voodoo Festival, Ouidah, Benin',country:'Benin',act:'act3',done:false},
+  {text:'Look a mountain gorilla in the eyes, Uganda',country:'Uganda',act:'act3',done:false},
+  {text:'Trek to Machu Picchu at sunrise',country:'Peru',act:'act6',done:false},
+  {text:'Walk the salt flats of Uyuni at sunset',country:'Bolivia',act:'act6',done:false},
+  {text:'Dance at Rio Carnival in full costume',country:'Brazil',act:'act6',done:false},
+  {text:'Watch everything burn at Burning Man',country:'USA',act:'act7',done:false},
+  {text:'Move into a home in Italy',country:'Italy',act:'act7',done:false},
+  {text:'Drink a 1L Masskrug at Oktoberfest',country:'Germany',act:'act2',done:false},
+  {text:'Ride the Bernina Express through the Alps',country:'Switzerland',act:'act1',done:false},
+  {text:'Kayak among Galápagos sea lions',country:'Ecuador',act:'act6',done:false},
+  {text:'Eat pizza in Naples at 2am',country:'Italy',act:'act1',done:false},
+];
+
+let currentTab='dashboard',currentAct=null,currentDestId=null,editingId=null,aiMsgs=[];
+let nextId=100;
+
+function actMeta(id){return ACTS_META.find(a=>a.id===id)||ACTS_META[0];}
+function destById(id){return DESTS.find(d=>d.id===id);}
+function sortedDests(){return[...DESTS].sort((a,b)=>{if(a.arrival&&b.arrival)return a.arrival.localeCompare(b.arrival);if(a.arrival)return-1;if(b.arrival)return 1;return 0;});}
+function destsForAct(actId){return sortedDests().filter(d=>d.act===actId);}
+
+function updateHeaderStats(){
+  const countries=new Set(DESTS.map(d=>d.country)).size;
+  const days=DESTS.reduce((s,d)=>s+daysBetween(d.arrival,d.departure),0);
+  document.getElementById('hCountries').textContent=countries;
+  document.getElementById('hDays').textContent=days;
+}
+
+function renderSidebar(){
+  const el=document.getElementById('actsList');
+  let h='';
+  ACTS_META.forEach(act=>{
+    const dests=destsForAct(act.id);
+    const isActive=currentAct===act.id;
+    const totalDays=dests.reduce((s,d)=>s+daysBetween(d.arrival,d.departure),0);
+    h+=`<div class="act-item${isActive?' active':''}" onclick="selectAct('${act.id}')" style="border-left-color:${isActive?act.color:'transparent'}">
+      <div style="min-width:0">
+        <div class="act-name" style="${isActive?'color:'+act.color:''}">${act.name}</div>
+        <div style="font-size:9px;color:var(--text3);font-family:sans-serif;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${act.subtitle}</div>
+      </div>
+      <span class="act-badge">${totalDays}d</span>
+    </div>`;
+    if(isActive){
+      dests.forEach(dest=>{
+        const isActiveDest=currentDestId===dest.id;
+        const wd=dest.arrival?wdStr(dest.arrival):'';
+        h+=`<div class="dest-item${isActiveDest?' active':''}" onclick="selectDest('${dest.id}')">
+          <span class="dest-flag-sm">${dest.flag||'📍'}</span>
+          <div class="dest-info">
+            <div class="dest-city">${dest.city}</div>
+            <div class="dest-meta">${dest.arrival?formatDate(dest.arrival)+' '+wd:'TBD'}${dest.event?' · '+dest.event.substring(0,18)+(dest.event.length>18?'…':''):''}</div>
+          </div>
+          <div class="dest-dot" style="background:${dest.status==='confirmed'?'#4BC896':dest.status==='cancelled'?'#666':dest.status==='wishlist'?'#8B4BC8':'#8B6914'}"></div>
+        </div>`;
+      });
+    }
+  });
+  el.innerHTML=h;
+}
+
+function selectAct(id){currentAct=id;currentDestId=null;renderSidebar();renderContent();}
+function selectDest(id){currentDestId=id;currentAct=destById(id)?.act||currentAct;renderSidebar();renderContent();}
+
+function switchTab(tab,el){
+  currentTab=tab;currentDestId=null;
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderSidebar();renderContent();
+}
+
+function renderContent(){
+  const el=document.getElementById('mainContent');
+  if(currentTab==='dashboard'){el.innerHTML=(currentDestId&&destById(currentDestId))?renderDestProfile():renderDashboard();}
+  else if(currentTab==='route'){el.innerHTML=renderRoute();}
+  else if(currentTab==='festivals'){el.innerHTML=renderFestivals();}
+  else if(currentTab==='budget'){el.innerHTML=renderBudget();}
+  else if(currentTab==='bucket'){el.innerHTML=renderBucketList();}
+  else if(currentTab==='ai'){el.innerHTML=renderAI();}
+}
+
+function renderDashboard(){
+  const total=DESTS.length;
+  const confirmed=DESTS.filter(d=>d.status==='confirmed').length;
+  const totalDays=DESTS.reduce((s,d)=>s+daysBetween(d.arrival,d.departure),0);
+  const countries=new Set(DESTS.map(d=>d.country)).size;
+  const bucketDone=BUCKET.filter(b=>b.done).length;
+  const hotelSpend=DESTS.reduce((s,d)=>s+(d.cost||0),0);
+  const actCards=ACTS_META.map(act=>{
+    const dd=destsForAct(act.id);
+    const d=dd.reduce((s,x)=>s+daysBetween(x.arrival,x.departure),0);
+    return`<div class="stat-card" onclick="selectAct('${act.id}')" style="cursor:pointer;border-top:2px solid ${act.color}">
+      <div style="font-size:11px;color:${act.color};font-family:sans-serif;margin-bottom:4px">${act.name}</div>
+      <div style="font-size:9px;color:var(--text3);font-family:sans-serif;margin-bottom:.5rem;line-height:1.3">${act.subtitle}</div>
+      <div class="stat-val" style="font-size:20px">${d}<span style="font-size:11px;color:var(--text3)">d</span></div>
+      <div class="stat-label">${dd.length} destinations</div>
+    </div>`;
+  }).join('');
+  const nextDests=sortedDests().filter(d=>d.arrival&&d.status!=='cancelled').slice(0,6);
+  const nextRows=nextDests.map(d=>{
+    const am=actMeta(d.act);
+    const dep=d.departure?formatDate(d.departure)+' '+wdStr(d.departure):'?';
+    return`<div style="display:flex;align-items:center;gap:.75rem;padding:.55rem .875rem;border-bottom:1px solid rgba(46,46,66,.35);cursor:pointer;font-family:sans-serif" onclick="selectDest('${d.id}')" onmouseover="this.style.background='rgba(255,255,255,.02)'" onmouseout="this.style.background=''">
+      <span style="font-size:18px">${d.flag||'📍'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;color:var(--text1)">${d.city}, ${d.country}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px">${d.arrival?formatDate(d.arrival)+' <span style="color:var(--text3)">'+wdStr(d.arrival)+'</span>':'TBD'} → ${dep}${d.event?' · <span style="color:var(--gold)">'+d.event+'</span>':''}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:11px;color:var(--gold)">${d.cost>0?'$'+d.cost.toFixed(0):'TBD'}</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:1px">${d.hotel||'No hotel'}</div>
+      </div>
+      <div style="width:6px;height:6px;border-radius:50%;background:${d.status==='confirmed'?'#4BC896':d.status==='cancelled'?'#666':'#8B6914'};flex-shrink:0"></div>
+    </div>`;
+  }).join('');
+  return`<div class="panel">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1.25rem;margin-bottom:1.25rem;position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(201,168,76,.05) 0%,transparent 60%);pointer-events:none"></div>
+      <div style="font-size:20px;color:var(--text1);letter-spacing:.04em;margin-bottom:3px">The Angel's Eye — Rituals of the World</div>
+      <div style="font-size:9px;color:var(--text3);letter-spacing:.2em;text-transform:uppercase;font-family:sans-serif;margin-bottom:.875rem">A sacred &amp; sinful mythology · Tour 2027–2029</div>
+      <div style="font-size:12px;color:var(--text2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.875rem;max-width:580px">Dos amantes salen del mundo ordinario para vivirlo todo: belleza, deseo, trance, muerte simbólica, fe, exceso, tribu, naturaleza brutal y ciudades sin pudor.</div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val">${countries}</div><div class="stat-label">Countries</div></div>
+      <div class="stat-card"><div class="stat-val">${totalDays}</div><div class="stat-label">Days planned</div></div>
+      <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-label">Destinations</div><div class="stat-sub">${confirmed} confirmed</div></div>
+      <div class="stat-card"><div class="stat-val">${FESTIVALS.length}</div><div class="stat-label">Festivals</div></div>
+      <div class="stat-card"><div class="stat-val">${bucketDone}/${BUCKET.length}</div><div class="stat-label">Bucket list</div></div>
+      <div class="stat-card"><div class="stat-val">$${Math.round(hotelSpend/1000)}k</div><div class="stat-label">Hotels booked</div></div>
+    </div>
+    <div class="section-title">Journey Acts</div>
+    <div class="stats-grid" style="margin-bottom:1.25rem">${actCards}</div>
+    <div class="section-title">Upcoming Destinations</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:3px;overflow:hidden">${nextRows}</div>
+  </div>`;
+}
+
+function renderDestProfile(){
+  const d=destById(currentDestId);
+  if(!d)return renderDashboard();
+  const am=actMeta(d.act);
+  const nights=daysBetween(d.arrival,d.departure);
+  const cpn=nights>0&&d.cost>0?(d.cost/nights).toFixed(2):'—';
+  const cpnpp=nights>0&&d.cost>0&&d.persons>0?(d.cost/nights/d.persons).toFixed(2):'—';
+  const owed=d.cost>0?(d.cost-(d.paid||0)).toFixed(2):'—';
+  const hotelPaid=(d.paid||0)>=d.cost&&d.cost>0;
+  const paidPartial=(d.paid||0)>0&&(d.paid||0)<d.cost;
+  const hotelPaidLabel=d.cost<=0?'—':hotelPaid?'<span class="paid-badge yes">✓ Fully Paid</span>':paidPartial?`<span class="paid-badge no">⚡ $${parseFloat(d.paid).toFixed(0)} paid · $${owed} owed</span>`:'<span class="paid-badge no">✗ Not Paid</span>';
+  const arrWD=d.arrival?wdStr(d.arrival):'';
+  const depWD=d.departure?wdStr(d.departure):'';
+  const todoItems=d.todo?d.todo.split('\n').filter(t=>t.trim()).map(t=>`<li class="todo-item">${t}</li>`).join(''):'<li class="todo-item" style="color:var(--text3)">No items added yet</li>';
+  let transportHTML='<div style="font-size:11px;color:var(--text3);font-family:sans-serif;font-style:italic">No transportation added</div>';
+  if(d.mot){
+    const tPaidBadge=d.t_paid==='yes'?'<span class="paid-badge yes">✓ Paid</span>':d.t_paid==='partial'?'<span class="paid-badge no">⚡ Partial</span>':'<span class="paid-badge no">✗ Unpaid</span>';
+    const depDT=d.t_dep_dt?new Date(d.t_dep_dt):null;
+    const arrDT=d.t_arr_dt?new Date(d.t_arr_dt):null;
+    const depStr=depDT?depDT.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+WD[depDT.getDay()]+' '+depDT.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
+    const arrStr=arrDT?arrDT.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+WD[arrDT.getDay()]+' '+arrDT.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
+    transportHTML=`
+      <div class="detail-row"><span class="detail-label">Mode</span><span class="detail-val gold">${d.mot}</span></div>
+      ${d.t_num?`<div class="detail-row"><span class="detail-label">Flight / Train #</span><span class="detail-val">${d.t_num}</span></div>`:''}
+      ${d.t_ref?`<div class="detail-row"><span class="detail-label">Booking #</span><span class="detail-val">${d.t_ref}</span></div>`:''}
+      <div class="detail-row"><span class="detail-label">Departs</span><span class="detail-val">${d.t_dep_port||'—'} · ${depStr}</span></div>
+      <div class="detail-row"><span class="detail-label">Arrives</span><span class="detail-val">${d.t_arr_port||'—'} · ${arrStr}</span></div>
+      ${d.t_connection?`<div class="detail-row"><span class="detail-label">Connection</span><span class="detail-val">${d.t_connection}</span></div>`:''}
+      <div class="detail-row"><span class="detail-label">Cost</span><span class="detail-val">${d.t_cost>0?'$'+d.t_cost.toFixed(2):'—'}</span></div>
+      <div class="detail-row"><span class="detail-label">Payment</span><span class="detail-val">${tPaidBadge}</span></div>`;
+  }
+  return`<div class="profile-wrap">
+    <div class="profile-top">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
+        <div class="profile-flag-big">${d.flag||'📍'}</div>
+        <div style="font-size:9px;color:var(--text3);font-family:sans-serif;text-align:center;letter-spacing:.05em">${d.country}</div>
+      </div>
+      <div class="profile-meta">
+        <div class="profile-city">${d.city}</div>
+        <div class="profile-country">${d.country}</div>
+        <div class="profile-tags">
+          <span class="tag gold">${am.name}</span>
+          <span class="tag" style="border-color:${am.color}44;color:${am.color}">${d.status}</span>
+          ${d.priority?`<span class="tag">${'★'.repeat(parseInt(d.priority))} Priority</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <button class="action-btn" onclick="openModal('${d.id}')"><i class="ti ti-edit"></i> Edit</button>
+        <button class="action-btn del" onclick="removeDestination('${d.id}')"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>
+    ${d.event?`<div style="margin-bottom:.875rem"><div class="event-pill">
+      <i class="ti ti-confetti" style="color:${am.color};font-size:16px"></i>
+      <div>
+        <div style="font-size:12px;color:var(--text1);font-family:sans-serif">${d.event}</div>
+        ${d.event_date?`<div style="font-size:10px;color:var(--gold);font-family:sans-serif;margin-top:1px">${d.event_date}</div>`:''}
+      </div>
+    </div></div>`:''}
+    <div class="profile-grid">
+      <div class="profile-block">
+        <div class="block-title">Stay Details</div>
+        <div class="detail-row"><span class="detail-label">Arrival</span><span class="detail-val gold">${d.arrival?formatDate(d.arrival):'TBD'} <span style="color:var(--text3)">${arrWD}</span></span></div>
+        <div class="detail-row"><span class="detail-label">Departure</span><span class="detail-val gold">${d.departure?formatDate(d.departure):'TBD'} <span style="color:var(--text3)">${depWD}</span></span></div>
+        <div class="detail-row"><span class="detail-label">Nights</span><span class="detail-val">${nights>0?nights:'—'}</span></div>
+        <div class="detail-row"><span class="detail-label">Status</span><span class="detail-val ${d.status==='confirmed'?'green':d.status==='cancelled'?'red':''}">${d.status}</span></div>
+        <div class="detail-row"><span class="detail-label">Act</span><span class="detail-val" style="color:${am.color}">${am.name}</span></div>
+      </div>
+      <div class="profile-block">
+        <div class="block-title">Accommodation</div>
+        <div class="detail-row"><span class="detail-label">Hotel</span><span class="detail-val gold">${d.hotel||'Not booked'}</span></div>
+        ${d.hotel_ref?`<div class="detail-row"><span class="detail-label">Booking #</span><span class="detail-val">${d.hotel_ref}</span></div>`:''}
+        <div class="detail-row"><span class="detail-label">Total</span><span class="detail-val">${d.cost>0?'$'+d.cost.toFixed(2):'TBD'}</span></div>
+        <div class="detail-row"><span class="detail-label">Per night</span><span class="detail-val">${cpn!=='—'?'$'+cpn:cpn}</span></div>
+        <div class="detail-row"><span class="detail-label">Per night/person</span><span class="detail-val">${cpnpp!=='—'?'$'+cpnpp:cpnpp}</span></div>
+        <div class="detail-row"><span class="detail-label">Paid</span><span class="detail-val">${hotelPaidLabel}</span></div>
+      </div>
+    </div>
+    <div class="profile-block-full">
+      <div class="block-title"><i class="ti ti-plane" style="vertical-align:-1px"></i> Transportation</div>
+      ${transportHTML}
+    </div>
+    ${d.notes?`<div class="profile-block-full">
+      <div class="block-title"><i class="ti ti-notes" style="vertical-align:-1px"></i> Notes &amp; Memories</div>
+      <div class="notes-box">${d.notes}</div>
+    </div>`:''}
+    ${d.todo?`<div class="profile-block-full">
+      <div class="block-title"><i class="ti ti-list-check" style="vertical-align:-1px"></i> Things To Do</div>
+      <ul class="todo-list">${todoItems}</ul>
+    </div>`:''}
+    <div style="display:flex;gap:6px;margin-top:.25rem;flex-wrap:wrap">
+      <button onclick="openModal('${d.id}')" style="padding:5px 14px;background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);color:var(--gold);border-radius:2px;font-family:sans-serif;font-size:10px;cursor:pointer;letter-spacing:.08em;text-transform:uppercase"><i class="ti ti-edit"></i> Edit this destination</button>
+    </div>
+  </div>`;
+}
+
+function renderRoute(){
+  const sorted=sortedDests();
+  const rows=sorted.map(d=>{
+    const am=actMeta(d.act);
+    const nights=daysBetween(d.arrival,d.departure);
+    const arrWD=d.arrival?wdStr(d.arrival):'';
+    const depWD=d.departure?wdStr(d.departure):'';
+    return`<tr class="${d.status==='cancelled'?'cancelled':''}" onclick="viewDest('${d.id}')">
+      <td style="width:28px;padding:.45rem .5rem .45rem .75rem"><span style="font-size:16px">${d.flag||'📍'}</span></td>
+      <td><div style="font-size:12px;color:var(--text1)">${d.city}</div><div style="font-size:9px;color:var(--text3)">${d.country}</div></td>
+      <td><div style="font-size:11px">${d.arrival?formatDate(d.arrival):'—'} <span class="wd-badge">${arrWD}</span></div></td>
+      <td><div style="font-size:11px">${d.departure?formatDate(d.departure):'—'} <span class="wd-badge">${depWD}</span></div></td>
+      <td style="color:var(--text3)">${nights>0?nights+'n':'—'}</td>
+      <td><div style="font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;color:var(--text2)">${d.event||''}</div></td>
+      <td><div class="detail-val ${d.status==='confirmed'?'green':d.status==='cancelled'?'red':''}" style="font-size:10px">${d.status}</div></td>
+      <td style="color:${am.color};font-size:10px;white-space:nowrap">${am.name}</td>
+      <td style="padding:.45rem .5rem" onclick="event.stopPropagation()">
+        <div style="display:flex;gap:4px">
+          <button class="action-btn" onclick="openModal('${d.id}')"><i class="ti ti-edit"></i></button>
+          <button class="action-btn del" onclick="removeDestination('${d.id}')"><i class="ti ti-trash"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  return`<div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem">
+      <div class="section-title" style="margin-bottom:0;flex:1">All Destinations · ${sorted.length} stops</div>
+      <button class="add-btn" style="flex-shrink:0" onclick="openModal()"><i class="ti ti-plus"></i> Add</button>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:3px;overflow:hidden;overflow-x:auto">
+      <table class="route-table">
+        <thead><tr><th></th><th>Destination</th><th>Arrival</th><th>Departure</th><th>Nights</th><th>Event</th><th>Status</th><th>Act</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function viewDest(id){
+  currentDestId=id;currentAct=destById(id)?.act||currentAct;currentTab='dashboard';
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  renderSidebar();renderContent();
+}
+
+function renderFestivals(){
+  const cards=FESTIVALS.map(f=>{
+    const am=actMeta(f.act);
+    const dots=Array.from({length:5},(_,i)=>`<div class="pdot" style="background:${i<f.priority?am.color:'var(--border2)'}"></div>`).join('');
+    return`<div class="festival-card">
+      <div class="f-type" style="color:${am.color}">${f.type}</div>
+      <div class="f-name">${f.name}</div>
+      <div class="f-loc"><i class="ti ti-map-pin" style="font-size:11px;vertical-align:-1px"></i> ${f.loc}</div>
+      <div class="f-date">${f.date}</div>
+      <div class="pdots">${dots}</div>
+    </div>`;
+  }).join('');
+  return`<div class="panel">
+    <div class="section-title">Festivals &amp; Events · ${FESTIVALS.length}</div>
+    <div class="festival-grid">${cards}</div>
+  </div>`;
+}
+
+function renderBudget(){
+  const totalHotel=DESTS.reduce((s,d)=>s+((d.cost)||0),0);
+  const totalPaid=DESTS.reduce((s,d)=>s+((d.paid)||0),0);
+  const totalOwed=totalHotel-totalPaid;
+  const totalTransport=DESTS.reduce((s,d)=>s+((d.t_cost)||0),0);
+  const budget=50000;
+  const spent=totalHotel+totalTransport;
+  const cats=[
+    {name:'Hotels',val:totalHotel,budget:18000,color:'#C9A84C'},
+    {name:'Flights & Transport',val:totalTransport,budget:12000,color:'#4B8BC8'},
+    {name:'Food & Drink',val:0,budget:8000,color:'#4BC896'},
+    {name:'Festivals & Tickets',val:0,budget:5000,color:'#C84B6B'},
+    {name:'Local Transport',val:0,budget:3000,color:'#8B4BC8'},
+    {name:'Entertainment',val:0,budget:2000,color:'#C8734B'},
+    {name:'Visas',val:0,budget:1000,color:'#C8C84B'},
+    {name:'Insurance',val:0,budget:1000,color:'#6B8080'},
+  ];
+  const bars=cats.map(c=>{const p=c.budget>0?Math.min(100,c.val/c.budget*100):0;return`<div style="margin-bottom:.625rem">
+    <div style="display:flex;justify-content:space-between;font-family:sans-serif;font-size:11px;margin-bottom:3px">
+      <span style="color:var(--text2)">${c.name}</span>
+      <span style="color:var(--text3)">$${Math.round(c.val).toLocaleString()} / $${c.budget.toLocaleString()}</span>
+    </div>
+    <div style="height:3px;background:var(--border2);border-radius:2px;overflow:hidden"><div style="height:100%;width:${p.toFixed(0)}%;background:${c.color};border-radius:2px"></div></div>
+  </div>`;}).join('');
+  const hotelRows=DESTS.filter(d=>d.cost>0&&d.hotel).map(d=>{
+    const paidBadge=d.paid>=d.cost?'<span class="paid-badge yes" style="font-size:8px">✓ Paid</span>':d.paid>0?`<span class="paid-badge no" style="font-size:8px">⚡ $${parseFloat(d.paid).toFixed(0)} paid</span>`:'<span class="paid-badge no" style="font-size:8px">✗ Unpaid</span>';
+    return`<div class="detail-row">
+      <span class="detail-label">${d.flag||''} ${d.hotel}</span>
+      <span class="detail-val" style="display:flex;align-items:center;gap:8px">${paidBadge} <span style="color:var(--gold)">${fmt$(d.cost)}</span></span>
+    </div>`;}).join('');
+  return`<div class="panel">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val">$${Math.round(budget/1000)}k</div><div class="stat-label">Budget</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#C84B4B">$${Math.round(spent).toLocaleString()}</div><div class="stat-label">Committed</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--green)">$${(budget-spent).toLocaleString()}</div><div class="stat-label">Remaining</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--red)">$${Math.round(totalOwed).toLocaleString()}</div><div class="stat-label">Hotel balance owed</div></div>
+    </div>
+    <div class="profile-block-full" style="margin-bottom:.875rem"><div class="block-title">By category</div>${bars}</div>
+    <div class="profile-block-full"><div class="block-title">Hotel breakdown</div>${hotelRows||'<div style="color:var(--text3);font-size:11px;font-family:sans-serif">No hotels booked yet</div>'}</div>
+  </div>`;
+}
+
+function renderBucketList(){
+  const done=BUCKET.filter(b=>b.done).length;
+  const items=BUCKET.map((b,i)=>{const am=actMeta(b.act);return`<div class="bucket-item" onclick="toggleBucket(${i})">
+    <div class="bcheck${b.done?' done':''}"></div>
+    <div style="flex:1"><div class="btext${b.done?' done':''}">${b.text}</div><div class="bctry">${b.country}</div></div>
+    <span style="font-size:9px;padding:1px 7px;border-radius:2px;background:${am.color}22;color:${am.color};font-family:sans-serif;flex-shrink:0">${am.name}</span>
+  </div>`;}).join('');
+  return`<div class="panel">
+    <div class="stats-grid" style="margin-bottom:1.25rem">
+      <div class="stat-card"><div class="stat-val">${done}</div><div class="stat-label">Completed</div></div>
+      <div class="stat-card"><div class="stat-val">${BUCKET.length-done}</div><div class="stat-label">Remaining</div></div>
+      <div class="stat-card"><div class="stat-val">${Math.round(done/BUCKET.length*100)}%</div><div class="stat-label">Life score</div></div>
+    </div>
+    <div class="section-title">Life experiences</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:3px;overflow:hidden">${items}</div>
+    <div style="margin-top:.5rem;font-family:sans-serif;font-size:10px;color:var(--text3);text-align:center">Click to mark as completed</div>
+  </div>`;
+}
+function toggleBucket(i){BUCKET[i].done=!BUCKET[i].done;renderContent();}
+
+const AI_RESP={
+  "Can I stay 10 more days in Spain?":"Based on your Schengen entry on Jan 22, 2027, your Spanish itinerary adds up to roughly 63 days in the zone. Adding 10 more risks exceeding the 90/180-day Schengen rule. Recommendation: bridge with Morocco between Barcelona legs — your Cap d'Agde stretch already helps. You're currently safe if you keep the breaks as planned.",
+  "What festivals near my route next month?":"Fiestas de Gracia (Barcelona, Aug 15–21) aligns perfectly with your route. La Tomatina (Buñol, Aug 25) is 1h from Barcelona/Valencia. Ibiza closing parties run through September. Extend Barcelona by 2 days to catch Gracia, then head straight to Buñol.",
+  "Best route Pamplona to Cap d'Agde?":"Pamplona → Zugarramurdi (witches' caves, 1d) → Bilbao (3d, BBK Live + Guggenheim) → San Sebastián (2d) → Biarritz (1d) → Andorra (2d) → Cap d'Agde (10d). Total ~680km, extraordinary Pyrenean scenery, 3 bonus destinations.",
+  "How to reduce cost by $5,000?":"1. Use Airbnb in Berlin, Budapest, Moldova: save ~$800. 2. Book Africa flights 3+ months ahead: save ~$1,200. 3. Cap d'Agde caravan vs. apartment (7 nights): save ~$700. 4. Local riads in Morocco instead of international hotels: save ~$400. Total achievable: $3,100–$5,500."
+};
+function renderAI(){
+  const sugs=Object.keys(AI_RESP);
+  const sugsHTML=sugs.map(s=>`<button class="ai-sug" onclick="handleAI('${s.replace(/'/g,"\\'")}')">${s} ↗</button>`).join('');
+  const msgsHTML=aiMsgs.length===0?`<div style="color:var(--text3);font-family:sans-serif;font-size:11px;font-style:italic;text-align:center;padding:2rem 0">Ask anything about your journey…</div>`:aiMsgs.map(m=>`<div class="ai-msg ${m.role}"><div class="ai-msg-lbl">${m.role==='user'?'You':'Angel\'s Eye AI'}</div>${m.content}</div>`).join('');
+  return`<div class="ai-wrap">
+    <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-family:sans-serif">AI Travel Advisor</div>
+    <div style="font-size:11px;color:var(--text3);font-family:sans-serif">Knows your full route, budget, and plans</div>
+    <div class="ai-suggestions">${sugsHTML}</div>
+    <div id="aiMsgs" class="ai-msgs">${msgsHTML}</div>
+    <div class="ai-row"><input class="ai-inp" id="aiInp" type="text" placeholder="Ask about visas, festivals, budget, routes…" onkeydown="if(event.key==='Enter')sendAIMsg()"/><button class="ai-send" onclick="sendAIMsg()">Ask</button></div>
+  </div>`;
+}
+function handleAI(q){
+  aiMsgs.push({role:'user',content:q});renderContent();
+  setTimeout(()=>{
+    const r=AI_RESP[q]||`Processing "${q}"… In the full implementation this connects to the Claude API with full context of your ${DESTS.length} destinations, budget, and travel dates.`;
+    aiMsgs.push({role:'ai',content:r});renderContent();
+    const el=document.getElementById('aiMsgs');if(el)el.scrollTop=el.scrollHeight;
+  },700);
+}
+function sendAIMsg(){const inp=document.getElementById('aiInp');if(!inp||!inp.value.trim())return;const q=inp.value.trim();inp.value='';handleAI(q);}
+
+function recalcDates(){
+  const a=document.getElementById('f_arrival').value;
+  const dep=document.getElementById('f_departure').value;
+  document.getElementById('f_arrival_wd').textContent=a?wdStr(a):'';
+  document.getElementById('f_departure_wd').textContent=dep?wdStr(dep):'';
+  if(a&&dep){const n=daysBetween(a,dep);document.getElementById('f_nights').value=n>=0?n:'';document.getElementById('f_nights_calc').textContent=n>0?n+' nights':'';}
+  recalcHotel();
+}
+function recalcFromNights(){
+  const a=document.getElementById('f_arrival').value;
+  const n=parseInt(document.getElementById('f_nights').value);
+  if(a&&!isNaN(n)&&n>=0){
+    const d=new Date(a+'T12:00:00');d.setDate(d.getDate()+n);
+    const dep=d.toISOString().split('T')[0];
+    document.getElementById('f_departure').value=dep;
+    document.getElementById('f_departure_wd').textContent=wdStr(dep);
+    document.getElementById('f_nights_calc').textContent=n+' nights';
+  }
+  recalcHotel();
+}
+function recalcHotel(){
+  const cost=parseFloat(document.getElementById('f_cost').value)||0;
+  const persons=parseInt(document.getElementById('f_persons').value)||1;
+  const paid=parseFloat(document.getElementById('f_paid').value)||0;
+  const a=document.getElementById('f_arrival').value;
+  const dep=document.getElementById('f_departure').value;
+  const nights=a&&dep?daysBetween(a,dep):0;
+  const cpn=nights>0&&cost>0?(cost/nights).toFixed(2):'—';
+  const cpnpp=nights>0&&cost>0&&persons>0?(cost/nights/persons).toFixed(2):'—';
+  const owed=cost>0?(cost-paid).toFixed(2):'—';
+  document.getElementById('f_cpn').textContent=cpn!=='—'?'$'+cpn:'—';
+  document.getElementById('f_cpnpp').textContent=cpnpp!=='—'?'$'+cpnpp:'—';
+  document.getElementById('f_owed').textContent=owed!=='—'?'$'+owed:'—';
+}
+
+function openModal(editId){
+  editingId=editId||null;
+  document.getElementById('modalTitle').textContent=editId?'Edit Destination':'Add New Destination';
+  const fields=['act','status','country','city','flag','priority','arrival','departure','nights','event','event_date','hotel','hotel_ref','cost','persons','paid','mot','t_ref','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','notes','todo'];
+  fields.forEach(f=>{const el=document.getElementById('f_'+f);if(el){if(el.tagName==='SELECT'){el.selectedIndex=0;}else{el.value='';}}});
+  document.getElementById('f_persons').value='2';
+  document.getElementById('f_t_paid').value='no';
+  document.getElementById('f_cpn').textContent='—';
+  document.getElementById('f_cpnpp').textContent='—';
+  document.getElementById('f_owed').textContent='—';
+  document.getElementById('f_arrival_wd').textContent='';
+  document.getElementById('f_departure_wd').textContent='';
+  document.getElementById('f_nights_calc').textContent='';
+  if(editId){
+    const d=destById(editId);
+    if(d){
+      const setV=(fid,val)=>{const el=document.getElementById('f_'+fid);if(el&&val!=null)el.value=val;};
+      setV('act',d.act);setV('status',d.status);setV('country',d.country);setV('city',d.city);
+      setV('flag',d.flag);setV('priority',d.priority||3);setV('arrival',d.arrival);setV('departure',d.departure);
+      setV('event',d.event);setV('event_date',d.event_date);setV('hotel',d.hotel);setV('hotel_ref',d.hotel_ref);
+      setV('cost',d.cost||'');setV('persons',d.persons||2);setV('paid',d.paid||'');
+      setV('mot',d.mot);setV('t_ref',d.t_ref);setV('t_dep_port',d.t_dep_port);setV('t_arr_port',d.t_arr_port);
+      setV('t_dep_dt',d.t_dep_dt);setV('t_arr_dt',d.t_arr_dt);setV('t_connection',d.t_connection);
+      setV('t_cost',d.t_cost||'');setV('t_paid',d.t_paid||'no');setV('t_num',d.t_num);
+      setV('notes',d.notes);setV('todo',d.todo);
+      recalcDates();
+    }
+  } else if(currentAct){document.getElementById('f_act').value=currentAct;}
+  document.getElementById('modalOverlay').style.display='flex';
+}
+function closeModal(){document.getElementById('modalOverlay').style.display='none';editingId=null;}
+
+function saveDestination(){
+  const gv=id=>document.getElementById('f_'+id)?.value?.trim()||'';
+  const gn=id=>parseFloat(document.getElementById('f_'+id)?.value)||0;
+  const dest={
+    id:editingId||('d'+(++nextId)),
+    act:gv('act')||'act1',status:gv('status')||'planned',
+    country:gv('country'),city:gv('city'),flag:gv('flag')||'📍',
+    priority:parseInt(gv('priority'))||3,
+    arrival:gv('arrival'),departure:gv('departure'),
+    event:gv('event'),event_date:gv('event_date'),
+    hotel:gv('hotel'),hotel_ref:gv('hotel_ref'),
+    cost:gn('cost'),persons:parseInt(gv('persons'))||2,paid:gn('paid'),
+    mot:gv('mot'),t_ref:gv('t_ref'),t_dep_port:gv('t_dep_port'),t_arr_port:gv('t_arr_port'),
+    t_dep_dt:gv('t_dep_dt'),t_arr_dt:gv('t_arr_dt'),t_connection:gv('t_connection'),
+    t_cost:gn('t_cost'),t_paid:gv('t_paid'),t_num:gv('t_num'),
+    notes:document.getElementById('f_notes')?.value?.trim()||'',
+    todo:document.getElementById('f_todo')?.value?.trim()||'',
+  };
+  if(!dest.city){alert('Please enter a city name.');return;}
+  if(editingId){const idx=DESTS.findIndex(d=>d.id===editingId);if(idx>=0)DESTS[idx]=dest;}
+  else{DESTS.push(dest);}
+  closeModal();
+  currentAct=dest.act;currentDestId=dest.id;
+  updateHeaderStats();renderSidebar();renderContent();
+}
+
+function removeDestination(id){
+  if(!confirm('Remove this destination from your journey?'))return;
+  DESTS=DESTS.filter(d=>d.id!==id);
+  if(currentDestId===id){currentDestId=null;}
+  updateHeaderStats();renderSidebar();renderContent();
+}
+
+renderSidebar();
+renderContent();
+</script>
+</body>
+</html>
