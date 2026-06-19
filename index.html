@@ -334,7 +334,8 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .ctx-item{padding:.5rem .875rem;font-family:var(--font-ui);font-size:12px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:6px}
 .ctx-item:hover{background:rgba(201,168,76,.08);color:var(--gold)}
 /* GLOBE */
-.globe-wrap{position:relative;flex:1;overflow:hidden;background:#000005;min-height:0}
+.globe-wrap{position:relative;width:100%;height:calc(100vh - 96px);overflow:hidden;background:#000005}
+@media(max-width:599px){.globe-wrap{height:calc(100vh - 96px)}}
 .globe-wrap canvas{display:block;touch-action:none}
 .globe-hud{position:absolute;top:0;left:0;right:0;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;z-index:10;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,5,.55),transparent)}
 .globe-hud>*{pointer-events:auto}
@@ -384,27 +385,6 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 }
 @media(max-width:380px){.sgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
-<script>
-// Multi-CDN loader for Three.js with automatic fallback — tries each source in order
-// until one succeeds, so a single blocked/unreachable CDN doesn't break the globe.
-(function(){
-  var sources=[
-    'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
-    'https://unpkg.com/three@0.128.0/build/three.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.128.0/three.min.js'
-  ];
-  window.__threeLoadFailed=false;
-  function tryLoad(i){
-    if(i>=sources.length){window.__threeLoadFailed=true;return;}
-    var s=document.createElement('script');
-    s.src=sources[i];
-    s.onload=function(){window.__threeReady=true;};
-    s.onerror=function(){tryLoad(i+1);};
-    document.head.appendChild(s);
-  }
-  tryLoad(0);
-})();
-</script>
 </head>
 <body data-theme="mythic">
 <div class="app">
@@ -1023,7 +1003,7 @@ function importCSV(input){
   reader.readAsText(file,'UTF-8');
 }
 
-// ── 3D GLOBE ──────────────────────────────────────────────────────────────────
+// ── SVG GLOBE (zero external dependencies, pure math) ─────────────────────────
 const GEO={
   'Switzerland':{la:46.8,ln:8.2},'Austria':{la:47.5,ln:14.5},'Italy':{la:41.9,ln:12.5},
   'Finland':{la:64,ln:26},'Spain':{la:40,ln:-3.5},'France':{la:46.2,ln:2.2},
@@ -1044,21 +1024,7 @@ const GEO={
   'Moldova':{la:47.4,ln:28.4},'Madagascar':{la:-18,ln:44},'Namibia':{la:-22,ln:17},
 };
 
-let globeState={
-  scene:null,camera:null,renderer:null,globe:null,group:null,
-  raf:null,resizeObs:null,raycaster:null,mouse:null,
-  rotY:0.6,rotX:-0.15,targetRotY:0.6,targetRotX:-0.15,
-  dragging:false,lastX:0,lastY:0,zoom:14,targetZoom:14,
-  pulseT:0,nodeMeshes:[],arcLines:[],heatMode:false,storyMode:false,storyIdx:0,storyTimer:null,
-  timelineIdx:null,canvasEl:null,initialized:false,R:5,
-};
-
 function destLatLng(d){const g=GEO[d.country];return g?{la:g.la,ln:g.ln}:null;}
-function llToVec3(lat,lng,r){
-  const phi=(90-lat)*(Math.PI/180);
-  const theta=(lng+180)*(Math.PI/180);
-  return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(theta),r*Math.cos(phi),r*Math.sin(phi)*Math.sin(theta));
-}
 
 function continentOf(country){
   const map={
@@ -1072,8 +1038,53 @@ function continentOf(country){
   return map[country]||null;
 }
 
+// World landmass outline as lat/lng polygon rings (simplified but recognizable continents)
+const LAND_RINGS=[
+  // North America
+  [[71,-156],[66,-165],[60,-165],[55,-162],[58,-152],[60,-145],[60,-140],[55,-130],[50,-128],[48,-124],[42,-124],[38,-123],[34,-120],[32,-117],[24,-110],[23,-106],[20,-105],[16,-95],[18,-94],[21,-97],[26,-97],[29,-94],[30,-89],[29,-85],[28,-82],[25,-80],[27,-80],[31,-81],[35,-76],[38,-75],[40,-74],[42,-71],[45,-67],[47,-65],[49,-67],[50,-62],[52,-56],[51,-55],[48,-52],[47,-52],[46,-60],[45,-64],[44,-66],[44,-68],[45,-67],[47,-70],[48,-70],[49,-77],[51,-80],[55,-83],[58,-93],[58,-94],[55,-90],[54,-92],[58,-95],[63,-90],[66,-86],[68,-85],[69,-95],[68,-100],[70,-100],[72,-95],[74,-95],[75,-90],[74,-80],[71,-75],[70,-70],[67,-65],[63,-65],[60,-65],[58,-67],[58,-78],[56,-78],[55,-83],[58,-93]],
+  // South America
+  [[12,-72],[10,-75],[8,-77],[6,-78],[1,-79],[-3,-80],[-6,-81],[-10,-78],[-14,-76],[-18,-71],[-22,-70],[-26,-71],[-30,-71],[-34,-72],[-38,-73],[-42,-73],[-46,-75],[-50,-74],[-53,-71],[-55,-69],[-52,-69],[-50,-69],[-48,-66],[-44,-65],[-40,-63],[-38,-62],[-34,-58],[-32,-58],[-30,-57],[-27,-58],[-22,-58],[-20,-58],[-18,-58],[-15,-60],[-13,-60],[-10,-65],[-8,-65],[-5,-68],[-3,-70],[0,-70],[4,-69],[8,-67],[10,-65],[10,-67],[12,-72]],
+  // Europe
+  [[71,28],[68,33],[66,33],[65,40],[60,38],[60,30],[58,28],[55,21],[54,20],[54,14],[55,12],[57,11],[59,11],[62,5],[63,8],[66,12],[68,17],[71,25],[71,28]],
+  [[60,5],[58,7],[56,8],[55,9],[53,7],[51,4],[50,2],[49,0],[48,-2],[47,-3],[46,-1],[44,-1],[43,-2],[42,3],[40,0],[38,-1],[37,-2],[36,-5],[37,-6],[40,-9],[42,-9],[44,-9],[45,-1],[47,-2],[49,-5],[51,3],[53,4],[55,9],[58,7],[60,5]],
+  [[45,8],[44,7],[42,9],[41,9],[38,9],[37,15],[40,18],[41,16],[44,12],[45,9],[45,8]],
+  [[42,20],[40,22],[39,23],[38,24],[37,23],[36,22],[35,25],[37,27],[39,26],[41,27],[42,28],[43,24],[42,20]],
+  // Africa
+  [[37,10],[35,1],[33,-7],[31,-9],[28,-12],[24,-15],[21,-17],[17,-16],[14,-17],[12,-16],[8,-13],[5,-10],[4,-7],[5,-3],[4,3],[2,8],[0,9],[-2,10],[-5,12],[-6,12],[-9,13],[-13,13],[-17,11],[-22,14],[-26,15],[-29,16],[-33,18],[-34,20],[-34,25],[-31,29],[-28,32],[-26,33],[-23,35],[-20,35],[-16,40],[-13,40],[-10,40],[-6,39],[-3,39],[0,42],[3,41],[5,46],[8,49],[11,51],[12,43],[15,40],[16,38],[18,38],[20,37],[22,36],[24,35],[28,33],[30,32],[31,32],[33,28],[32,25],[31,25],[31,20],[30,20],[28,15],[27,15],[24,12],[20,11],[18,12],[15,15],[15,18],[18,21],[22,22],[28,24],[30,20],[33,16],[35,9],[37,10]],
+  // Asia / Middle East / India / SE Asia
+  [[44,28],[40,29],[37,28],[36,33],[35,36],[33,35],[30,34],[29,34],[27,34],[24,38],[22,39],[18,42],[16,42],[13,43],[12,44],[15,52],[18,54],[22,59],[25,61],[28,61],[28,55],[30,49],[31,48],[33,48],[35,46],[37,42],[38,41],[40,41],[42,42],[43,46],[42,48],[40,50],[38,49],[36,53],[37,56],[40,53],[44,50],[44,40],[44,28]],
+  [[37,57],[35,60],[33,62],[30,62],[29,61],[28,61],[25,61],[24,67],[22,68],[24,70],[26,68],[29,71],[30,73],[33,73],[36,71],[37,72],[38,71],[37,66],[37,57]],
+  [[35,77],[32,75],[29,72],[26,68],[24,68],[22,69],[21,72],[19,72],[15,73],[12,75],[10,77],[8,77],[9,79],[11,79],[13,80],[16,82],[18,84],[21,87],[22,89],[23,88],[24,91],[26,91],[27,89],[28,89],[28,85],[30,80],[31,78],[35,77]],
+  [[28,89],[26,92],[24,93],[22,93],[21,93],[20,94],[18,94],[16,94],[16,98],[19,98],[21,100],[20,103],[18,103],[16,103],[14,101],[12,99],[10,99],[8,99],[7,100],[5,103],[2,104],[1,104],[-2,101],[-3,104],[-1,109],[1,110],[4,114],[6,116],[8,117],[11,123],[14,121],[18,121],[22,121],[24,118],[24,112],[22,110],[18,109],[12,109],[10,106],[16,108],[20,109],[22,113],[24,118]],
+  [[40,120],[38,122],[36,120],[35,126],[37,127],[39,125],[41,129],[43,131],[45,134],[48,138],[45,142],[42,141],[40,140],[38,141],[36,140],[35,135],[34,131],[34,129],[33,130],[31,131],[32,132],[33,135],[35,136],[34,138],[35,140],[37,141],[40,141],[42,140],[44,142],[44,145],[42,140],[40,120]],
+  [[18,109],[10,107],[8,105],[6,102],[4,98],[2,98],[-2,100],[-4,102],[-6,106],[-7,109],[-7,113],[-6,116],[-3,117],[-1,117],[1,118],[3,119],[6,118],[6,116]],
+  // Australia
+  [[-11,131],[-12,136],[-14,136],[-16,139],[-17,141],[-15,143],[-12,143],[-11,143],[-13,146],[-17,146],[-20,149],[-23,151],[-25,153],[-28,153],[-31,153],[-34,151],[-35,150],[-37,150],[-38,148],[-38,145],[-38,141],[-35,138],[-35,136],[-32,134],[-32,131],[-31,129],[-26,127],[-22,123],[-20,119],[-18,122],[-16,123],[-14,126],[-13,128],[-11,131]],
+];
+
+// Compass-style country reference dots when no full polygon available (decorative anchors)
+let svgGlobe={
+  rotY:25,rotX:-15,zoom:1,targetRotY:25,targetRotX:-15,targetZoom:1,
+  dragging:false,lastX:0,lastY:0,lastMoveX:0,lastMoveY:0,
+  raf:null,heatMode:false,storyMode:false,storyIdx:0,storyTimer:null,
+  timelineIdx:null,pulseT:0,el:null,svgEl:null,
+};
+
+function llTo3D(lat,lng,r){
+  const phi=lat*Math.PI/180, theta=lng*Math.PI/180;
+  return {x:r*Math.cos(phi)*Math.sin(theta), y:-r*Math.sin(phi), z:r*Math.cos(phi)*Math.cos(theta)};
+}
+function rotateY(p,a){const c=Math.cos(a),s=Math.sin(a);return{x:p.x*c+p.z*s,y:p.y,z:-p.x*s+p.z*c};}
+function rotateX(p,a){const c=Math.cos(a),s=Math.sin(a);return{x:p.x,y:p.y*c-p.z*s,z:p.y*s+p.z*c};}
+function project(lat,lng){
+  let p=llTo3D(lat,lng,1);
+  p=rotateY(p,svgGlobe.rotY*Math.PI/180);
+  p=rotateX(p,svgGlobe.rotX*Math.PI/180);
+  return p; // p.z>0 means facing viewer (visible)
+}
+
 function renderMap(){
-  scheduleGlobeInit();
+  setTimeout(()=>initSvgGlobe(),20);
   const dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
   const visited=new Set(dests.map(d=>d.country));
   const totalDays=dests.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
@@ -1081,7 +1092,6 @@ function renderMap(){
   dests.forEach(d=>{const c=continentOf(d.country);if(c)continents.add(c);});
   const legend=cActs().filter(a=>dests.some(d=>d.act===a.id)).map(a=>`<div style="display:flex;align-items:center;gap:5px;font-size:9px;color:${a.color};font-family:var(--font-ui)"><div style="width:7px;height:7px;border-radius:50%;background:${a.color};box-shadow:0 0 4px ${a.color}"></div>${esc(a.name)}</div>`).join('');
   return`<div class="globe-wrap" id="globeWrap">
-    <div class="globe-loading" id="globeLoading">Initializing globe…</div>
     <div class="globe-hud">
       <div class="globe-stats-bar">
         <div class="gstat"><div class="gstat-v">${visited.size}</div><div class="gstat-l">Countries</div></div>
@@ -1094,12 +1104,15 @@ function renderMap(){
       <button class="gbtn" id="heatBtn" onclick="toggleHeatMode()" title="Heat map mode"><i class="ti ti-map-2"></i></button>
       <button class="gbtn" id="storyBtn" onclick="toggleStoryMode()" title="Story mode — auto-fly the journey"><i class="ti ti-player-play"></i></button>
       <button class="gbtn" onclick="resetGlobeView()" title="Reset view"><i class="ti ti-refresh"></i></button>
+      <button class="gbtn" onclick="zoomGlobe(1)" title="Zoom in"><i class="ti ti-zoom-in"></i></button>
+      <button class="gbtn" onclick="zoomGlobe(-1)" title="Zoom out"><i class="ti ti-zoom-out"></i></button>
     </div>
     <div class="globe-legend">${legend}</div>
     <div class="globe-info-panel" id="globeInfoPanel">
       <button class="gip-close" onclick="closeGlobeInfo()">&#x2715;</button>
       <div id="globeInfoBody"></div>
     </div>
+    <div id="globeSvgHost" style="position:absolute;inset:0"></div>
     <div class="globe-timeline">
       <div class="timeline-track"><input type="range" class="timeline-slider" id="timelineSlider" min="0" max="${Math.max(0,dests.length-1)}" value="${dests.length-1}" oninput="onTimelineMove(this.value)"/></div>
       <div class="timeline-label" id="timelineLabel">${dests.length?'Showing full journey through '+esc(dests[dests.length-1].city):'No destinations yet'}</div>
@@ -1107,245 +1120,247 @@ function renderMap(){
   </div>`;
 }
 
-// Polls for THREE readiness (up to ~8s) before giving up, since the multi-CDN
-// fallback loader may take a moment if the first source is slow or blocked.
-function scheduleGlobeInit(){
-  let attempts=0;
-  const maxAttempts=80; // 80 * 100ms = 8 seconds
-  const poll=()=>{
-    const wrap=document.getElementById('globeWrap');
-    if(!wrap)return; // user navigated away
-    if(typeof THREE!=='undefined'){initGlobe();return;}
-    if(window.__threeLoadFailed){initGlobe();return;} // all CDN sources failed — show error immediately
-    attempts++;
-    if(attempts>=maxAttempts){initGlobe();return;} // give up, show error
-    setTimeout(poll,100);
-  };
-  setTimeout(poll,30);
-}
-
-function initGlobe(){
+function initSvgGlobe(){
   const wrap=document.getElementById('globeWrap');
   if(!wrap)return;
-  if(typeof THREE==='undefined'){
-    wrap.innerHTML='<div class="globe-loading" style="flex-direction:column;gap:.5rem;text-align:center;padding:2rem"><i class="ti ti-world-off" style="font-size:32px;color:var(--t3)"></i><div>3D engine failed to load.<br/>Check your internet connection and refresh.</div></div>';
-    return;
-  }
-  let webglOk=true;
-  try{const testCanvas=document.createElement('canvas');webglOk=!!(testCanvas.getContext('webgl')||testCanvas.getContext('experimental-webgl'));}catch(e){webglOk=false;}
-  if(!webglOk){
-    wrap.innerHTML='<div class="globe-loading" style="flex-direction:column;gap:.5rem;text-align:center;padding:2rem"><i class="ti ti-world-off" style="font-size:32px;color:var(--t3)"></i><div>Your browser/device does not support WebGL,<br/>required for the 3D globe.</div></div>';
-    return;
-  }
   teardownGlobe();
-  try{
-  const W=wrap.clientWidth||800,H=wrap.clientHeight||500;
-  const scene=new THREE.Scene();
-  const camera=new THREE.PerspectiveCamera(45,W/H,0.1,1000);
-  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-  renderer.setSize(W,H);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-  wrap.insertBefore(renderer.domElement,wrap.firstChild);
-  globeState.canvasEl=renderer.domElement;
-  renderer.domElement.style.position='absolute';
-  renderer.domElement.style.inset='0';
-
-  const starGeo=new THREE.BufferGeometry();
-  const starCount=1800;
-  const starPos=new Float32Array(starCount*3);
-  for(let i=0;i<starCount;i++){
-    const r=80+Math.random()*120;
-    const th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
-    starPos[i*3]=r*Math.sin(ph)*Math.cos(th);
-    starPos[i*3+1]=r*Math.sin(ph)*Math.sin(th);
-    starPos[i*3+2]=r*Math.cos(ph);
-  }
-  starGeo.setAttribute('position',new THREE.BufferAttribute(starPos,3));
-  const starMat=new THREE.PointsMaterial({color:0xBFE8FF,size:0.5,transparent:true,opacity:0.7});
-  scene.add(new THREE.Points(starGeo,starMat));
-
-  const R=5;
-  const group=new THREE.Group();
-  scene.add(group);
-
-  const sphereGeo=new THREE.SphereGeometry(R,64,64);
-  const sphereMat=new THREE.MeshPhongMaterial({color:0x0B2236,emissive:0x041018,shininess:8,transparent:true,opacity:0.97});
-  const globeMesh=new THREE.Mesh(sphereGeo,sphereMat);
-  group.add(globeMesh);
-
-  const gridMat=new THREE.LineBasicMaterial({color:0x2E5C78,transparent:true,opacity:0.35});
-  for(let la=-60;la<=60;la+=30){
-    const pts=[];for(let lo=-180;lo<=180;lo+=5)pts.push(llToVec3(la,lo,R*1.001));
-    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),gridMat));
-  }
-  for(let lo=-150;lo<=180;lo+=30){
-    const pts=[];for(let la=-90;la<=90;la+=5)pts.push(llToVec3(la,lo,R*1.001));
-    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),gridMat));
-  }
-
-  const atmGeo=new THREE.SphereGeometry(R*1.08,64,64);
-  const atmMat=new THREE.ShaderMaterial({
-    uniforms:{},
-    vertexShader:"varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
-    fragmentShader:"varying vec3 vN;void main(){float i=pow(0.65-dot(vN,vec3(0,0,1.0)),2.5);gl_FragColor=vec4(0.36,0.85,1.0,1.0)*i;}",
-    blending:THREE.AdditiveBlending,side:THREE.BackSide,transparent:true,
-  });
-  group.add(new THREE.Mesh(atmGeo,atmMat));
-
-  scene.add(new THREE.AmbientLight(0x405060,1.4));
-  const dl=new THREE.DirectionalLight(0xffffff,0.9);dl.position.set(5,3,5);scene.add(dl);
-
-  camera.position.set(0,0,globeState.zoom);
-
-  globeState.scene=scene;globeState.camera=camera;globeState.renderer=renderer;
-  globeState.globe=globeMesh;globeState.group=group;globeState.R=R;
-  globeState.raycaster=new THREE.Raycaster();globeState.mouse=new THREE.Vector2();
-  globeState.initialized=true;
-
-  buildGlobeContent();
-  attachGlobeInteraction(wrap);
-  animateGlobe();
-  const loadingEl=document.getElementById('globeLoading');if(loadingEl)loadingEl.remove();
-
-  globeState.resizeObs=new ResizeObserver(()=>{
-    if(!globeState.renderer)return;
-    const w=wrap.clientWidth,h=wrap.clientHeight;
-    globeState.camera.aspect=w/h;globeState.camera.updateProjectionMatrix();
-    globeState.renderer.setSize(w,h);
-  });
-  globeState.resizeObs.observe(wrap);
-  }catch(err){
-    console.error('Globe init failed:',err);
-    wrap.innerHTML='<div class="globe-loading" style="flex-direction:column;gap:.5rem;text-align:center;padding:2rem"><i class="ti ti-alert-triangle" style="font-size:32px;color:var(--t3)"></i><div>The 3D globe could not load.<br/>Try refreshing the page.</div></div>';
-  }
-}
-
-function buildGlobeContent(){
-  const R=globeState.R,group=globeState.group;
-  if(!group)return;
-  globeState.nodeMeshes.forEach(m=>group.remove(m));
-  globeState.arcLines.forEach(m=>group.remove(m));
-  globeState.nodeMeshes=[];globeState.arcLines=[];
-
-  let dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
-  if(globeState.timelineIdx!=null)dests=dests.slice(0,globeState.timelineIdx+1);
-
-  if(globeState.heatMode){
-    Object.entries(GEO).forEach(([name,g])=>{
-      const visited=dests.some(d=>d.country===name);
-      const pos=llToVec3(g.la,g.ln,R*1.01);
-      const geo=new THREE.SphereGeometry(visited?0.09:0.045,10,10);
-      const mat=new THREE.MeshBasicMaterial({color:visited?0xFFC857:0x33394A,transparent:true,opacity:visited?0.95:0.4});
-      const mesh=new THREE.Mesh(geo,mat);mesh.position.copy(pos);
-      group.add(mesh);globeState.nodeMeshes.push(mesh);
-    });
-  }
-
-  dests.forEach((d,i)=>{
-    const g=destLatLng(d);if(!g)return;
-    const pos=llToVec3(g.la,g.ln,R*1.02);
-    const am=aM(d.act);
-    const isLast=i===dests.length-1;
-    const col=new THREE.Color(am.color);
-    const geo=new THREE.SphereGeometry(isLast?0.13:0.09,14,14);
-    const mat=new THREE.MeshBasicMaterial({color:col});
-    const mesh=new THREE.Mesh(geo,mat);
-    mesh.position.copy(pos);
-    mesh.userData={destId:d.id,isDest:true,baseScale:isLast?0.13:0.09};
-    group.add(mesh);globeState.nodeMeshes.push(mesh);
-    const haloGeo=new THREE.SphereGeometry((isLast?0.13:0.09)*2.2,12,12);
-    const haloMat=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.22});
-    const halo=new THREE.Mesh(haloGeo,haloMat);halo.position.copy(pos);
-    group.add(halo);globeState.nodeMeshes.push(halo);
-  });
-
-  for(let i=0;i<dests.length-1;i++){
-    const g1=destLatLng(dests[i]),g2=destLatLng(dests[i+1]);
-    if(!g1||!g2)continue;
-    const p1=llToVec3(g1.la,g1.ln,R),p2=llToVec3(g2.la,g2.ln,R);
-    const mid=p1.clone().add(p2).multiplyScalar(0.5);
-    const dist=p1.distanceTo(p2);
-    mid.normalize().multiplyScalar(R+dist*0.35);
-    const curve=new THREE.QuadraticBezierCurve3(p1,mid,p2);
-    const pts=curve.getPoints(48);
-    const geo=new THREE.BufferGeometry().setFromPoints(pts);
-    const mat=new THREE.LineBasicMaterial({color:0x5CE8FF,transparent:true,opacity:0.55});
-    const line=new THREE.Line(geo,mat);
-    group.add(line);globeState.arcLines.push(line);
-  }
-}
-
-function attachGlobeInteraction(wrap){
-  const el=globeState.canvasEl;
-  const onDown=e=>{globeState.dragging=true;const p=e.touches?e.touches[0]:e;globeState.lastX=p.clientX;globeState.lastY=p.clientY;};
-  const onMove=e=>{
-    const p=e.touches?e.touches[0]:e;
-    if(globeState.dragging){
-      const dx=p.clientX-globeState.lastX,dy=p.clientY-globeState.lastY;
-      globeState.targetRotY+=dx*0.005;
-      globeState.targetRotX+=dy*0.005;
-      globeState.targetRotX=Math.max(-1.3,Math.min(1.3,globeState.targetRotX));
-      globeState.lastX=p.clientX;globeState.lastY=p.clientY;
-    }
-    const rect=el.getBoundingClientRect();
-    globeState.mouse.x=((p.clientX-rect.left)/rect.width)*2-1;
-    globeState.mouse.y=-((p.clientY-rect.top)/rect.height)*2+1;
-  };
-  const onUp=()=>{globeState.dragging=false;};
-  const onWheel=e=>{e.preventDefault();globeState.targetZoom+=e.deltaY*0.01;globeState.targetZoom=Math.max(7,Math.min(28,globeState.targetZoom));};
-  const onClick=e=>{
-    const rect=el.getBoundingClientRect();
-    const p=e.changedTouches?e.changedTouches[0]:e;
-    globeState.mouse.x=((p.clientX-rect.left)/rect.width)*2-1;
-    globeState.mouse.y=-((p.clientY-rect.top)/rect.height)*2+1;
-    globeState.raycaster.setFromCamera(globeState.mouse,globeState.camera);
-    const hits=globeState.raycaster.intersectObjects(globeState.nodeMeshes.filter(m=>m.userData&&m.userData.isDest));
-    if(hits.length){const id=hits[0].object.userData.destId;flyToDest(id);}
-  };
-  el.addEventListener('mousedown',onDown);el.addEventListener('mousemove',onMove);window.addEventListener('mouseup',onUp);
-  el.addEventListener('touchstart',onDown,{passive:true});el.addEventListener('touchmove',onMove,{passive:true});el.addEventListener('touchend',onUp);
-  el.addEventListener('wheel',onWheel,{passive:false});
-  el.addEventListener('click',onClick);
-  el.style.cursor='grab';
-}
-
-function animateGlobe(){
-  if(!globeState.renderer)return;
-  globeState.raf=requestAnimationFrame(animateGlobe);
-  globeState.rotY+=(globeState.targetRotY-globeState.rotY)*0.08;
-  globeState.rotX+=(globeState.targetRotX-globeState.rotX)*0.08;
-  globeState.zoom+=(globeState.targetZoom-globeState.zoom)*0.08;
-  if(globeState.group){globeState.group.rotation.y=globeState.rotY;globeState.group.rotation.x=globeState.rotX;}
-  globeState.camera.position.z=globeState.zoom;
-  globeState.pulseT+=0.04;
-  const pulse=1+Math.sin(globeState.pulseT)*0.12;
-  globeState.nodeMeshes.forEach(m=>{if(m.userData&&m.userData.isDest)m.scale.setScalar(pulse);});
-  globeState.renderer.render(globeState.scene,globeState.camera);
+  attachSvgGlobeInteraction(wrap);
+  animateSvgGlobe();
 }
 
 function teardownGlobe(){
-  if(globeState.raf)cancelAnimationFrame(globeState.raf);
-  if(globeState.resizeObs)globeState.resizeObs.disconnect();
-  if(globeState.storyTimer)clearInterval(globeState.storyTimer);
-  if(globeState.canvasEl&&globeState.canvasEl.parentNode)globeState.canvasEl.parentNode.removeChild(globeState.canvasEl);
-  globeState.renderer=null;globeState.scene=null;globeState.initialized=false;globeState.storyMode=false;
+  if(svgGlobe.raf)cancelAnimationFrame(svgGlobe.raf);
+  if(svgGlobe.storyTimer)clearInterval(svgGlobe.storyTimer);
+  svgGlobe.storyMode=false;
+  svgGlobe._listeners=null;
 }
 
-function resetGlobeView(){globeState.targetRotY=0.6;globeState.targetRotX=-0.15;globeState.targetZoom=14;}
+function resetGlobeView(){svgGlobe.targetRotY=25;svgGlobe.targetRotX=-15;svgGlobe.targetZoom=1;}
+function zoomGlobe(dir){svgGlobe.targetZoom=Math.max(0.55,Math.min(2.2,svgGlobe.targetZoom+dir*0.18));}
+
+function attachSvgGlobeInteraction(wrap){
+  const host=document.getElementById('globeSvgHost');
+  if(!host)return;
+  const onDown=e=>{
+    svgGlobe.dragging=true;
+    const p=e.touches?e.touches[0]:e;
+    svgGlobe.lastX=p.clientX;svgGlobe.lastY=p.clientY;
+    svgGlobe.lastMoveX=p.clientX;svgGlobe.lastMoveY=p.clientY;
+    host.style.cursor='grabbing';
+  };
+  const onMove=e=>{
+    if(!svgGlobe.dragging)return;
+    const p=e.touches?e.touches[0]:e;
+    const dx=p.clientX-svgGlobe.lastMoveX,dy=p.clientY-svgGlobe.lastMoveY;
+    svgGlobe.targetRotY+=dx*0.35;
+    svgGlobe.targetRotX=Math.max(-80,Math.min(80,svgGlobe.targetRotX-dy*0.35));
+    svgGlobe.lastMoveX=p.clientX;svgGlobe.lastMoveY=p.clientY;
+  };
+  const onUp=()=>{svgGlobe.dragging=false;host.style.cursor='grab';};
+  const onWheel=e=>{e.preventDefault();zoomGlobe(e.deltaY<0?1:-1);};
+  host.addEventListener('mousedown',onDown);
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('mouseup',onUp);
+  host.addEventListener('touchstart',onDown,{passive:true});
+  host.addEventListener('touchmove',onMove,{passive:true});
+  host.addEventListener('touchend',onUp);
+  host.addEventListener('wheel',onWheel,{passive:false});
+  host.style.cursor='grab';
+  svgGlobe._listeners={onDown,onMove,onUp,onWheel};
+}
+
+function wasClickNotDrag(){
+  return Math.abs(svgGlobe.lastMoveX-svgGlobe.lastX)<5 && Math.abs(svgGlobe.lastMoveY-svgGlobe.lastY)<5;
+}
+
+function animateSvgGlobe(){
+  svgGlobe.raf=requestAnimationFrame(animateSvgGlobe);
+  const dRotY=svgGlobe.targetRotY-svgGlobe.rotY;
+  const dRotX=svgGlobe.targetRotX-svgGlobe.rotX;
+  const dZoom=svgGlobe.targetZoom-svgGlobe.zoom;
+  svgGlobe.rotY+=dRotY*0.12;
+  svgGlobe.rotX+=dRotX*0.12;
+  svgGlobe.zoom+=dZoom*0.12;
+  svgGlobe.pulseT+=0.05;
+  // Only redraw if something is actually moving (rotation/zoom settling) or the pulse animation needs a frame.
+  // This avoids needlessly rebuilding the SVG 60x/sec when the globe is fully at rest, which keeps
+  // interaction snappy and avoids any pointer-event interception flicker on the node markers.
+  const isSettled=Math.abs(dRotY)<0.01&&Math.abs(dRotX)<0.01&&Math.abs(dZoom)<0.0005;
+  const hasPulsingNode=true; // last-destination node always pulses gently
+  if(!isSettled||hasPulsingNode||svgGlobe.dragging){
+    drawSvgGlobe();
+  }
+}
+
+function greatCirclePoints(la1,ln1,la2,ln2,n){
+  const toRad=d=>d*Math.PI/180;
+  const phi1=toRad(la1),lam1=toRad(ln1),phi2=toRad(la2),lam2=toRad(ln2);
+  const d=2*Math.asin(Math.sqrt(Math.sin((phi2-phi1)/2)**2+Math.cos(phi1)*Math.cos(phi2)*Math.sin((lam2-lam1)/2)**2));
+  const pts=[];
+  if(d===0){pts.push([la1,ln1]);return pts;}
+  for(let i=0;i<=n;i++){
+    const f=i/n;
+    const A=Math.sin((1-f)*d)/Math.sin(d), B=Math.sin(f*d)/Math.sin(d);
+    const x=A*Math.cos(phi1)*Math.cos(lam1)+B*Math.cos(phi2)*Math.cos(lam2);
+    const y=A*Math.cos(phi1)*Math.sin(lam1)+B*Math.cos(phi2)*Math.sin(lam2);
+    const z=A*Math.sin(phi1)+B*Math.sin(phi2);
+    const la=Math.atan2(z,Math.sqrt(x*x+y*y))*180/Math.PI;
+    const ln=Math.atan2(y,x)*180/Math.PI;
+    pts.push([la,ln]);
+  }
+  return pts;
+}
+
+function drawSvgGlobe(){
+  const host=document.getElementById('globeSvgHost');
+  if(!host)return;
+  const wrap=document.getElementById('globeWrap');
+  if(!wrap)return;
+  const W=wrap.clientWidth||800,H=wrap.clientHeight||500;
+  const cx=W/2,cy=H/2;
+  const R=Math.min(W,H)*0.34*svgGlobe.zoom;
+
+  let dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
+  if(svgGlobe.timelineIdx!=null)dests=dests.slice(0,svgGlobe.timelineIdx+1);
+  const visited=new Set(dests.map(d=>d.country));
+
+  // Project landmass rings, splitting at horizon (z<0 hidden)
+  let landPaths='';
+  LAND_RINGS.forEach(ring=>{
+    let segs=[];let cur=[];
+    ring.forEach(([la,ln])=>{
+      const p=project(la,ln);
+      if(p.z>-0.05){
+        cur.push([cx+p.x*R,cy+p.y*R]);
+      }else{
+        if(cur.length>1)segs.push(cur);
+        cur=[];
+      }
+    });
+    if(cur.length>1)segs.push(cur);
+    segs.forEach(seg=>{
+      if(seg.length<2)return;
+      const d='M'+seg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L');
+      landPaths+=`<path d="${d}" fill="none" stroke="#3A6B82" stroke-width="${1.1*svgGlobe.zoom}" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>`;
+    });
+  });
+
+  // Heat-map country reference dots
+  let heatDots='';
+  if(svgGlobe.heatMode){
+    Object.entries(GEO).forEach(([name,g])=>{
+      const p=project(g.la,g.ln);
+      if(p.z<0.02)return;
+      const isVisited=visited.has(name);
+      const x=cx+p.x*R,y=cy+p.y*R;
+      heatDots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(isVisited?3.2:1.6)*svgGlobe.zoom}" fill="${isVisited?'#FFC857':'#3A3F50'}" opacity="${isVisited?0.95:0.35}"/>`;
+    });
+  }
+
+  // Animated route arcs (great-circle, lifted above surface, hidden-side clipped)
+  let arcPaths='';
+  for(let i=0;i<dests.length-1;i++){
+    const g1=destLatLng(dests[i]),g2=destLatLng(dests[i+1]);
+    if(!g1||!g2)continue;
+    const pts=greatCirclePoints(g1.la,g1.ln,g2.la,g2.ln,40);
+    let segs=[];let cur=[];
+    pts.forEach(([la,ln],idx)=>{
+      // lift arc above surface based on progress (mid-arc bulges outward)
+      const t=idx/(pts.length-1);
+      const lift=1+Math.sin(t*Math.PI)*0.12;
+      const p=project(la,ln);
+      if(p.z>-0.02){
+        cur.push([cx+p.x*R*lift,cy+p.y*R*lift]);
+      }else{
+        if(cur.length>1)segs.push(cur);
+        cur=[];
+      }
+    });
+    if(cur.length>1)segs.push(cur);
+    segs.forEach(seg=>{
+      const d='M'+seg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L');
+      arcPaths+=`<path d="${d}" fill="none" stroke="#5CE8FF" stroke-width="${1.6*svgGlobe.zoom}" opacity="0.7" stroke-linecap="round" filter="url(#arcglow)"/>`;
+      arcPaths+=`<path d="${d}" fill="none" stroke="#BFF6FF" stroke-width="${0.6*svgGlobe.zoom}" opacity="0.9" stroke-linecap="round"/>`;
+    });
+  }
+
+  // Destination nodes (only visible-hemisphere ones, sorted back-to-front by z)
+  const pulse=1+Math.sin(svgGlobe.pulseT)*0.22;
+  const nodeData=dests.map((d,i)=>{
+    const g=destLatLng(d);if(!g)return null;
+    const p=project(g.la,g.ln);
+    const am=aM(d.act);
+    return{d,p,am,isLast:i===dests.length-1};
+  }).filter(Boolean).filter(n=>n.p.z>-0.05).sort((a,b)=>a.p.z-b.p.z);
+
+  let nodeMarkup='';
+  nodeData.forEach(n=>{
+    const x=cx+n.p.x*R,y=cy+n.p.y*R;
+    const baseR=(n.isLast?4.2:3)*svgGlobe.zoom*(n.isLast?pulse:1);
+    const haloR=baseR*2.4;
+    nodeMarkup+=`<g class="globe-node" data-id="${n.d.id}" style="cursor:pointer">
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${haloR.toFixed(1)}" fill="${n.am.color}" opacity="0.22"/>
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${baseR.toFixed(1)}" fill="${n.am.color}" opacity="0.97" filter="url(#nodeglow)"/>
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(baseR*0.4).toFixed(1)}" fill="#fff" opacity="0.85"/>
+    </g>`;
+  });
+
+  // Sphere base shading (radial gradient gives the "realistic" curved look)
+  const sphereR=R;
+  const lightX=cx-sphereR*0.32, lightY=cy-sphereR*0.35;
+
+  host.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block">
+    <defs>
+      <radialGradient id="sphereShade" cx="${((lightX-cx+sphereR)/(2*sphereR)*100).toFixed(0)}%" cy="${((lightY-cy+sphereR)/(2*sphereR)*100).toFixed(0)}%" r="75%">
+        <stop offset="0%" stop-color="#1A4A66"/>
+        <stop offset="55%" stop-color="#0E2C40"/>
+        <stop offset="100%" stop-color="#050E16"/>
+      </radialGradient>
+      <radialGradient id="atmGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="80%" stop-color="#5CE8FF" stop-opacity="0"/>
+        <stop offset="92%" stop-color="#5CE8FF" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="#5CE8FF" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="nodeglow" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="2.2" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="arcglow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2.5"/>
+      </filter>
+    </defs>
+    <circle cx="${cx}" cy="${cy}" r="${(sphereR*1.18).toFixed(1)}" fill="url(#atmGlow)"/>
+    <circle cx="${cx}" cy="${cy}" r="${sphereR.toFixed(1)}" fill="url(#sphereShade)" stroke="#2E5C78" stroke-width="1"/>
+    ${landPaths}
+    ${heatDots}
+    ${arcPaths}
+    ${nodeMarkup}
+  </svg>`;
+
+  // attach click handlers to nodes (re-bind each draw since innerHTML replaced)
+  host.querySelectorAll('.globe-node').forEach(g=>{
+    g.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(svgGlobe.dragging)return;
+      flyToDest(g.dataset.id);
+    });
+  });
+  host.querySelector('svg')?.addEventListener('click',()=>{
+    if(!wasClickNotDrag())return;
+  });
+}
 
 function toggleHeatMode(){
-  globeState.heatMode=!globeState.heatMode;
-  const btn=document.getElementById('heatBtn');if(btn)btn.classList.toggle('active',globeState.heatMode);
-  buildGlobeContent();
+  svgGlobe.heatMode=!svgGlobe.heatMode;
+  const btn=document.getElementById('heatBtn');if(btn)btn.classList.toggle('active',svgGlobe.heatMode);
 }
 
 function flyToDest(id){
   const d=dBy(id);if(!d)return;
   const g=destLatLng(d);if(!g)return;
-  const theta=(g.ln+180)*(Math.PI/180);
-  globeState.targetRotY=-theta+Math.PI/2+Math.PI;
-  globeState.targetRotX=-(g.la)*(Math.PI/180)*0.5;
-  globeState.targetZoom=9;
+  svgGlobe.targetRotY=-g.ln;
+  svgGlobe.targetRotX=g.la*0.6;
+  svgGlobe.targetZoom=1.5;
   showGlobeInfo(d);
 }
 
@@ -1376,35 +1391,34 @@ function showGlobeInfo(d){
 function closeGlobeInfo(){const p=document.getElementById('globeInfoPanel');if(p)p.classList.remove('open');}
 
 function onTimelineMove(val){
-  globeState.timelineIdx=parseInt(val);
+  svgGlobe.timelineIdx=parseInt(val);
   const dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
-  const d=dests[globeState.timelineIdx];
+  const d=dests[svgGlobe.timelineIdx];
   const lbl=document.getElementById('timelineLabel');
   if(lbl)lbl.textContent=d?("Showing journey through "+d.city+", "+d.country+" ("+(fD(d.arrival)||'TBD')+")"):'No destinations yet';
-  buildGlobeContent();
 }
 
 function toggleStoryMode(){
-  globeState.storyMode=!globeState.storyMode;
-  const btn=document.getElementById('storyBtn');if(btn)btn.classList.toggle('active',globeState.storyMode);
-  if(globeState.storyMode){
+  svgGlobe.storyMode=!svgGlobe.storyMode;
+  const btn=document.getElementById('storyBtn');if(btn)btn.classList.toggle('active',svgGlobe.storyMode);
+  if(svgGlobe.storyMode){
     const dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
-    globeState.storyIdx=0;
-    globeState.timelineIdx=null;
+    svgGlobe.storyIdx=0;
+    svgGlobe.timelineIdx=null;
     const slider=document.getElementById('timelineSlider');if(slider)slider.value=dests.length-1;
-    buildGlobeContent();
-    globeState.storyTimer=setInterval(()=>{
-      if(!globeState.storyMode||!dests.length){clearInterval(globeState.storyTimer);return;}
-      const d=dests[globeState.storyIdx];
+    svgGlobe.storyTimer=setInterval(()=>{
+      if(!svgGlobe.storyMode||!dests.length){clearInterval(svgGlobe.storyTimer);return;}
+      const d=dests[svgGlobe.storyIdx];
       flyToDest(d.id);
-      globeState.storyIdx=(globeState.storyIdx+1)%dests.length;
-    },4000);
+      svgGlobe.storyIdx=(svgGlobe.storyIdx+1)%dests.length;
+    },3500);
     if(dests.length)flyToDest(dests[0].id);
   }else{
-    if(globeState.storyTimer)clearInterval(globeState.storyTimer);
+    if(svgGlobe.storyTimer)clearInterval(svgGlobe.storyTimer);
     closeGlobeInfo();
   }
 }
+
 
 
 // ── EVENTS ────────────────────────────────────────────────────────────────────
