@@ -384,7 +384,27 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 }
 @media(max-width:380px){.sgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script>
+// Multi-CDN loader for Three.js with automatic fallback — tries each source in order
+// until one succeeds, so a single blocked/unreachable CDN doesn't break the globe.
+(function(){
+  var sources=[
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
+    'https://unpkg.com/three@0.128.0/build/three.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.128.0/three.min.js'
+  ];
+  window.__threeLoadFailed=false;
+  function tryLoad(i){
+    if(i>=sources.length){window.__threeLoadFailed=true;return;}
+    var s=document.createElement('script');
+    s.src=sources[i];
+    s.onload=function(){window.__threeReady=true;};
+    s.onerror=function(){tryLoad(i+1);};
+    document.head.appendChild(s);
+  }
+  tryLoad(0);
+})();
+</script>
 </head>
 <body data-theme="mythic">
 <div class="app">
@@ -1053,7 +1073,7 @@ function continentOf(country){
 }
 
 function renderMap(){
-  setTimeout(()=>initGlobe(),30);
+  scheduleGlobeInit();
   const dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
   const visited=new Set(dests.map(d=>d.country));
   const totalDays=dests.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
@@ -1085,6 +1105,23 @@ function renderMap(){
       <div class="timeline-label" id="timelineLabel">${dests.length?'Showing full journey through '+esc(dests[dests.length-1].city):'No destinations yet'}</div>
     </div>
   </div>`;
+}
+
+// Polls for THREE readiness (up to ~8s) before giving up, since the multi-CDN
+// fallback loader may take a moment if the first source is slow or blocked.
+function scheduleGlobeInit(){
+  let attempts=0;
+  const maxAttempts=80; // 80 * 100ms = 8 seconds
+  const poll=()=>{
+    const wrap=document.getElementById('globeWrap');
+    if(!wrap)return; // user navigated away
+    if(typeof THREE!=='undefined'){initGlobe();return;}
+    if(window.__threeLoadFailed){initGlobe();return;} // all CDN sources failed — show error immediately
+    attempts++;
+    if(attempts>=maxAttempts){initGlobe();return;} // give up, show error
+    setTimeout(poll,100);
+  };
+  setTimeout(poll,30);
 }
 
 function initGlobe(){
