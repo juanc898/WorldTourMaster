@@ -77,48 +77,54 @@ body{font-size:14px;transition:background .3s,color .3s}
   --navy:#1C2B45;
 }
 
-/* ---------- 5. EXPLORER'S ATLAS ---------- */
-[data-theme="explorer"]{
-  --gold:#C19A49;--gold-dim:#8C6D2E;
-  --bg:#2B2118;--ink:#352819;--sf:#3D2E1E;--sf2:#453523;
-  --bd:#5A462E;--bd2:#6E5638;
-  --t1:#F2E4C8;--t2:#D8C19A;--t3:#A88E68;
-  --green:#6B8F5C;--red:#B5573D;--blue:#3F7A98;--purple:#7A5C8A;
-  --font-display:'Cormorant',Georgia,serif;
-  --font-body:'Cormorant Garamond',Georgia,serif;--font-ui:'Cormorant Garamond',Georgia,serif;
-  --radius:2px;--shadow:0 4px 14px rgba(0,0,0,.35);--glow:none;
-  --card-bg:var(--sf);--accent-grad:linear-gradient(135deg,#8C6D2E,#C19A49);
+/* ---------- 5. MODERN PROFESSIONAL ---------- */
+[data-theme="modern"]{
+  --gold:#2563EB;--gold-dim:#1D4ED8;
+  --bg:#FFFFFF;--ink:#FFFFFF;--sf:#F5F6F8;--sf2:#FFFFFF;
+  --bd:#E5E7EB;--bd2:#D1D5DB;
+  --t1:#1F2430;--t2:#374151;--t3:#6B7280;
+  --green:#16A34A;--red:#DC2626;--blue:#2563EB;--purple:#7C3AED;
+  --font-display:'Montserrat',sans-serif;
+  --font-body:'Montserrat',sans-serif;--font-ui:'Montserrat',sans-serif;
+  --radius:8px;--shadow:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.04);
+  --glow:none;
+  --card-bg:#FFFFFF;--accent-grad:linear-gradient(135deg,#2563EB,#3B82F6);
 }
+[data-theme="modern"] .hdr{border-bottom:1px solid var(--bd2)}
+[data-theme="modern"] .nav{border-bottom:1px solid var(--bd2)}
+[data-theme="modern"] .scard,[data-theme="modern"] .pblk,[data-theme="modern"] .pblk-f{border:1px solid var(--bd2)}
 
 /* ---------- 6. DARK SURREALISM ---------- */
 [data-theme="surreal"]{
-  --gold:#C9A84C;--gold-dim:#8B6914;
+  --gold:#D4B05C;--gold-dim:#A8843E;
   --bg:#080808;--ink:#0F0F11;--sf:#161618;--sf2:#1C1C1F;
   --bd:#2A2A2E;--bd2:#383840;
-  --t1:#EDEAE6;--t2:#B8B4BC;--t3:#7A7680;
-  --green:#5A8C72;--red:#8B2E3B;--blue:#4A5E7A;--purple:#6B3F8C;
-  --crimson:#8B2E3B;
+  --t1:#F5F3EF;--t2:#CFCBD4;--t3:#9C97A4;
+  --green:#6FA086;--red:#A8434F;--blue:#5A719A;--purple:#7D52A0;
+  --crimson:#A8434F;
   --font-display:'Cinzel',Georgia,serif;
-  --font-body:'Cormorant Garamond',Georgia,serif;--font-ui:'Cormorant Garamond',Georgia,serif;
-  --radius:0px;--shadow:0 12px 40px rgba(0,0,0,.6);--glow:0 0 24px rgba(201,168,76,.08);
-  --card-bg:linear-gradient(160deg,#15151A,#0D0D10);
-  --accent-grad:linear-gradient(135deg,#8B2E3B,#C9A84C);
+  --font-body:'Cormorant Garamond',Georgia,serif;--font-ui:Georgia,serif;
+  --radius:0px;--shadow:0 12px 40px rgba(0,0,0,.6);--glow:0 0 24px rgba(212,176,92,.08);
+  --card-bg:linear-gradient(160deg,#17171C,#0D0D10);
+  --accent-grad:linear-gradient(135deg,#A8434F,#D4B05C);
 }
+[data-theme="surreal"] body,[data-theme="surreal"] .fi,[data-theme="surreal"] .btxt,[data-theme="surreal"] .dval,[data-theme="surreal"] .notes-box{font-weight:500}
+[data-theme="surreal"] .prof-city,[data-theme="surreal"] .mttl,[data-theme="surreal"] .sval{font-weight:700}
 
 /* ---------- 7. ULTRA LUXURY ---------- */
 [data-theme="luxury"]{
-  --gold:#E8C77A;--gold-dim:#B8943F;
+  --gold:#D4AF6A;--gold-dim:#B8943F;
   --bg:#08080A;--ink:#100F10;--sf:#181718;--sf2:#1F1D1F;
   --bd:#332F2A;--bd2:#453F38;
-  --t1:#F5F0E5;--t2:#D4C9B0;--t3:#9C9080;
+  --t1:#FAFAF8;--t2:#E5E2DC;--t3:#ADA89C;
   --green:#5FBF92;--red:#C85D5D;--blue:#6FA8D8;--purple:#A88BD8;
   --platinum:#D8D8DC;--champagne:#E8D9B5;
   --font-display:'Cinzel',Georgia,serif;
   --font-body:'Cormorant Garamond',Georgia,serif;--font-ui:Montserrat,sans-serif;
   --radius:4px;--shadow:0 10px 36px rgba(0,0,0,.55);
-  --glow:0 0 20px rgba(232,199,122,.18);
+  --glow:0 0 20px rgba(212,175,106,.16);
   --card-bg:linear-gradient(155deg,#1B1A1B,#100F10);
-  --accent-grad:linear-gradient(135deg,#B8943F,#E8C77A,#D8D8DC);
+  --accent-grad:linear-gradient(135deg,#B8943F,#D4AF6A,#D8D8DC);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -327,7 +333,43 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .ctx{position:fixed;background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);z-index:500;min-width:160px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 .ctx-item{padding:.5rem .875rem;font-family:var(--font-ui);font-size:12px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:6px}
 .ctx-item:hover{background:rgba(201,168,76,.08);color:var(--gold)}
-@media(min-width:600px){.hstat{display:block}}
+/* GLOBE */
+.globe-wrap{position:relative;flex:1;overflow:hidden;background:#000005;min-height:0}
+.globe-wrap canvas{display:block;touch-action:none}
+.globe-hud{position:absolute;top:0;left:0;right:0;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;z-index:10;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,5,.55),transparent)}
+.globe-hud>*{pointer-events:auto}
+.globe-stats-bar{display:flex;gap:1rem;flex-wrap:wrap;font-family:var(--font-ui)}
+.gstat{text-align:center}
+.gstat-v{font-size:15px;color:#5CE8FF;font-weight:700;line-height:1;text-shadow:0 0 10px rgba(92,232,255,.5)}
+.gstat-l{font-size:8px;color:#8FA8C0;text-transform:uppercase;letter-spacing:.1em}
+.globe-ctrls{position:absolute;top:.75rem;right:1rem;z-index:10;display:flex;gap:6px}
+.gbtn{background:rgba(15,20,35,.85);border:1px solid rgba(92,232,255,.25);border-radius:6px;color:#BFE8FF;font-size:14px;padding:6px 10px;cursor:pointer;font-family:var(--font-ui);display:flex;align-items:center;gap:4px;backdrop-filter:blur(6px)}
+.gbtn:hover{background:rgba(92,232,255,.15);border-color:rgba(92,232,255,.5)}
+.gbtn.active{background:rgba(92,232,255,.25);border-color:#5CE8FF;color:#fff}
+.globe-timeline{position:absolute;bottom:0;left:0;right:0;padding:.75rem 1rem 1rem;z-index:10;background:linear-gradient(0deg,rgba(0,0,5,.7),transparent)}
+.timeline-track{position:relative;height:32px;display:flex;align-items:center}
+.timeline-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:rgba(92,232,255,.2);border-radius:2px;outline:none;cursor:pointer}
+.timeline-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#5CE8FF;box-shadow:0 0 10px rgba(92,232,255,.8);cursor:pointer}
+.timeline-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#5CE8FF;box-shadow:0 0 10px rgba(92,232,255,.8);cursor:pointer;border:none}
+.timeline-label{font-size:10px;color:#8FA8C0;font-family:var(--font-ui);text-align:center;margin-top:4px}
+.globe-info-panel{position:absolute;top:0;right:0;bottom:0;width:300px;max-width:85vw;background:rgba(10,13,22,.92);backdrop-filter:blur(10px);border-left:1px solid rgba(92,232,255,.2);z-index:20;overflow-y:auto;transform:translateX(100%);transition:transform .3s ease;padding:1rem}
+.globe-info-panel.open{transform:translateX(0)}
+.gip-close{position:absolute;top:.6rem;right:.6rem;background:none;border:none;color:#8FA8C0;font-size:18px;cursor:pointer}
+.gip-flag{font-size:38px;line-height:1}
+.gip-city{font-size:18px;color:#fff;font-family:var(--font-display);font-weight:600;margin-top:4px}
+.gip-country{font-size:10px;color:#8FA8C0;letter-spacing:.1em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem}
+.gip-row{display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.06);font-family:var(--font-ui);font-size:11px}
+.gip-row span:first-child{color:#8FA8C0}
+.gip-row span:last-child{color:#D8EEFF}
+.gip-section{margin-top:.75rem;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#5CE8FF;font-family:var(--font-ui)}
+.globe-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#5CE8FF;font-family:var(--font-ui);font-size:12px;letter-spacing:.1em;text-transform:uppercase;z-index:5}
+.globe-legend{position:absolute;bottom:5.2rem;left:1rem;z-index:10;display:flex;flex-direction:column;gap:4px;background:rgba(10,13,22,.6);backdrop-filter:blur(6px);border-radius:6px;padding:.5rem .7rem;max-width:200px}
+@media(max-width:599px){
+  .globe-info-panel{width:100%}
+  .globe-stats-bar{gap:.6rem}
+  .globe-legend{display:none}
+}
+
 @media(max-width:599px){
   .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);width:80vw;max-width:280px}
   .sidebar.open{transform:translateX(0)}
@@ -342,6 +384,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 }
 @media(max-width:380px){.sgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.128.0/three.min.js"></script>
 </head>
 <body data-theme="mythic">
 <div class="app">
@@ -504,7 +547,7 @@ const THEMES=[
   {id:'executive',name:'Dark Executive',mood:'Sophisticated, focused, productive.',swatch:'#D8D8DC'},
   {id:'futurist',name:'Neo Futurist',mood:'Innovative, futuristic, intelligent.',swatch:'#00E5FF'},
   {id:'classic',name:'Timeless Classic',mood:'Prestigious, reliable, timeless.',swatch:'#9C7A29'},
-  {id:'explorer',name:"Explorer's Atlas",mood:'Adventure, discovery, curiosity.',swatch:'#C19A49'},
+  {id:'modern',name:'Modern Professional',mood:'Professional, trustworthy, organized, efficient.',swatch:'#2563EB'},
   {id:'surreal',name:'Dark Surrealism',mood:'Mystical, emotional, thought-provoking.',swatch:'#8B2E3B'},
   {id:'luxury',name:'Ultra Luxury',mood:'Exclusive, powerful, elite.',swatch:'#E8C77A'},
 ];
@@ -682,10 +725,10 @@ function selActFromCommand(id){
 }
 
 function switchTour(id){S.cur=id;curActId=null;curDestId=null;selBudCat=null;renderSB();renderContent();}
-function viewDestSB(id){curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));closeSB();renderSB();renderContent();}
+function viewDestSB(id){if(tab==='map'&&typeof teardownGlobe==='function')teardownGlobe();curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));closeSB();renderSB();renderContent();}
 
-function goTab(t){tab=t;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));curDestId=null;renderContent();}
-function switchTab(t,el){tab=t;curDestId=null;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');closeSB();renderSB();renderContent();}
+function goTab(t){if(tab==='map'&&t!=='map'&&typeof teardownGlobe==='function')teardownGlobe();tab=t;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));curDestId=null;renderContent();}
+function switchTab(t,el){if(tab==='map'&&t!=='map'&&typeof teardownGlobe==='function')teardownGlobe();tab=t;curDestId=null;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');closeSB();renderSB();renderContent();}
 
 function updateHStats(){
   autoStatus();
@@ -889,7 +932,7 @@ function renderRoute(){
 function toggleFMenu(){document.getElementById('fmenu')?.classList.toggle('open');}
 function toggleF(s){if(AF.includes(s))AF=AF.filter(x=>x!==s);else AF.push(s);saveF();renderContent();}
 function removeAllDests(){if(confirm('Remove ALL destinations from this tour?\nThis cannot be undone.')){{cDests().splice(0);curDestId=null;renderSB();renderContent();}}}
-function viewDest(id){curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));renderSB();renderContent();}
+function viewDest(id){if(tab==='map'&&typeof teardownGlobe==='function')teardownGlobe();curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));renderSB();renderContent();}
 
 // ── CSV IMPORT / EXPORT ───────────────────────────────────────────────────────
 function exportTemplate(){
@@ -960,7 +1003,7 @@ function importCSV(input){
   reader.readAsText(file,'UTF-8');
 }
 
-// ── MAP ───────────────────────────────────────────────────────────────────────
+// ── 3D GLOBE ──────────────────────────────────────────────────────────────────
 const GEO={
   'Switzerland':{la:46.8,ln:8.2},'Austria':{la:47.5,ln:14.5},'Italy':{la:41.9,ln:12.5},
   'Finland':{la:64,ln:26},'Spain':{la:40,ln:-3.5},'France':{la:46.2,ln:2.2},
@@ -981,67 +1024,336 @@ const GEO={
   'Moldova':{la:47.4,ln:28.4},'Madagascar':{la:-18,ln:44},'Namibia':{la:-22,ln:17},
 };
 
+let globeState={
+  scene:null,camera:null,renderer:null,globe:null,group:null,
+  raf:null,resizeObs:null,raycaster:null,mouse:null,
+  rotY:0.6,rotX:-0.15,targetRotY:0.6,targetRotX:-0.15,
+  dragging:false,lastX:0,lastY:0,zoom:14,targetZoom:14,
+  pulseT:0,nodeMeshes:[],arcLines:[],heatMode:false,storyMode:false,storyIdx:0,storyTimer:null,
+  timelineIdx:null,canvasEl:null,initialized:false,R:5,
+};
+
+function destLatLng(d){const g=GEO[d.country];return g?{la:g.la,ln:g.ln}:null;}
+function llToVec3(lat,lng,r){
+  const phi=(90-lat)*(Math.PI/180);
+  const theta=(lng+180)*(Math.PI/180);
+  return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(theta),r*Math.cos(phi),r*Math.sin(phi)*Math.sin(theta));
+}
+
+function continentOf(country){
+  const map={
+    'Switzerland':'Europe','Austria':'Europe','Italy':'Europe','Finland':'Europe','Spain':'Europe','France':'Europe','Germany':'Europe','UK':'Europe','Portugal':'Europe','Greece':'Europe','Croatia':'Europe','Czech Republic':'Europe','Slovakia':'Europe','Hungary':'Europe','Moldova':'Europe','Russia':'Europe',
+    'Egypt':'Africa','Benin':'Africa','Uganda':'Africa','Morocco':'Africa','South Africa':'Africa','Kenya':'Africa','Ethiopia':'Africa','Madagascar':'Africa','Namibia':'Africa',
+    'Turkey':'Asia','Jordan':'Asia','UAE':'Asia','India':'Asia','Nepal':'Asia','Thailand':'Asia','Vietnam':'Asia','Indonesia':'Asia','Japan':'Asia','China':'Asia','Myanmar':'Asia','Cambodia':'Asia','Laos':'Asia','Sri Lanka':'Asia',
+    'Australia':'Oceania','New Zealand':'Oceania',
+    'Colombia':'South America','Ecuador':'South America','Peru':'South America','Bolivia':'South America','Chile':'South America','Argentina':'South America','Brazil':'South America',
+    'Mexico':'North America','USA':'North America','Canada':'North America',
+  };
+  return map[country]||null;
+}
+
 function renderMap(){
-  const dests=sDests().filter(d=>d.status!=='cancelled');
-  const W=900,H=460;
-  const lx=lng=>((lng+180)/360)*W;
-  const ly=lat=>((90-lat)/180)*H;
+  setTimeout(()=>initGlobe(),30);
+  const dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
   const visited=new Set(dests.map(d=>d.country));
-  const pts=dests.map(d=>{const g=GEO[d.country];if(!g)return null;const am=aM(d.act);return{x:lx(g.ln),y:ly(g.la),color:am.color,city:d.city,flag:d.flag,id:d.id};}).filter(Boolean);
-  const lp=pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  const allDots=Object.entries(GEO).map(([name,g])=>{
-    const v=visited.has(name);
-    return`<circle cx="${lx(g.ln).toFixed(1)}" cy="${ly(g.la).toFixed(1)}" r="${v?2:1.2}" fill="${v?'rgba(201,168,76,.5)':'rgba(120,120,150,.22)'}"/>`;
-  }).join('');
-  const destDots=pts.map(p=>`<g onclick="viewDest('${p.id}')" style="cursor:pointer" title="${esc(p.city)}">
-    <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="9" fill="${p.color}" opacity=".15"/>
-    <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="${p.color}" opacity=".95"/>
-    <text x="${(p.x+8).toFixed(1)}" y="${(p.y+4).toFixed(1)}" font-size="9" fill="${p.color}" font-family="sans-serif" font-weight="600">${esc(p.city.substring(0,12))}</text>
-  </g>`).join('');
-  const continents=`
-    <path d="M 72 75 L 68 95 L 75 120 L 88 155 L 95 195 L 130 220 L 155 200 L 185 185 L 215 175 L 235 145 L 220 105 L 200 80 L 175 65 L 145 58 L 115 60 Z" fill="#1E2535" stroke="#2A3448" stroke-width="1"/>
-    <path d="M 135 230 L 125 290 L 140 350 L 165 395 L 205 410 L 235 385 L 248 335 L 245 275 L 225 248 L 185 235 Z" fill="#1E2535" stroke="#2A3448" stroke-width="1"/>
-    <path d="M 335 55 L 325 80 L 330 115 L 345 138 L 375 145 L 415 138 L 435 110 L 428 72 L 400 55 L 370 50 Z" fill="#1E2535" stroke="#2A3448" stroke-width="1"/>
-    <path d="M 332 148 L 322 185 L 330 250 L 345 310 L 368 342 L 398 350 L 432 320 L 445 265 L 442 205 L 435 158 L 405 144 L 370 142 Z" fill="#1E2535" stroke="#2A3448" stroke-width="1"/>
-    <path d="M 428 58 L 422 82 L 442 105 L 480 115 L 545 100 L 620 85 L 695 95 L 740 125 L 745 160 L 720 178 L 680 185 L 640 192 L 600 215 L 565 215 L 535 198 L 500 178 L 470 158 L 452 135 L 440 108 Z" fill="#1E2535" stroke="#2A3448" stroke-width="1"/>
-    <path d="M 545 198 L 540 225 L 558 252 L 590 258 L 628 245 L 658 228 L 678 200 L 655 192 L 618 198 L 580 210 Z" fill="#1E2535" stroke="#2A3448" stroke-width="1"/>
-    <path d="M 640 205 L 640 230 L 655 260 L 680 278 L 715 280 L 740 262 L 750 235 L 738 212 L 712 200 L 680 200 Z" fill="#1E2535" stroke="#2A3448" stroke-width="1"/>
-    <path d="M 658 292 L 648 325 L 665 355 L 698 370 L 738 368 L 762 348 L 768 315 L 752 290 L 718 278 L 685 282 Z" fill="#1E2535" stroke="#2A3448" stroke-width="1"/>
-    <path d="M 215 32 L 205 55 L 218 68 L 252 65 L 268 42 L 248 27 Z" fill="#1E2535" stroke="#2A3448" stroke-width="0.7"/>
-  `;
-  const gridLines=Array.from({length:17},(_,i)=>`<line x1="${((i+1)*50)}" y1="0" x2="${((i+1)*50)}" y2="${H}" stroke="rgba(40,55,90,.3)" stroke-width=".4"/>`).join('')
-    +Array.from({length:8},(_,i)=>`<line x1="0" y1="${((i+1)*55)}" x2="${W}" y2="${((i+1)*55)}" stroke="rgba(40,55,90,.3)" stroke-width=".4"/>`).join('');
-  const eq=ly(0).toFixed(0),tp=ly(23.5).toFixed(0),tc=ly(-23.5).toFixed(0);
-  const countryList=[...visited].sort().map(c=>{const flag=dests.find(d=>d.country===c)?.flag||'🌍';return`<div style="display:flex;align-items:center;gap:6px;padding:.3rem .5rem;background:var(--sf);border:1px solid var(--bd);border-radius:var(--radius);font-family:var(--font-ui);font-size:11px;color:var(--t2)"><span style="font-size:16px">${flag}</span>${esc(c)}</div>`;}).join('');
-  const legend=cActs().filter(a=>dests.some(d=>d.act===a.id)).map(a=>`<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:${a.color};font-family:var(--font-ui)"><div style="width:8px;height:8px;border-radius:50%;background:${a.color}"></div>${esc(a.name)}</div>`).join('');
-  return`<div style="display:flex;flex-direction:column;height:100%">
-    <div style="padding:.625rem 1rem;border-bottom:1px solid var(--bd);background:var(--ink);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-      <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);letter-spacing:.1em;text-transform:uppercase">World Route · ${dests.length} Destinations · ${visited.size} Countries</div>
-      <div style="display:flex;gap:1rem;flex-wrap:wrap">${legend}</div>
+  const totalDays=dests.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
+  const continents=new Set();
+  dests.forEach(d=>{const c=continentOf(d.country);if(c)continents.add(c);});
+  const legend=cActs().filter(a=>dests.some(d=>d.act===a.id)).map(a=>`<div style="display:flex;align-items:center;gap:5px;font-size:9px;color:${a.color};font-family:var(--font-ui)"><div style="width:7px;height:7px;border-radius:50%;background:${a.color};box-shadow:0 0 4px ${a.color}"></div>${esc(a.name)}</div>`).join('');
+  return`<div class="globe-wrap" id="globeWrap">
+    <div class="globe-loading" id="globeLoading">Initializing globe…</div>
+    <div class="globe-hud">
+      <div class="globe-stats-bar">
+        <div class="gstat"><div class="gstat-v">${visited.size}</div><div class="gstat-l">Countries</div></div>
+        <div class="gstat"><div class="gstat-v">${dests.length}</div><div class="gstat-l">Cities</div></div>
+        <div class="gstat"><div class="gstat-v">${totalDays}</div><div class="gstat-l">Days</div></div>
+        <div class="gstat"><div class="gstat-v">${continents.size}</div><div class="gstat-l">Continents</div></div>
+      </div>
     </div>
-    <div class="map-wrap">
-      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="background:#0C1016">
-        <defs><radialGradient id="og" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:#0D1520;stop-opacity:1"/><stop offset="100%" style="stop-color:#0C1016;stop-opacity:1"/></radialGradient></defs>
-        <rect width="${W}" height="${H}" fill="url(#og)"/>
-        ${gridLines}
-        <line x1="0" y1="${eq}" x2="${W}" y2="${eq}" stroke="rgba(75,139,200,.3)" stroke-width="1" stroke-dasharray="6,4"/>
-        <line x1="0" y1="${tp}" x2="${W}" y2="${tp}" stroke="rgba(201,168,76,.15)" stroke-width=".7" stroke-dasharray="4,6"/>
-        <line x1="0" y1="${tc}" x2="${W}" y2="${tc}" stroke="rgba(201,168,76,.15)" stroke-width=".7" stroke-dasharray="4,6"/>
-        ${continents}
-        ${allDots}
-        ${pts.length>1?`<polyline points="${lp}" fill="none" stroke="rgba(201,168,76,.4)" stroke-width="1.5" stroke-dasharray="6,4"/>`:``}
-        ${destDots}
-        <text x="6" y="${parseInt(eq)-3}" font-size="7" fill="rgba(75,139,200,.5)" font-family="sans-serif">Equator</text>
-        <text x="6" y="${parseInt(tp)-3}" font-size="7" fill="rgba(201,168,76,.4)" font-family="sans-serif">Tropic of Cancer</text>
-        <text x="6" y="${parseInt(tc)-3}" font-size="7" fill="rgba(201,168,76,.4)" font-family="sans-serif">Tropic of Capricorn</text>
-      </svg>
+    <div class="globe-ctrls">
+      <button class="gbtn" id="heatBtn" onclick="toggleHeatMode()" title="Heat map mode"><i class="ti ti-map-2"></i></button>
+      <button class="gbtn" id="storyBtn" onclick="toggleStoryMode()" title="Story mode — auto-fly the journey"><i class="ti ti-player-play"></i></button>
+      <button class="gbtn" onclick="resetGlobeView()" title="Reset view"><i class="ti ti-refresh"></i></button>
     </div>
-    <div style="padding:.75rem 1rem;border-top:1px solid var(--bd);background:var(--ink)">
-      <div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.5rem">Countries in this Tour · ${visited.size}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px">${countryList}</div>
+    <div class="globe-legend">${legend}</div>
+    <div class="globe-info-panel" id="globeInfoPanel">
+      <button class="gip-close" onclick="closeGlobeInfo()">&#x2715;</button>
+      <div id="globeInfoBody"></div>
+    </div>
+    <div class="globe-timeline">
+      <div class="timeline-track"><input type="range" class="timeline-slider" id="timelineSlider" min="0" max="${Math.max(0,dests.length-1)}" value="${dests.length-1}" oninput="onTimelineMove(this.value)"/></div>
+      <div class="timeline-label" id="timelineLabel">${dests.length?'Showing full journey through '+esc(dests[dests.length-1].city):'No destinations yet'}</div>
     </div>
   </div>`;
 }
+
+function initGlobe(){
+  const wrap=document.getElementById('globeWrap');
+  if(!wrap||typeof THREE==='undefined')return;
+  teardownGlobe();
+  const W=wrap.clientWidth||800,H=wrap.clientHeight||500;
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(45,W/H,0.1,1000);
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setSize(W,H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  wrap.insertBefore(renderer.domElement,wrap.firstChild);
+  globeState.canvasEl=renderer.domElement;
+  renderer.domElement.style.position='absolute';
+  renderer.domElement.style.inset='0';
+
+  const starGeo=new THREE.BufferGeometry();
+  const starCount=1800;
+  const starPos=new Float32Array(starCount*3);
+  for(let i=0;i<starCount;i++){
+    const r=80+Math.random()*120;
+    const th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
+    starPos[i*3]=r*Math.sin(ph)*Math.cos(th);
+    starPos[i*3+1]=r*Math.sin(ph)*Math.sin(th);
+    starPos[i*3+2]=r*Math.cos(ph);
+  }
+  starGeo.setAttribute('position',new THREE.BufferAttribute(starPos,3));
+  const starMat=new THREE.PointsMaterial({color:0xBFE8FF,size:0.5,transparent:true,opacity:0.7});
+  scene.add(new THREE.Points(starGeo,starMat));
+
+  const R=5;
+  const group=new THREE.Group();
+  scene.add(group);
+
+  const sphereGeo=new THREE.SphereGeometry(R,64,64);
+  const sphereMat=new THREE.MeshPhongMaterial({color:0x0B2236,emissive:0x041018,shininess:8,transparent:true,opacity:0.97});
+  const globeMesh=new THREE.Mesh(sphereGeo,sphereMat);
+  group.add(globeMesh);
+
+  const gridMat=new THREE.LineBasicMaterial({color:0x2E5C78,transparent:true,opacity:0.35});
+  for(let la=-60;la<=60;la+=30){
+    const pts=[];for(let lo=-180;lo<=180;lo+=5)pts.push(llToVec3(la,lo,R*1.001));
+    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),gridMat));
+  }
+  for(let lo=-150;lo<=180;lo+=30){
+    const pts=[];for(let la=-90;la<=90;la+=5)pts.push(llToVec3(la,lo,R*1.001));
+    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),gridMat));
+  }
+
+  const atmGeo=new THREE.SphereGeometry(R*1.08,64,64);
+  const atmMat=new THREE.ShaderMaterial({
+    uniforms:{},
+    vertexShader:"varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
+    fragmentShader:"varying vec3 vN;void main(){float i=pow(0.65-dot(vN,vec3(0,0,1.0)),2.5);gl_FragColor=vec4(0.36,0.85,1.0,1.0)*i;}",
+    blending:THREE.AdditiveBlending,side:THREE.BackSide,transparent:true,
+  });
+  group.add(new THREE.Mesh(atmGeo,atmMat));
+
+  scene.add(new THREE.AmbientLight(0x405060,1.4));
+  const dl=new THREE.DirectionalLight(0xffffff,0.9);dl.position.set(5,3,5);scene.add(dl);
+
+  camera.position.set(0,0,globeState.zoom);
+
+  globeState.scene=scene;globeState.camera=camera;globeState.renderer=renderer;
+  globeState.globe=globeMesh;globeState.group=group;globeState.R=R;
+  globeState.raycaster=new THREE.Raycaster();globeState.mouse=new THREE.Vector2();
+  globeState.initialized=true;
+
+  buildGlobeContent();
+  attachGlobeInteraction(wrap);
+  animateGlobe();
+  const loadingEl=document.getElementById('globeLoading');if(loadingEl)loadingEl.remove();
+
+  globeState.resizeObs=new ResizeObserver(()=>{
+    if(!globeState.renderer)return;
+    const w=wrap.clientWidth,h=wrap.clientHeight;
+    globeState.camera.aspect=w/h;globeState.camera.updateProjectionMatrix();
+    globeState.renderer.setSize(w,h);
+  });
+  globeState.resizeObs.observe(wrap);
+}
+
+function buildGlobeContent(){
+  const R=globeState.R,group=globeState.group;
+  if(!group)return;
+  globeState.nodeMeshes.forEach(m=>group.remove(m));
+  globeState.arcLines.forEach(m=>group.remove(m));
+  globeState.nodeMeshes=[];globeState.arcLines=[];
+
+  let dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
+  if(globeState.timelineIdx!=null)dests=dests.slice(0,globeState.timelineIdx+1);
+
+  if(globeState.heatMode){
+    Object.entries(GEO).forEach(([name,g])=>{
+      const visited=dests.some(d=>d.country===name);
+      const pos=llToVec3(g.la,g.ln,R*1.01);
+      const geo=new THREE.SphereGeometry(visited?0.09:0.045,10,10);
+      const mat=new THREE.MeshBasicMaterial({color:visited?0xFFC857:0x33394A,transparent:true,opacity:visited?0.95:0.4});
+      const mesh=new THREE.Mesh(geo,mat);mesh.position.copy(pos);
+      group.add(mesh);globeState.nodeMeshes.push(mesh);
+    });
+  }
+
+  dests.forEach((d,i)=>{
+    const g=destLatLng(d);if(!g)return;
+    const pos=llToVec3(g.la,g.ln,R*1.02);
+    const am=aM(d.act);
+    const isLast=i===dests.length-1;
+    const col=new THREE.Color(am.color);
+    const geo=new THREE.SphereGeometry(isLast?0.13:0.09,14,14);
+    const mat=new THREE.MeshBasicMaterial({color:col});
+    const mesh=new THREE.Mesh(geo,mat);
+    mesh.position.copy(pos);
+    mesh.userData={destId:d.id,isDest:true,baseScale:isLast?0.13:0.09};
+    group.add(mesh);globeState.nodeMeshes.push(mesh);
+    const haloGeo=new THREE.SphereGeometry((isLast?0.13:0.09)*2.2,12,12);
+    const haloMat=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.22});
+    const halo=new THREE.Mesh(haloGeo,haloMat);halo.position.copy(pos);
+    group.add(halo);globeState.nodeMeshes.push(halo);
+  });
+
+  for(let i=0;i<dests.length-1;i++){
+    const g1=destLatLng(dests[i]),g2=destLatLng(dests[i+1]);
+    if(!g1||!g2)continue;
+    const p1=llToVec3(g1.la,g1.ln,R),p2=llToVec3(g2.la,g2.ln,R);
+    const mid=p1.clone().add(p2).multiplyScalar(0.5);
+    const dist=p1.distanceTo(p2);
+    mid.normalize().multiplyScalar(R+dist*0.35);
+    const curve=new THREE.QuadraticBezierCurve3(p1,mid,p2);
+    const pts=curve.getPoints(48);
+    const geo=new THREE.BufferGeometry().setFromPoints(pts);
+    const mat=new THREE.LineBasicMaterial({color:0x5CE8FF,transparent:true,opacity:0.55});
+    const line=new THREE.Line(geo,mat);
+    group.add(line);globeState.arcLines.push(line);
+  }
+}
+
+function attachGlobeInteraction(wrap){
+  const el=globeState.canvasEl;
+  const onDown=e=>{globeState.dragging=true;const p=e.touches?e.touches[0]:e;globeState.lastX=p.clientX;globeState.lastY=p.clientY;};
+  const onMove=e=>{
+    const p=e.touches?e.touches[0]:e;
+    if(globeState.dragging){
+      const dx=p.clientX-globeState.lastX,dy=p.clientY-globeState.lastY;
+      globeState.targetRotY+=dx*0.005;
+      globeState.targetRotX+=dy*0.005;
+      globeState.targetRotX=Math.max(-1.3,Math.min(1.3,globeState.targetRotX));
+      globeState.lastX=p.clientX;globeState.lastY=p.clientY;
+    }
+    const rect=el.getBoundingClientRect();
+    globeState.mouse.x=((p.clientX-rect.left)/rect.width)*2-1;
+    globeState.mouse.y=-((p.clientY-rect.top)/rect.height)*2+1;
+  };
+  const onUp=()=>{globeState.dragging=false;};
+  const onWheel=e=>{e.preventDefault();globeState.targetZoom+=e.deltaY*0.01;globeState.targetZoom=Math.max(7,Math.min(28,globeState.targetZoom));};
+  const onClick=e=>{
+    const rect=el.getBoundingClientRect();
+    const p=e.changedTouches?e.changedTouches[0]:e;
+    globeState.mouse.x=((p.clientX-rect.left)/rect.width)*2-1;
+    globeState.mouse.y=-((p.clientY-rect.top)/rect.height)*2+1;
+    globeState.raycaster.setFromCamera(globeState.mouse,globeState.camera);
+    const hits=globeState.raycaster.intersectObjects(globeState.nodeMeshes.filter(m=>m.userData&&m.userData.isDest));
+    if(hits.length){const id=hits[0].object.userData.destId;flyToDest(id);}
+  };
+  el.addEventListener('mousedown',onDown);el.addEventListener('mousemove',onMove);window.addEventListener('mouseup',onUp);
+  el.addEventListener('touchstart',onDown,{passive:true});el.addEventListener('touchmove',onMove,{passive:true});el.addEventListener('touchend',onUp);
+  el.addEventListener('wheel',onWheel,{passive:false});
+  el.addEventListener('click',onClick);
+  el.style.cursor='grab';
+}
+
+function animateGlobe(){
+  if(!globeState.renderer)return;
+  globeState.raf=requestAnimationFrame(animateGlobe);
+  globeState.rotY+=(globeState.targetRotY-globeState.rotY)*0.08;
+  globeState.rotX+=(globeState.targetRotX-globeState.rotX)*0.08;
+  globeState.zoom+=(globeState.targetZoom-globeState.zoom)*0.08;
+  if(globeState.group){globeState.group.rotation.y=globeState.rotY;globeState.group.rotation.x=globeState.rotX;}
+  globeState.camera.position.z=globeState.zoom;
+  globeState.pulseT+=0.04;
+  const pulse=1+Math.sin(globeState.pulseT)*0.12;
+  globeState.nodeMeshes.forEach(m=>{if(m.userData&&m.userData.isDest)m.scale.setScalar(pulse);});
+  globeState.renderer.render(globeState.scene,globeState.camera);
+}
+
+function teardownGlobe(){
+  if(globeState.raf)cancelAnimationFrame(globeState.raf);
+  if(globeState.resizeObs)globeState.resizeObs.disconnect();
+  if(globeState.storyTimer)clearInterval(globeState.storyTimer);
+  if(globeState.canvasEl&&globeState.canvasEl.parentNode)globeState.canvasEl.parentNode.removeChild(globeState.canvasEl);
+  globeState.renderer=null;globeState.scene=null;globeState.initialized=false;globeState.storyMode=false;
+}
+
+function resetGlobeView(){globeState.targetRotY=0.6;globeState.targetRotX=-0.15;globeState.targetZoom=14;}
+
+function toggleHeatMode(){
+  globeState.heatMode=!globeState.heatMode;
+  const btn=document.getElementById('heatBtn');if(btn)btn.classList.toggle('active',globeState.heatMode);
+  buildGlobeContent();
+}
+
+function flyToDest(id){
+  const d=dBy(id);if(!d)return;
+  const g=destLatLng(d);if(!g)return;
+  const theta=(g.ln+180)*(Math.PI/180);
+  globeState.targetRotY=-theta+Math.PI/2+Math.PI;
+  globeState.targetRotX=-(g.la)*(Math.PI/180)*0.5;
+  globeState.targetZoom=9;
+  showGlobeInfo(d);
+}
+
+function showGlobeInfo(d){
+  const am=aM(d.act);
+  const nights=dBtw(d.arrival,d.departure);
+  const body=document.getElementById('globeInfoBody');
+  if(!body)return;
+  body.innerHTML="<div class=\"gip-flag\">"+(d.flag||'📍')+"</div>"
+    +"<div class=\"gip-city\">"+esc(d.city)+"</div>"
+    +"<div class=\"gip-country\">"+esc(d.country)+" · "+esc(am.name)+"</div>"
+    +"<div class=\"gip-row\"><span>Status</span><span style=\"text-transform:capitalize\">"+esc(d.status)+"</span></div>"
+    +"<div class=\"gip-row\"><span>Arrival</span><span>"+(d.arrival?fD(d.arrival)+' '+wS(d.arrival):'TBD')+"</span></div>"
+    +"<div class=\"gip-row\"><span>Departure</span><span>"+(d.departure?fD(d.departure)+' '+wS(d.departure):'TBD')+"</span></div>"
+    +"<div class=\"gip-row\"><span>Nights</span><span>"+(nights||'—')+"</span></div>"
+    +(d.event?"<div class=\"gip-section\">Event</div><div class=\"gip-row\"><span>"+esc(d.event)+"</span><span>"+esc(d.event_date||'')+"</span></div>":"")
+    +"<div class=\"gip-section\">Accommodation</div>"
+    +"<div class=\"gip-row\"><span>Hotel</span><span>"+(esc(d.hotel)||'Not booked')+"</span></div>"
+    +"<div class=\"gip-row\"><span>Cost</span><span>"+(d.cost>0?'$'+d.cost.toFixed(2):'TBD')+"</span></div>"
+    +"<div class=\"gip-section\">Transport</div>"
+    +"<div class=\"gip-row\"><span>Mode</span><span>"+(esc(d.mot)||'—')+"</span></div>"
+    +"<div class=\"gip-row\"><span>Cost</span><span>"+(d.t_cost>0?'$'+d.t_cost.toFixed(2):'—')+"</span></div>"
+    +(d.notes?"<div class=\"gip-section\">Notes</div><div style=\"font-size:11px;color:#C8DCEC;font-family:var(--font-ui);line-height:1.5;margin-top:4px\">"+esc(d.notes)+"</div>":"")
+    +"<button class=\"btnp\" style=\"width:100%;margin-top:1rem\" onclick=\"closeGlobeInfo();openDestModal('"+d.id+"')\">Edit Destination</button>"
+    +"<button class=\"btng\" style=\"width:100%;margin-top:.5rem\" onclick=\"closeGlobeInfo();viewDest('"+d.id+"')\">View Full Profile</button>";
+  const panel=document.getElementById('globeInfoPanel');if(panel)panel.classList.add('open');
+}
+function closeGlobeInfo(){const p=document.getElementById('globeInfoPanel');if(p)p.classList.remove('open');}
+
+function onTimelineMove(val){
+  globeState.timelineIdx=parseInt(val);
+  const dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
+  const d=dests[globeState.timelineIdx];
+  const lbl=document.getElementById('timelineLabel');
+  if(lbl)lbl.textContent=d?("Showing journey through "+d.city+", "+d.country+" ("+(fD(d.arrival)||'TBD')+")"):'No destinations yet';
+  buildGlobeContent();
+}
+
+function toggleStoryMode(){
+  globeState.storyMode=!globeState.storyMode;
+  const btn=document.getElementById('storyBtn');if(btn)btn.classList.toggle('active',globeState.storyMode);
+  if(globeState.storyMode){
+    const dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
+    globeState.storyIdx=0;
+    globeState.timelineIdx=null;
+    const slider=document.getElementById('timelineSlider');if(slider)slider.value=dests.length-1;
+    buildGlobeContent();
+    globeState.storyTimer=setInterval(()=>{
+      if(!globeState.storyMode||!dests.length){clearInterval(globeState.storyTimer);return;}
+      const d=dests[globeState.storyIdx];
+      flyToDest(d.id);
+      globeState.storyIdx=(globeState.storyIdx+1)%dests.length;
+    },4000);
+    if(dests.length)flyToDest(dests[0].id);
+  }else{
+    if(globeState.storyTimer)clearInterval(globeState.storyTimer);
+    closeGlobeInfo();
+  }
+}
+
 
 // ── EVENTS ────────────────────────────────────────────────────────────────────
 function renderEvents(){
@@ -1182,7 +1494,7 @@ function renderBudget(){
       <div class="scard"><div class="sval" style="color:var(--green)">$${Math.round(totBudget-totSpent).toLocaleString()}</div><div class="slbl">Remaining</div></div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
-      <div class="sec-ttl" style="margin-bottom:0;flex:1">Categories <span style="font-size:9px;color:var(--t3);font-weight:400">(drag to reorder)</span></div>
+      <div class="sec-ttl" style="margin-bottom:0;flex:1">Categories</div>
       <button class="abtn" onclick="openBudgetModal()" style="font-size:10px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No categories yet</div>'}</div>
@@ -1238,8 +1550,9 @@ function renderBucket(){
   if(bktCatFilter)bkt=bkt.filter(b=>(b.category||'')===bktCatFilter);
 
   const cats=cBktCats();
-  const catChips=`<button class="fbtn" style="${!bktCatFilter?'border-color:var(--gold);color:var(--gold)':''}" onclick="setBktCatFilter(null)">All</button>`+
-    cats.map(c=>`<button class="fbtn" style="${bktCatFilter===c.id?'border-color:'+c.color+';color:'+c.color:''}" onclick="setBktCatFilter('${c.id}')">${esc(c.name)}</button>`).join('');
+  const catFilterLabel=bktCatFilter?bktCatM(bktCatFilter).name:'All Categories';
+  const catMenuItems=`<div class="fmi" onclick="setBktCatFilter(null)" style="${!bktCatFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!bktCatFilter?'-check-filled':''}" style="font-size:12px"></i> All Categories</div>`+
+    cats.map(c=>`<div class="fmi" onclick="setBktCatFilter('${c.id}')" style="${bktCatFilter===c.id?'color:'+c.color:''}"><div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div> ${esc(c.name)}</div>`).join('');
 
   const statusItems=['pending','achieved'].map(s=>`<label class="fmi"><input type="checkbox" ${BF.includes(s)?'checked':''} onchange="toggleBF('${s}')"/> ${s==='achieved'?'Achieved':'Pending'}</label>`).join('');
 
@@ -1283,26 +1596,29 @@ function renderBucket(){
         <button class="fbtn" onclick="toggleBFMenu()"><i class="ti ti-filter"></i> Status <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="bfmenu">${statusItems}</div>
       </div>
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleBCMenu()"><i class="ti ti-tag"></i> ${esc(catFilterLabel)} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="bcmenu">${catMenuItems}</div>
+      </div>
+      <button class="abtn" onclick="openBktCatModal()" style="font-size:10px;padding:4px 9px"><i class="ti ti-plus"></i> New category</button>
       <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${bkt.length}/${allBkt.length} shown</span>
     </div>
-    <div class="frow" style="margin-bottom:.5rem">${catChips}
-      <button class="abtn" onclick="openBktCatModal()" style="font-size:10px;padding:4px 9px"><i class="ti ti-plus"></i> New category</button>
-    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
-      <div class="sec-ttl" style="margin-bottom:0;flex:1">Life Experiences <span style="font-size:9px;color:var(--t3);font-weight:400">(drag ⠿ to reorder)</span></div>
+      <div class="sec-ttl" style="margin-bottom:0;flex:1">Life Experiences</div>
       <button class="abtn" onclick="openBktModal()" style="font-size:10px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1rem">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No experiences match the current filters.</div>'}</div>
     <div class="sec-ttl">Manage Categories</div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catMgmtRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No categories yet.</div>'}</div>
-    <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:10px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate · drag ⠿ to reorder</div>
+    <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:10px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate</div>
   </div>`;
 }
 
-function toggleBFMenu(){document.getElementById('bfmenu')?.classList.toggle('open');}
+function toggleBFMenu(){document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bfmenu')?.classList.toggle('open');}
+function toggleBCMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.toggle('open');}
 function toggleBF(s){if(BF.includes(s))BF=BF.filter(x=>x!==s);else BF.push(s);saveBF();renderContent();}
-function setBktCatFilter(id){bktCatFilter=id;renderContent();}
-document.addEventListener('click',e=>{const bm=document.getElementById('bfmenu');if(bm&&!bm.parentElement?.contains(e.target))bm.classList.remove('open');});
+function setBktCatFilter(id){bktCatFilter=id;document.getElementById('bcmenu')?.classList.remove('open');renderContent();}
+document.addEventListener('click',e=>{const bm=document.getElementById('bfmenu');if(bm&&!bm.parentElement?.contains(e.target))bm.classList.remove('open');const cm=document.getElementById('bcmenu');if(cm&&!cm.parentElement?.contains(e.target))cm.classList.remove('open');});
 
 function toggleBkt(id){const b=cur().bucket.find(x=>x.id===id);if(b){b.done=!b.done;renderContent();updateHStats();}}
 function setBktR(id,r){const b=cur().bucket.find(x=>x.id===id);if(b){b.rating=b.rating===r?0:r;renderContent();}}
