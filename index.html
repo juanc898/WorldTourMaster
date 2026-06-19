@@ -384,7 +384,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 }
 @media(max-width:380px){.sgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.128.0/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 </head>
 <body data-theme="mythic">
 <div class="app">
@@ -1089,8 +1089,19 @@ function renderMap(){
 
 function initGlobe(){
   const wrap=document.getElementById('globeWrap');
-  if(!wrap||typeof THREE==='undefined')return;
+  if(!wrap)return;
+  if(typeof THREE==='undefined'){
+    wrap.innerHTML='<div class="globe-loading" style="flex-direction:column;gap:.5rem;text-align:center;padding:2rem"><i class="ti ti-world-off" style="font-size:32px;color:var(--t3)"></i><div>3D engine failed to load.<br/>Check your internet connection and refresh.</div></div>';
+    return;
+  }
+  let webglOk=true;
+  try{const testCanvas=document.createElement('canvas');webglOk=!!(testCanvas.getContext('webgl')||testCanvas.getContext('experimental-webgl'));}catch(e){webglOk=false;}
+  if(!webglOk){
+    wrap.innerHTML='<div class="globe-loading" style="flex-direction:column;gap:.5rem;text-align:center;padding:2rem"><i class="ti ti-world-off" style="font-size:32px;color:var(--t3)"></i><div>Your browser/device does not support WebGL,<br/>required for the 3D globe.</div></div>';
+    return;
+  }
   teardownGlobe();
+  try{
   const W=wrap.clientWidth||800,H=wrap.clientHeight||500;
   const scene=new THREE.Scene();
   const camera=new THREE.PerspectiveCamera(45,W/H,0.1,1000);
@@ -1166,6 +1177,10 @@ function initGlobe(){
     globeState.renderer.setSize(w,h);
   });
   globeState.resizeObs.observe(wrap);
+  }catch(err){
+    console.error('Globe init failed:',err);
+    wrap.innerHTML='<div class="globe-loading" style="flex-direction:column;gap:.5rem;text-align:center;padding:2rem"><i class="ti ti-alert-triangle" style="font-size:32px;color:var(--t3)"></i><div>The 3D globe could not load.<br/>Try refreshing the page.</div></div>';
+  }
 }
 
 function buildGlobeContent(){
