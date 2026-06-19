@@ -5,48 +5,160 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>The Angel's Eye — Rituals of the World</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital@0;1&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@300;400;500;600;700&family=Cormorant:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
+html,body{height:100%;overflow:hidden}
+body{font-size:14px;transition:background .3s,color .3s}
+
+/* ══════════════════════════════════════════════════════
+   THEME SYSTEM — 7 distinct themes via [data-theme]
+   ══════════════════════════════════════════════════════ */
+
+/* ---------- 1. MYTHIC ODYSSEY (default/original) ---------- */
+[data-theme="mythic"]{
   --gold:#C9A84C;--gold-dim:#8B6914;
   --bg:#0A0A0F;--ink:#12121A;--sf:#1A1A26;--sf2:#22222F;
   --bd:#2E2E42;--bd2:#3A3A52;
   --t1:#F0EDE6;--t2:#CECCDB;--t3:#A09CB0;
   --green:#4BC896;--red:#C84B4B;--blue:#4B8BC8;--purple:#8B4BC8;
-  --sw:248px;
+  --font-display:'Cormorant Garamond',Georgia,serif;
+  --font-body:Georgia,serif;--font-ui:sans-serif;
+  --radius:3px;--shadow:none;--glow:none;
+  --card-bg:var(--sf);--accent-grad:linear-gradient(135deg,var(--gold-dim),var(--gold));
 }
-[data-theme=light]{
+[data-theme="mythic"].light-variant{
   --bg:#F4F2EC;--ink:#E8E6E0;--sf:#FFFFFF;--sf2:#F0EEE8;
-  --bd:#D5D2C8;--bd2:#C5C2B8;
-  --t1:#1A1814;--t2:#42403A;--t3:#78746A;
+  --bd:#D5D2C8;--bd2:#C5C2B8;--t1:#1A1814;--t2:#42403A;--t3:#78746A;
 }
-html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--t1);font-family:Georgia,serif;font-size:14px;transition:background .2s,color .2s}
+
+/* ---------- 2. DARK EXECUTIVE ---------- */
+[data-theme="executive"]{
+  --gold:#D8D8DC;--gold-dim:#9A9AA2;
+  --bg:#0B0C0E;--ink:#141518;--sf:#1C1D22;--sf2:#23252B;
+  --bd:#2C2E36;--bd2:#3A3D47;
+  --t1:#F5F5F7;--t2:#C8C9D1;--t3:#8E909C;
+  --green:#3DDC97;--red:#E5484D;--blue:#5AA9E6;--purple:#A78BFA;
+  --font-display:'Montserrat',sans-serif;
+  --font-body:'Montserrat',sans-serif;--font-ui:'Montserrat',sans-serif;
+  --radius:6px;--shadow:0 8px 24px rgba(0,0,0,.4);
+  --glow:0 0 0 1px rgba(255,255,255,.04) inset;
+  --card-bg:linear-gradient(180deg,#1E1F25,#191A1F);
+  --accent-grad:linear-gradient(135deg,#C0C2C8,#E8E8EC);
+}
+
+/* ---------- 3. NEO FUTURIST ---------- */
+[data-theme="futurist"]{
+  --gold:#00E5FF;--gold-dim:#7B5FFF;
+  --bg:#06060F;--ink:#0B0B1C;--sf:#11122A;--sf2:#161836;
+  --bd:#2A2C55;--bd2:#3D4070;
+  --t1:#E8F4FF;--t2:#A8C8E8;--t3:#6E7FAE;
+  --green:#39FFC4;--red:#FF4D8D;--blue:#00B8FF;--purple:#C77DFF;
+  --font-display:'Orbitron',sans-serif;
+  --font-body:'Rajdhani',sans-serif;--font-ui:'Rajdhani',sans-serif;
+  --radius:10px;--shadow:0 0 32px rgba(0,229,255,.12),0 8px 24px rgba(0,0,0,.5);
+  --glow:0 0 12px rgba(0,229,255,.35);
+  --card-bg:linear-gradient(135deg,rgba(17,18,42,.9),rgba(22,24,54,.9));
+  --accent-grad:linear-gradient(90deg,#00E5FF,#7B5FFF,#FF4D8D);
+}
+
+/* ---------- 4. TIMELESS CLASSIC ---------- */
+[data-theme="classic"]{
+  --gold:#9C7A29;--gold-dim:#7A5F1F;
+  --bg:#F7F2E7;--ink:#EFE8D8;--sf:#FFFBF2;--sf2:#F7F0E2;
+  --bd:#D9CCA8;--bd2:#C7B88E;
+  --t1:#2B2316;--t2:#4A3F2A;--t3:#7A6C4E;
+  --green:#3F7D5C;--red:#9C3B3B;--blue:#2F5F8A;--purple:#5B4A8A;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'EB Garamond',Georgia,serif;--font-ui:'EB Garamond',Georgia,serif;
+  --radius:1px;--shadow:0 2px 8px rgba(80,60,20,.08);--glow:none;
+  --card-bg:var(--sf);--accent-grad:linear-gradient(135deg,var(--gold-dim),var(--gold));
+  --navy:#1C2B45;
+}
+
+/* ---------- 5. EXPLORER'S ATLAS ---------- */
+[data-theme="explorer"]{
+  --gold:#C19A49;--gold-dim:#8C6D2E;
+  --bg:#2B2118;--ink:#352819;--sf:#3D2E1E;--sf2:#453523;
+  --bd:#5A462E;--bd2:#6E5638;
+  --t1:#F2E4C8;--t2:#D8C19A;--t3:#A88E68;
+  --green:#6B8F5C;--red:#B5573D;--blue:#3F7A98;--purple:#7A5C8A;
+  --font-display:'Cormorant',Georgia,serif;
+  --font-body:'Cormorant Garamond',Georgia,serif;--font-ui:'Cormorant Garamond',Georgia,serif;
+  --radius:2px;--shadow:0 4px 14px rgba(0,0,0,.35);--glow:none;
+  --card-bg:var(--sf);--accent-grad:linear-gradient(135deg,#8C6D2E,#C19A49);
+}
+
+/* ---------- 6. DARK SURREALISM ---------- */
+[data-theme="surreal"]{
+  --gold:#C9A84C;--gold-dim:#8B6914;
+  --bg:#080808;--ink:#0F0F11;--sf:#161618;--sf2:#1C1C1F;
+  --bd:#2A2A2E;--bd2:#383840;
+  --t1:#EDEAE6;--t2:#B8B4BC;--t3:#7A7680;
+  --green:#5A8C72;--red:#8B2E3B;--blue:#4A5E7A;--purple:#6B3F8C;
+  --crimson:#8B2E3B;
+  --font-display:'Cinzel',Georgia,serif;
+  --font-body:'Cormorant Garamond',Georgia,serif;--font-ui:'Cormorant Garamond',Georgia,serif;
+  --radius:0px;--shadow:0 12px 40px rgba(0,0,0,.6);--glow:0 0 24px rgba(201,168,76,.08);
+  --card-bg:linear-gradient(160deg,#15151A,#0D0D10);
+  --accent-grad:linear-gradient(135deg,#8B2E3B,#C9A84C);
+}
+
+/* ---------- 7. ULTRA LUXURY ---------- */
+[data-theme="luxury"]{
+  --gold:#E8C77A;--gold-dim:#B8943F;
+  --bg:#08080A;--ink:#100F10;--sf:#181718;--sf2:#1F1D1F;
+  --bd:#332F2A;--bd2:#453F38;
+  --t1:#F5F0E5;--t2:#D4C9B0;--t3:#9C9080;
+  --green:#5FBF92;--red:#C85D5D;--blue:#6FA8D8;--purple:#A88BD8;
+  --platinum:#D8D8DC;--champagne:#E8D9B5;
+  --font-display:'Cinzel',Georgia,serif;
+  --font-body:'Cormorant Garamond',Georgia,serif;--font-ui:Montserrat,sans-serif;
+  --radius:4px;--shadow:0 10px 36px rgba(0,0,0,.55);
+  --glow:0 0 20px rgba(232,199,122,.18);
+  --card-bg:linear-gradient(155deg,#1B1A1B,#100F10);
+  --accent-grad:linear-gradient(135deg,#B8943F,#E8C77A,#D8D8DC);
+}
+
+/* ══════════════════════════════════════════════════════
+   STRUCTURAL CSS (theme-aware via variables)
+   ══════════════════════════════════════════════════════ */
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .app{display:flex;flex-direction:column;height:100vh}
-/* HEADER */
-.hdr{background:var(--ink);border-bottom:1px solid var(--bd);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0;gap:.5rem}
-.logo-eye{width:26px;height:26px;border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr{background:var(--ink);border-bottom:1px solid var(--bd);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;gap:.5rem;box-shadow:var(--glow)}
+.logo-eye{width:26px;height:26px;border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--glow)}
 .logo-eye::after{content:'';width:7px;height:7px;background:var(--gold);border-radius:50%}
-.logo-txt{font-size:12px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;white-space:nowrap}
-.logo-sub{font-size:8px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:sans-serif;white-space:nowrap}
+.logo-txt{font-size:13px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;white-space:nowrap;font-family:var(--font-display);font-weight:600}
+.logo-sub{font-size:8px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);white-space:nowrap}
 .hdr-r{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
-.hstat{text-align:center;cursor:pointer;padding:4px 6px;border-radius:3px;display:none}
+.hstat{text-align:center;cursor:pointer;padding:4px 6px;border-radius:var(--radius);display:none}
 .hstat:hover{background:rgba(255,255,255,.06)}
-.hstat-v{font-size:14px;color:var(--gold);line-height:1}
-.hstat-l{font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;font-family:sans-serif}
-.add-btn{display:flex;align-items:center;gap:4px;padding:6px 11px;background:var(--gold-dim);border:none;border-radius:3px;color:#0A0A0F;font-family:sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;cursor:pointer;text-transform:uppercase;white-space:nowrap}
-.add-btn:hover{background:var(--gold)}
-.icon-btn{background:none;border:1px solid var(--bd2);border-radius:3px;color:var(--t2);font-size:16px;cursor:pointer;padding:4px 7px;display:flex;align-items:center}
+.hstat-v{font-size:14px;color:var(--gold);line-height:1;font-family:var(--font-display);font-weight:600}
+.hstat-l{font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-ui)}
+.add-btn{display:flex;align-items:center;gap:4px;padding:6px 11px;background:var(--accent-grad);border:none;border-radius:var(--radius);color:#0A0A0F;font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:.06em;cursor:pointer;text-transform:uppercase;white-space:nowrap;box-shadow:var(--glow)}
+.add-btn:hover{filter:brightness(1.1)}
+.icon-btn{background:none;border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-size:16px;cursor:pointer;padding:4px 7px;display:flex;align-items:center}
 .icon-btn:hover{color:var(--t1);border-color:var(--bd)}
+.theme-pop{position:absolute;top:calc(100% + 6px);right:0;background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);min-width:230px;z-index:200;display:none;padding:.4rem;box-shadow:0 8px 30px rgba(0,0,0,.5);max-height:70vh;overflow-y:auto}
+.theme-pop.open{display:block}
+.theme-opt{display:flex;align-items:center;gap:8px;padding:.5rem .6rem;border-radius:4px;cursor:pointer;font-family:var(--font-ui)}
+.theme-opt:hover{background:rgba(255,255,255,.05)}
+.theme-opt.active{background:rgba(201,168,76,.12)}
+.theme-swatch{width:24px;height:24px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.15)}
+.theme-opt-txt{flex:1;min-width:0}
+.theme-opt-name{font-size:11px;color:var(--t1);font-weight:600}
+.theme-opt-mood{font-size:9px;color:var(--t3)}
 /* NAV */
 .nav{background:var(--ink);border-bottom:1px solid var(--bd);display:flex;overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch}
 .nav::-webkit-scrollbar{height:2px}
-.nav-tab{padding:0 .75rem;height:40px;display:flex;align-items:center;gap:4px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:sans-serif;flex-shrink:0;transition:color .15s}
+.nav-tab{padding:0 .75rem;height:42px;display:flex;align-items:center;gap:4px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--font-ui);flex-shrink:0;transition:color .15s}
 .nav-tab:hover{color:var(--t2)}
 .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 /* LAYOUT */
 .main{flex:1;display:flex;overflow:hidden}
-.sidebar{width:var(--sw);background:var(--ink);border-right:1px solid var(--bd);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column;transition:transform .25s}
+.sidebar{width:248px;background:var(--ink);border-right:1px solid var(--bd);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column;transition:transform .25s}
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:var(--bd)}
 .content{flex:1;overflow-y:auto;background:var(--bg)}
@@ -54,94 +166,94 @@ body{background:var(--bg);color:var(--t1);font-family:Georgia,serif;font-size:14
 .content::-webkit-scrollbar-thumb{background:var(--bd2)}
 /* SIDEBAR */
 .tour-bar{padding:.4rem .625rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:4px}
-.tour-sel{flex:1;background:var(--sf2);border:1px solid var(--bd);border-radius:3px;padding:.3rem .5rem;color:var(--gold);font-family:sans-serif;font-size:11px;outline:none;cursor:pointer}
+.tour-sel{flex:1;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--radius);padding:.3rem .5rem;color:var(--gold);font-family:var(--font-ui);font-size:11px;outline:none;cursor:pointer}
 .act-row{padding:.4rem .625rem .4rem .875rem;cursor:pointer;border-left:2px solid transparent;display:flex;align-items:center;gap:4px}
 .act-row:hover{background:rgba(255,255,255,.025)}
 .act-row.active{background:rgba(201,168,76,.05)}
-.act-nm{font-size:11px;color:var(--t2);font-family:sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.act-sub{font-size:9px;color:var(--t3);font-family:sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.act-badge{font-size:8px;background:var(--bd);color:var(--t3);padding:1px 5px;border-radius:8px;font-family:sans-serif;flex-shrink:0}
+.act-nm{font-size:11px;color:var(--t2);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.act-sub{font-size:9px;color:var(--t3);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act-badge{font-size:8px;background:var(--bd);color:var(--t3);padding:1px 5px;border-radius:8px;font-family:var(--font-ui);flex-shrink:0}
 .dest-row{padding:.28rem .625rem .28rem 1.5rem;cursor:pointer;display:flex;align-items:center;gap:5px}
 .dest-row:hover{background:rgba(255,255,255,.018)}
 .dest-row.active{background:rgba(201,168,76,.04)}
-.dest-city{font-size:11px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:sans-serif;flex:1}
+.dest-city{font-size:11px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-ui);flex:1}
 .dest-row.active .dest-city{color:var(--t1)}
-.dest-meta{font-size:9px;color:var(--t3);font-family:sans-serif}
+.dest-meta{font-size:9px;color:var(--t3);font-family:var(--font-ui)}
 .dot5{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 /* PANEL */
 .panel{padding:1rem}
-.sec-ttl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);font-family:sans-serif;margin-bottom:.625rem;display:flex;align-items:center;gap:6px}
+.sec-ttl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);margin-bottom:.625rem;display:flex;align-items:center;gap:6px}
 .sec-ttl::after{content:'';flex:1;height:1px;background:var(--bd)}
 /* STAT CARDS */
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1rem}
-.scard{background:var(--sf);border:1px solid var(--bd);border-radius:3px;padding:.75rem;cursor:pointer;transition:background .15s}
-.scard:hover{background:var(--sf2)}
-.sval{font-size:22px;color:var(--gold);line-height:1}
-.slbl{font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-top:3px;font-family:sans-serif}
-.ssub{font-size:10px;color:var(--t2);margin-top:2px;font-family:sans-serif}
+.scard{background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:.75rem;cursor:pointer;transition:transform .15s,background .15s;box-shadow:var(--shadow)}
+.scard:hover{background:var(--sf2);transform:translateY(-1px)}
+.sval{font-size:22px;color:var(--gold);line-height:1;font-family:var(--font-display);font-weight:600}
+.slbl{font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-top:3px;font-family:var(--font-ui)}
+.ssub{font-size:10px;color:var(--t2);margin-top:2px;font-family:var(--font-ui)}
 /* PROFILE */
 .prof-wrap{padding:1rem}
 .prof-top{display:flex;gap:.875rem;margin-bottom:1rem;align-items:flex-start;flex-wrap:wrap}
 .prof-flag{font-size:44px;line-height:1;flex-shrink:0}
 .prof-meta{flex:1;min-width:180px}
-.prof-city{font-size:20px;color:var(--t1);letter-spacing:.02em}
-.prof-cntry{font-size:10px;color:var(--t3);font-family:sans-serif;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+.prof-city{font-size:21px;color:var(--t1);letter-spacing:.02em;font-family:var(--font-display);font-weight:600}
+.prof-cntry{font-size:10px;color:var(--t3);font-family:var(--font-ui);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
 .ptags{display:flex;flex-wrap:wrap;gap:4px}
-.tag{padding:2px 8px;border:1px solid var(--bd2);border-radius:2px;font-size:9px;color:var(--t2);font-family:sans-serif;text-transform:uppercase}
+.tag{padding:2px 8px;border:1px solid var(--bd2);border-radius:var(--radius);font-size:9px;color:var(--t2);font-family:var(--font-ui);text-transform:uppercase}
 .tag.gld{border-color:var(--gold-dim);color:var(--gold)}
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
-.pblk{background:var(--sf);border:1px solid var(--bd);border-radius:3px;padding:.75rem}
-.pblk-f{background:var(--sf);border:1px solid var(--bd);border-radius:3px;padding:.75rem;margin-bottom:.75rem}
-.bttl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);font-family:sans-serif;margin-bottom:.5rem}
-.drow{display:flex;justify-content:space-between;align-items:flex-start;padding:.25rem 0;border-bottom:1px solid rgba(128,128,128,.13);font-family:sans-serif;gap:.5rem}
+.pblk{background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:.75rem;box-shadow:var(--shadow)}
+.pblk-f{background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:.75rem;margin-bottom:.75rem;box-shadow:var(--shadow)}
+.bttl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);margin-bottom:.5rem}
+.drow{display:flex;justify-content:space-between;align-items:flex-start;padding:.25rem 0;border-bottom:1px solid rgba(128,128,128,.13);font-family:var(--font-ui);gap:.5rem}
 .drow:last-child{border-bottom:none}
 .dlbl{font-size:11px;color:var(--t3);flex-shrink:0}
 .dval{font-size:11px;color:var(--t2);text-align:right}
 .dval.gld{color:var(--gold)}
 .dval.grn{color:var(--green)}
 .dval.red{color:var(--red)}
-.pyes{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px;border-radius:2px;background:rgba(75,200,150,.15);color:var(--green);font-family:sans-serif}
-.pno{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px;border-radius:2px;background:rgba(200,75,75,.12);color:var(--red);font-family:sans-serif}
-.notes-box{font-size:12px;color:var(--t2);font-family:sans-serif;line-height:1.6;white-space:pre-wrap}
+.pyes{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px;border-radius:var(--radius);background:rgba(75,200,150,.15);color:var(--green);font-family:var(--font-ui)}
+.pno{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px;border-radius:var(--radius);background:rgba(200,75,75,.12);color:var(--red);font-family:var(--font-ui)}
+.notes-box{font-size:12px;color:var(--t2);font-family:var(--font-ui);line-height:1.6;white-space:pre-wrap}
 .todo-list{list-style:none;display:flex;flex-direction:column;gap:3px}
-.todo-item{display:flex;align-items:flex-start;gap:5px;font-size:11px;color:var(--t2);font-family:sans-serif;line-height:1.4}
+.todo-item{display:flex;align-items:flex-start;gap:5px;font-size:11px;color:var(--t2);font-family:var(--font-ui);line-height:1.4}
 .todo-item::before{content:'◇';color:var(--gold-dim);font-size:9px;margin-top:2px;flex-shrink:0}
-.ev-pill{display:inline-flex;align-items:center;gap:6px;padding:.35rem .75rem;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:3px;margin-bottom:.75rem}
+.ev-pill{display:inline-flex;align-items:center;gap:6px;padding:.35rem .75rem;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:var(--radius);margin-bottom:.75rem}
 /* BUTTONS */
-.abtn{padding:2px 7px;border:1px solid var(--bd2);border-radius:2px;background:transparent;color:var(--t2);font-family:sans-serif;font-size:9px;cursor:pointer;transition:all .15s}
+.abtn{padding:2px 7px;border:1px solid var(--bd2);border-radius:var(--radius);background:transparent;color:var(--t2);font-family:var(--font-ui);font-size:9px;cursor:pointer;transition:all .15s}
 .abtn:hover{color:var(--t1);border-color:var(--bd)}
 .abtn.del:hover{border-color:var(--red);color:var(--red)}
 /* STATUS BADGES */
-.sbadge{font-size:9px;padding:2px 7px;border-radius:2px;font-family:sans-serif;white-space:nowrap}
+.sbadge{font-size:9px;padding:2px 7px;border-radius:var(--radius);font-family:var(--font-ui);white-space:nowrap}
 .sb-planned{background:rgba(139,105,20,.25);color:#D4A84C}
 .sb-confirmed{background:rgba(75,200,150,.18);color:#4BC896}
 .sb-cancelled{background:rgba(200,75,75,.15);color:#C84B4B}
 .sb-wishlist{background:rgba(139,75,200,.18);color:#9B5BD8}
 .sb-completed{background:rgba(75,139,200,.18);color:#5B9BD8}
 /* ROUTE TABLE */
-.rtbl{width:100%;border-collapse:collapse;font-family:sans-serif;font-size:11px}
+.rtbl{width:100%;border-collapse:collapse;font-family:var(--font-ui);font-size:11px}
 .rtbl th{padding:.4rem .6rem;text-align:left;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--bd);font-weight:400;background:var(--sf)}
 .rtbl td{padding:.45rem .6rem;border-bottom:1px solid rgba(128,128,128,.1);color:var(--t2);vertical-align:middle}
-.rtbl tr:hover td{background:rgba(201,168,76,.03);cursor:pointer}
+.rtbl tr:hover td{background:rgba(201,168,76,.04);cursor:pointer}
 .rtbl tr.cancelled td{opacity:.45}
 .wd{font-size:9px;color:var(--t3);margin-left:2px}
 /* FILTER ROW */
 .frow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}
-.fbtn{padding:5px 9px;background:var(--sf);border:1px solid var(--bd2);border-radius:3px;color:var(--t2);font-family:sans-serif;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.fbtn{padding:5px 9px;background:var(--sf);border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-family:var(--font-ui);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px}
 .fbtn:hover{border-color:var(--bd);color:var(--t1)}
-.fmenu{position:absolute;top:calc(100%+4px);left:0;background:var(--ink);border:1px solid var(--bd2);border-radius:3px;min-width:150px;z-index:50;display:none;padding:.25rem 0;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.fmenu{position:absolute;top:calc(100% + 4px);left:0;background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);min-width:150px;z-index:50;display:none;padding:.25rem 0;box-shadow:0 4px 16px rgba(0,0,0,.4)}
 .fmenu.open{display:block}
-.fmi{display:flex;align-items:center;gap:6px;padding:.35rem .625rem;cursor:pointer;font-family:sans-serif;font-size:11px;color:var(--t2)}
+.fmi{display:flex;align-items:center;gap:6px;padding:.35rem .625rem;cursor:pointer;font-family:var(--font-ui);font-size:11px;color:var(--t2)}
 .fmi:hover{background:rgba(255,255,255,.03)}
 .fmi input[type=checkbox]{accent-color:var(--gold);cursor:pointer}
 /* EVENTS */
 .ev-item{display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .15s}
 .ev-item:hover{background:var(--sf2)}
-.ev-name{font-size:13px;color:var(--t1);font-family:sans-serif;line-height:1.3}
-.ev-loc{font-size:11px;color:var(--t3);font-family:sans-serif;margin-top:2px}
-.ev-date{font-size:10px;color:var(--gold);font-family:sans-serif;margin-top:2px}
-.ev-cost-lbl{font-size:11px;color:var(--green);font-family:sans-serif;margin-top:2px}
-.ev-type{font-size:9px;padding:2px 7px;border-radius:2px;font-family:sans-serif;white-space:nowrap;flex-shrink:0}
+.ev-name{font-size:13px;color:var(--t1);font-family:var(--font-ui);line-height:1.3}
+.ev-loc{font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px}
+.ev-date{font-size:10px;color:var(--gold);font-family:var(--font-ui);margin-top:2px}
+.ev-cost-lbl{font-size:11px;color:var(--green);font-family:var(--font-ui);margin-top:2px}
+.ev-type{font-size:9px;padding:2px 7px;border-radius:var(--radius);font-family:var(--font-ui);white-space:nowrap;flex-shrink:0}
 .pdots{display:flex;gap:3px;margin-top:4px}
 .pdot{width:5px;height:5px;border-radius:50%}
 /* BUDGET */
@@ -149,11 +261,11 @@ body{background:var(--bg);color:var(--t1);font-family:Georgia,serif;font-size:14
 .bcat:hover{background:rgba(255,255,255,.02)}
 .bcat.active{background:rgba(201,168,76,.05)}
 .bcat.drag-over{border-top:2px solid var(--gold)}
-.bexp{display:flex;justify-content:space-between;align-items:center;padding:.4rem .75rem;border-bottom:1px solid rgba(128,128,128,.08);font-family:sans-serif;font-size:11px}
+.bexp{display:flex;justify-content:space-between;align-items:center;padding:.4rem .75rem;border-bottom:1px solid rgba(128,128,128,.08);font-family:var(--font-ui);font-size:11px}
 /* BUCKET */
-.bkt{display:flex;align-items:center;gap:.4rem;padding:.5rem .75rem;border-bottom:1px solid var(--bd);font-family:sans-serif;cursor:default;user-select:none}
+.bkt{display:flex;align-items:center;gap:.4rem;padding:.5rem .75rem;border-bottom:1px solid var(--bd);font-family:var(--font-ui);cursor:default;user-select:none}
 .bkt.drag-over{border-top:2px solid var(--gold)}
-.bchk{width:16px;height:16px;border:1px solid var(--bd2);border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s}
+.bchk{width:16px;height:16px;border:1px solid var(--bd2);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s}
 .bchk.done{background:var(--gold-dim);border-color:var(--gold)}
 .bchk.done::after{content:'✓';font-size:10px;color:var(--gold)}
 .btxt{font-size:11px;color:var(--t2);flex:1;line-height:1.4}
@@ -162,58 +274,58 @@ body{background:var(--bg);color:var(--t1);font-family:Georgia,serif;font-size:14
 .star{font-size:12px;line-height:1;transition:color .1s;user-select:none}
 .star.on{color:var(--gold)}
 .star.off{color:var(--bd2)}
+.bkt-cat-hdr{padding:.5rem .75rem;background:var(--sf2);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-family:var(--font-ui);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
 /* AI */
 .ai-wrap{padding:1rem;display:flex;flex-direction:column;gap:.75rem}
-.ai-msgs{display:flex;flex-direction:column;gap:.5rem;min-height:150px;max-height:300px;overflow-y:auto;background:var(--sf);border:1px solid var(--bd);border-radius:3px;padding:.75rem}
-.ai-msg{font-size:11px;line-height:1.6;font-family:sans-serif}
+.ai-msgs{display:flex;flex-direction:column;gap:.5rem;min-height:150px;max-height:300px;overflow-y:auto;background:var(--sf);border:1px solid var(--bd);border-radius:var(--radius);padding:.75rem}
+.ai-msg{font-size:11px;line-height:1.6;font-family:var(--font-ui)}
 .ai-msg.user{color:var(--gold);text-align:right}
 .ai-msg.ai{color:var(--t2)}
 .ai-msg-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
-.ai-sug{padding:.4rem .6rem;background:var(--sf);border:1px solid var(--bd);border-radius:3px;font-size:11px;color:var(--t2);cursor:pointer;font-family:sans-serif;text-align:left;width:100%}
+.ai-sug{padding:.4rem .6rem;background:var(--sf);border:1px solid var(--bd);border-radius:var(--radius);font-size:11px;color:var(--t2);cursor:pointer;font-family:var(--font-ui);text-align:left;width:100%}
 .ai-sug:hover{background:var(--sf2);color:var(--t1)}
 .ai-row{display:flex;gap:6px}
-.ai-inp{flex:1;background:var(--sf);border:1px solid var(--bd2);border-radius:3px;padding:.4rem .625rem;color:var(--t1);font-family:sans-serif;font-size:11px;outline:none}
+.ai-inp{flex:1;background:var(--sf);border:1px solid var(--bd2);border-radius:var(--radius);padding:.4rem .625rem;color:var(--t1);font-family:var(--font-ui);font-size:11px;outline:none}
 .ai-inp:focus{border-color:var(--gold-dim)}
-.ai-send{padding:.4rem .875rem;background:var(--gold-dim);border:none;border-radius:3px;color:#0A0A0F;font-family:sans-serif;font-size:11px;font-weight:700;cursor:pointer}
-.ai-send:hover{background:var(--gold)}
+.ai-send{padding:.4rem .875rem;background:var(--accent-grad);border:none;border-radius:var(--radius);color:#0A0A0F;font-family:var(--font-ui);font-size:11px;font-weight:700;cursor:pointer}
+.ai-send:hover{filter:brightness(1.1)}
 /* MAP */
 .map-wrap{width:100%;overflow:hidden;background:#0C1016;position:relative}
 .map-wrap svg{width:100%;display:block}
-[data-theme=light] .map-wrap{background:#C8DCF0}
 /* MODAL */
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto}
-.modal{background:var(--ink);border:1px solid var(--bd2);border-radius:4px;width:100%;max-width:580px;margin:auto}
+.modal{background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);width:100%;max-width:580px;margin:auto;box-shadow:var(--shadow)}
 .mhdr{padding:.875rem 1rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--ink);z-index:1}
-.mttl{font-size:14px;color:var(--gold);letter-spacing:.04em}
+.mttl{font-size:14px;color:var(--gold);letter-spacing:.04em;font-family:var(--font-display);font-weight:600}
 .mx{background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1}
 .mx:hover{color:var(--t1)}
 .mbody{padding:1rem;display:flex;flex-direction:column;gap:.875rem;max-height:calc(100vh - 130px);overflow-y:auto}
 .mbody::-webkit-scrollbar{width:4px}
 .mbody::-webkit-scrollbar-thumb{background:var(--bd2)}
-.msect{border:1px solid var(--bd);border-radius:3px;overflow:hidden}
-.msttl{padding:.4rem .75rem;background:var(--sf);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);font-family:sans-serif;border-bottom:1px solid var(--bd)}
+.msect{border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden}
+.msttl{padding:.4rem .75rem;background:var(--sf);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);border-bottom:1px solid var(--bd)}
 .mflds{padding:.75rem;display:flex;flex-direction:column;gap:.625rem}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:.625rem}
 .f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.625rem}
 .fg{display:flex;flex-direction:column;gap:4px}
-.flbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:sans-serif}
-.fi{background:var(--sf2);border:1px solid var(--bd);border-radius:3px;padding:.5rem .75rem;color:var(--t1);font-family:sans-serif;font-size:13px;outline:none;width:100%;-webkit-appearance:none}
+.flbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui)}
+.fi{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--radius);padding:.5rem .75rem;color:var(--t1);font-family:var(--font-ui);font-size:13px;outline:none;width:100%;-webkit-appearance:none}
 .fi:focus{border-color:var(--gold-dim)}
 .fi::placeholder{color:var(--t3)}
 select.fi option{background:var(--sf2)}
 textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
-.fc{font-size:11px;color:var(--gold);font-family:sans-serif;margin-top:2px;min-height:16px}
+.fc{font-size:11px;color:var(--gold);font-family:var(--font-ui);margin-top:2px;min-height:16px}
 .mfoot{padding:.75rem 1rem;border-top:1px solid var(--bd);display:flex;gap:.5rem;justify-content:flex-end;background:var(--ink)}
-.btnp{padding:8px 18px;background:var(--gold-dim);border:none;border-radius:3px;color:#0A0A0F;font-family:sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;cursor:pointer;text-transform:uppercase}
-.btnp:hover{background:var(--gold)}
-.btng{padding:8px 14px;background:transparent;border:1px solid var(--bd2);border-radius:3px;color:var(--t2);font-family:sans-serif;font-size:12px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
+.btnp{padding:8px 18px;background:var(--accent-grad);border:none;border-radius:var(--radius);color:#0A0A0F;font-family:var(--font-ui);font-size:12px;font-weight:700;letter-spacing:.06em;cursor:pointer;text-transform:uppercase}
+.btnp:hover{filter:brightness(1.1)}
+.btng{padding:8px 14px;background:transparent;border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-family:var(--font-ui);font-size:12px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
 .btng:hover{color:var(--t1);border-color:var(--bd)}
 /* MOBILE */
 .menu-btn{display:none;background:none;border:none;color:var(--t2);font-size:22px;cursor:pointer;padding:4px}
 .sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90}
 /* CTX MENU */
-.ctx{position:fixed;background:var(--ink);border:1px solid var(--bd2);border-radius:3px;z-index:500;min-width:160px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
-.ctx-item{padding:.5rem .875rem;font-family:sans-serif;font-size:12px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:6px}
+.ctx{position:fixed;background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);z-index:500;min-width:160px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.ctx-item{padding:.5rem .875rem;font-family:var(--font-ui);font-size:12px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:6px}
 .ctx-item:hover{background:rgba(201,168,76,.08);color:var(--gold)}
 @media(min-width:600px){.hstat{display:block}}
 @media(max-width:599px){
@@ -226,11 +338,12 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   .panel,.prof-wrap{padding:.75rem}
   .f2,.f3{grid-template-columns:1fr}
   .hm{display:none}
+  .theme-pop{right:-40px;max-width:90vw}
 }
 @media(max-width:380px){.sgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
-<body>
+<body data-theme="mythic">
 <div class="app">
 <header class="hdr">
   <div style="display:flex;align-items:center;gap:6px">
@@ -244,7 +357,11 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     <div class="hstat" onclick="goTab('map')" title="View Map"><div class="hstat-v" id="hCnt">0</div><div class="hstat-l">Countries</div></div>
     <div class="hstat" onclick="goTab('route')" title="View Route"><div class="hstat-v" id="hDst">0</div><div class="hstat-l">Destinations</div></div>
     <div class="hstat" onclick="goTab('events')" title="View Events"><div class="hstat-v" id="hEvt">0</div><div class="hstat-l">Events</div></div>
-    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme"><i class="ti ti-sun"></i></button>
+    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark"><i class="ti ti-sun"></i></button>
+    <div style="position:relative">
+      <button class="icon-btn" onclick="toggleThemePop(event)" id="stylesBtn" title="Choose appearance"><i class="ti ti-palette"></i></button>
+      <div class="theme-pop" id="themePop"></div>
+    </div>
     <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>
   </div>
 </header>
@@ -264,7 +381,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
       <select class="tour-sel" id="tourSel" onchange="switchTour(this.value)"></select>
       <button class="abtn" onclick="openTourModal()" style="padding:3px 6px;font-size:10px" title="Manage Tours"><i class="ti ti-settings"></i></button>
     </div>
-    <div style="padding:.5rem .75rem .3rem;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);font-family:sans-serif;display:flex;align-items:center;justify-content:space-between;padding-right:.5rem">
+    <div style="padding:.5rem .75rem .3rem;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);display:flex;align-items:center;justify-content:space-between;padding-right:.5rem">
       <span>Journey Acts</span>
       <button class="abtn" onclick="openActModal()" style="padding:1px 6px;font-size:10px"><i class="ti ti-plus"></i></button>
     </div>
@@ -322,15 +439,25 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 </div>
 <div class="mfoot"><button class="btng" onclick="closeActModal()">Cancel</button><button class="btnp" onclick="saveAct()">Save Act</button></div>
 </div></div>
-<!-- BUCKET MODAL -->
+<!-- BUCKET ITEM MODAL -->
 <div class="mo" id="bucketModal" style="display:none" onclick="if(event.target===this)closeBktModal()">
 <div class="modal" style="max-width:440px"><div class="mhdr"><div class="mttl" id="bktModalTitle">Add Experience</div><button class="mx" onclick="closeBktModal()">&#x2715;</button></div>
 <div class="mbody">
   <div class="fg"><label class="flbl">Experience</label><input class="fi" id="bkt_text" type="text" placeholder="e.g. Watch sunrise at Angkor Wat"/></div>
-  <div class="f2"><div class="fg"><label class="flbl">Country</label><input class="fi" id="bkt_country" type="text" placeholder="e.g. Cambodia"/></div><div class="fg"><label class="flbl">Act</label><select class="fi" id="bkt_act"></select></div></div>
-  <div class="f2"><div class="fg"><label class="flbl">Star Rating</label><select class="fi" id="bkt_rating"><option value="0">No rating</option><option value="1">★ 1</option><option value="2">★★ 2</option><option value="3">★★★ 3</option><option value="4">★★★★ 4</option><option value="5">★★★★★ 5</option></select></div><div class="fg"><label class="flbl">Status</label><select class="fi" id="bkt_done"><option value="false">Not done yet</option><option value="true">Completed ✓</option></select></div></div>
+  <div class="f2"><div class="fg"><label class="flbl">Country</label><input class="fi" id="bkt_country" type="text" placeholder="e.g. Cambodia"/></div><div class="fg"><label class="flbl">Journey Act</label><select class="fi" id="bkt_act"></select></div></div>
+  <div class="f2"><div class="fg"><label class="flbl">Category</label><select class="fi" id="bkt_category"></select></div><div class="fg"><label class="flbl">Star Rating</label><select class="fi" id="bkt_rating"><option value="0">No rating</option><option value="1">★ 1</option><option value="2">★★ 2</option><option value="3">★★★ 3</option><option value="4">★★★★ 4</option><option value="5">★★★★★ 5</option></select></div></div>
+  <div class="fg"><label class="flbl">Status</label><select class="fi" id="bkt_done"><option value="false">Not done yet</option><option value="true">Completed ✓</option></select></div>
 </div>
 <div class="mfoot"><button class="btng" onclick="closeBktModal()">Cancel</button><button class="btnp" onclick="saveBktItem()">Save</button></div>
+</div></div>
+<!-- BUCKET CATEGORY MODAL -->
+<div class="mo" id="bktCatModal" style="display:none" onclick="if(event.target===this)closeBktCatModal()">
+<div class="modal" style="max-width:380px"><div class="mhdr"><div class="mttl" id="bktCatModalTitle">Add Category</div><button class="mx" onclick="closeBktCatModal()">&#x2715;</button></div>
+<div class="mbody">
+  <div class="fg"><label class="flbl">Category Name</label><input class="fi" id="bktcat_name" type="text" placeholder="e.g. Spiritual / Adrenaline / Food"/></div>
+  <div class="fg"><label class="flbl">Color</label><input class="fi" id="bktcat_color" type="color" value="#C9A84C" style="height:42px;padding:4px"/></div>
+</div>
+<div class="mfoot"><button class="btng" onclick="closeBktCatModal()">Cancel</button><button class="btnp" onclick="saveBktCat()">Save</button></div>
 </div></div>
 <!-- TOUR MANAGE MODAL -->
 <div class="mo" id="tourModal" style="display:none" onclick="if(event.target===this)closeTourModal()">
@@ -371,15 +498,43 @@ const uid=()=>'i'+Date.now()+Math.floor(Math.random()*9999);
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const today=new Date().toISOString().split('T')[0];
 
-// ── THEME ─────────────────────────────────────────────────────────────────────
+// ── THEME SYSTEM ──────────────────────────────────────────────────────────────
+const THEMES=[
+  {id:'mythic',name:'Mythic Odyssey',mood:'The original — symbolic, ritual, golden.',swatch:'#C9A84C'},
+  {id:'executive',name:'Dark Executive',mood:'Sophisticated, focused, productive.',swatch:'#D8D8DC'},
+  {id:'futurist',name:'Neo Futurist',mood:'Innovative, futuristic, intelligent.',swatch:'#00E5FF'},
+  {id:'classic',name:'Timeless Classic',mood:'Prestigious, reliable, timeless.',swatch:'#9C7A29'},
+  {id:'explorer',name:"Explorer's Atlas",mood:'Adventure, discovery, curiosity.',swatch:'#C19A49'},
+  {id:'surreal',name:'Dark Surrealism',mood:'Mystical, emotional, thought-provoking.',swatch:'#8B2E3B'},
+  {id:'luxury',name:'Ultra Luxury',mood:'Exclusive, powerful, elite.',swatch:'#E8C77A'},
+];
+let theme=localStorage.getItem('ae_visual_theme')||'mythic';
 let dark=localStorage.getItem('ae_theme')!=='light';
-function applyTheme(){document.body.setAttribute('data-theme',dark?'dark':'light');document.getElementById('themeBtn').innerHTML=dark?'<i class="ti ti-sun"></i>':'<i class="ti ti-moon"></i>';}
+function applyTheme(){
+  document.body.setAttribute('data-theme',theme);
+  document.body.classList.toggle('light-variant',!dark&&theme==='mythic');
+  document.getElementById('themeBtn').innerHTML=dark?'<i class="ti ti-sun"></i>':'<i class="ti ti-moon"></i>';
+  document.getElementById('themeBtn').style.display=theme==='mythic'?'flex':'none';
+}
 function toggleTheme(){dark=!dark;localStorage.setItem('ae_theme',dark?'dark':'light');applyTheme();}
+function setVisualTheme(id){theme=id;localStorage.setItem('ae_visual_theme',id);applyTheme();renderThemePop();document.getElementById('themePop').classList.remove('open');}
+function toggleThemePop(e){e.stopPropagation();renderThemePop();document.getElementById('themePop').classList.toggle('open');}
+function renderThemePop(){
+  document.getElementById('themePop').innerHTML=THEMES.map(t=>`
+    <div class="theme-opt${t.id===theme?' active':''}" onclick="setVisualTheme('${t.id}')">
+      <div class="theme-swatch" style="background:${t.swatch}"></div>
+      <div class="theme-opt-txt"><div class="theme-opt-name">${esc(t.name)}</div><div class="theme-opt-mood">${esc(t.mood)}</div></div>
+      ${t.id===theme?'<i class="ti ti-check" style="color:var(--gold);font-size:14px"></i>':''}
+    </div>`).join('');
+}
+document.addEventListener('click',e=>{const pop=document.getElementById('themePop');if(pop&&!pop.contains(e.target)&&e.target.id!=='stylesBtn'&&!document.getElementById('stylesBtn').contains(e.target))pop.classList.remove('open');});
 applyTheme();
 
 // ── FILTER PERSISTENCE ────────────────────────────────────────────────────────
 let AF=JSON.parse(localStorage.getItem('ae_filters')||'["planned","confirmed","wishlist","completed","cancelled"]');
 function saveF(){localStorage.setItem('ae_filters',JSON.stringify(AF));}
+let BF=JSON.parse(localStorage.getItem('ae_bkt_filters')||'["pending","achieved"]'); // bucket list status filter
+function saveBF(){localStorage.setItem('ae_bkt_filters',JSON.stringify(BF));}
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let S={
@@ -413,27 +568,34 @@ let S={
         {id:'d13',act:'a6',country:'Brazil',city:'Rio de Janeiro',flag:'🇧🇷',arrival:'2029-02-21',departure:'2029-03-05',status:'planned',event:'Rio Carnival',event_date:'February 2029',event_type:'Cultural/Sensual',event_cost:0,hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'Flight',t_ref:'',t_dep_port:'',t_arr_port:'GIG',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'The greatest party on Earth.',todo:'Sambadrome parade\nBloco street carnival',priority:5},
         {id:'d14',act:'a7',country:'USA',city:'Black Rock Desert, NV',flag:'🇺🇸',arrival:'2029-08-25',departure:'2029-09-01',status:'planned',event:'Burning Man',event_date:'August 2029',event_type:'Transformational/Art',event_cost:500,hotel:'',hotel_ref:'',cost:0,persons:2,paid:0,mot:'',t_ref:'',t_dep_port:'',t_arr_port:'',t_dep_dt:'',t_arr_dt:'',t_connection:'',t_cost:0,t_paid:'no',t_num:'',notes:'The final ritual. Everything burns. Rebirth.',todo:'Art installation camp\nBurning of the Man\nSunrise at the Temple',priority:5},
       ],
+      bktCategories:[
+        {id:'bc_spirit',name:'Spiritual & Sacred',color:'#8B4BC8'},
+        {id:'bc_adren',name:'Adrenaline & Adventure',color:'#C84B6B'},
+        {id:'bc_culture',name:'Culture & Festivals',color:'#C9A84C'},
+        {id:'bc_nature',name:'Nature & Wildlife',color:'#4BC896'},
+        {id:'bc_food',name:'Food & Indulgence',color:'#C8734B'},
+      ],
       bucket:[
-        {id:'b1',text:'Watch sunrise over Venice in Carnival costume',country:'Italy',act:'a1',done:false,rating:5,order:0},
-        {id:'b2',text:'Sleep in glass igloo under Northern Lights',country:'Finland',act:'a1',done:true,rating:5,order:1},
-        {id:'b3',text:'Watch a Snow Polo match in St. Moritz',country:'Switzerland',act:'a1',done:true,rating:4,order:2},
-        {id:'b4',text:'Attend the Vienna Opera Ball in black tie',country:'Austria',act:'a1',done:false,rating:5,order:3},
-        {id:'b5',text:'Run with the bulls in Pamplona',country:'Spain',act:'a2',done:false,rating:5,order:4},
-        {id:'b6',text:'Dance all night at Berghain, Berlin',country:'Germany',act:'a2',done:false,rating:4,order:5},
-        {id:'b7',text:"Swim at Cap d'Agde naturist village",country:'France',act:'a2',done:false,rating:4,order:6},
-        {id:'b8',text:'Be covered in colors at Holi, Vrindavan',country:'India',act:'a4',done:false,rating:5,order:7},
-        {id:'b9',text:'Bathe in the Ganges at dawn in Varanasi',country:'India',act:'a4',done:false,rating:5,order:8},
-        {id:'b10',text:'Attend Voodoo Festival, Ouidah, Benin',country:'Benin',act:'a3',done:false,rating:5,order:9},
-        {id:'b11',text:'Trek to Machu Picchu at sunrise',country:'Peru',act:'a6',done:false,rating:5,order:10},
-        {id:'b12',text:'Walk Uyuni salt flats at sunset',country:'Bolivia',act:'a6',done:false,rating:4,order:11},
-        {id:'b13',text:'Dance at Rio Carnival in full costume',country:'Brazil',act:'a6',done:false,rating:5,order:12},
-        {id:'b14',text:'Watch everything burn at Burning Man',country:'USA',act:'a7',done:false,rating:5,order:13},
-        {id:'b15',text:'Move into a home in Italy',country:'Italy',act:'a7',done:false,rating:5,order:14},
-        {id:'b16',text:'Ride the Bernina Express through the Alps',country:'Switzerland',act:'a1',done:false,rating:3,order:15},
-        {id:'b17',text:'Kayak among Galápagos sea lions',country:'Ecuador',act:'a6',done:false,rating:4,order:16},
-        {id:'b18',text:'Eat pizza in Naples at 2am',country:'Italy',act:'a1',done:false,rating:3,order:17},
-        {id:'b19',text:'Drink a 1L Masskrug at Oktoberfest',country:'Germany',act:'a2',done:false,rating:3,order:18},
-        {id:'b20',text:'Look a mountain gorilla in the eyes, Uganda',country:'Uganda',act:'a3',done:false,rating:5,order:19},
+        {id:'b1',text:'Watch sunrise over Venice in Carnival costume',country:'Italy',act:'a1',category:'bc_culture',done:false,rating:5,order:0},
+        {id:'b2',text:'Sleep in glass igloo under Northern Lights',country:'Finland',act:'a1',category:'bc_nature',done:true,rating:5,order:1},
+        {id:'b3',text:'Watch a Snow Polo match in St. Moritz',country:'Switzerland',act:'a1',category:'bc_culture',done:true,rating:4,order:2},
+        {id:'b4',text:'Attend the Vienna Opera Ball in black tie',country:'Austria',act:'a1',category:'bc_culture',done:false,rating:5,order:3},
+        {id:'b5',text:'Run with the bulls in Pamplona',country:'Spain',act:'a2',category:'bc_adren',done:false,rating:5,order:4},
+        {id:'b6',text:'Dance all night at Berghain, Berlin',country:'Germany',act:'a2',category:'bc_culture',done:false,rating:4,order:5},
+        {id:'b7',text:"Swim at Cap d'Agde naturist village",country:'France',act:'a2',category:'bc_adren',done:false,rating:4,order:6},
+        {id:'b8',text:'Be covered in colors at Holi, Vrindavan',country:'India',act:'a4',category:'bc_spirit',done:false,rating:5,order:7},
+        {id:'b9',text:'Bathe in the Ganges at dawn in Varanasi',country:'India',act:'a4',category:'bc_spirit',done:false,rating:5,order:8},
+        {id:'b10',text:'Attend Voodoo Festival, Ouidah, Benin',country:'Benin',act:'a3',category:'bc_spirit',done:false,rating:5,order:9},
+        {id:'b11',text:'Trek to Machu Picchu at sunrise',country:'Peru',act:'a6',category:'bc_adren',done:false,rating:5,order:10},
+        {id:'b12',text:'Walk Uyuni salt flats at sunset',country:'Bolivia',act:'a6',category:'bc_nature',done:false,rating:4,order:11},
+        {id:'b13',text:'Dance at Rio Carnival in full costume',country:'Brazil',act:'a6',category:'bc_culture',done:false,rating:5,order:12},
+        {id:'b14',text:'Watch everything burn at Burning Man',country:'USA',act:'a7',category:'bc_spirit',done:false,rating:5,order:13},
+        {id:'b15',text:'Move into a home in Italy',country:'Italy',act:'a7',category:'bc_food',done:false,rating:5,order:14},
+        {id:'b16',text:'Ride the Bernina Express through the Alps',country:'Switzerland',act:'a1',category:'bc_nature',done:false,rating:3,order:15},
+        {id:'b17',text:'Kayak among Galápagos sea lions',country:'Ecuador',act:'a6',category:'bc_nature',done:false,rating:4,order:16},
+        {id:'b18',text:'Eat pizza in Naples at 2am',country:'Italy',act:'a1',category:'bc_food',done:false,rating:3,order:17},
+        {id:'b19',text:'Drink a 1L Masskrug at Oktoberfest',country:'Germany',act:'a2',category:'bc_food',done:false,rating:3,order:18},
+        {id:'b20',text:'Look a mountain gorilla in the eyes, Uganda',country:'Uganda',act:'a3',category:'bc_nature',done:false,rating:5,order:19},
       ],
       budget:[
         {id:'bc1',name:'Accommodation',budget:18000,color:'#C9A84C',expenses:[],linked:'hotels'},
@@ -453,7 +615,9 @@ let S={
 const cur=()=>S.tours[S.cur];
 const cActs=()=>cur().acts;
 const cDests=()=>cur().destinations;
+const cBktCats=()=>cur().bktCategories||(cur().bktCategories=[]);
 const aM=id=>cActs().find(a=>a.id===id)||cActs()[0]||{name:'?',color:'#888',subtitle:''};
+const bktCatM=id=>cBktCats().find(c=>c.id===id)||{name:'Uncategorized',color:'#888'};
 const dBy=id=>cDests().find(d=>d.id===id);
 const sDests=()=>[...cDests()].sort((a,b)=>{
   if(a.arrival&&b.arrival)return a.arrival.localeCompare(b.arrival);
@@ -463,12 +627,13 @@ function autoStatus(){cDests().forEach(d=>{if(d.departure&&d.departure<today&&d.
 
 // ── UI STATE ──────────────────────────────────────────────────────────────────
 let tab='dashboard',curActId=null,curDestId=null;
-let editDestId=null,editActId=null,editBktId=null,editBudCatId=null,editTourId=null;
+let editDestId=null,editActId=null,editBktId=null,editBudCatId=null,editTourId=null,editBktCatId=null;
 let aiMsgs=[],selBudCat=null,ctxEvId=null;
 let bdDragSrc=null,bktDragSrc=null;
 
 // ── SIDEBAR ───────────────────────────────────────────────────────────────────
 function toggleSB(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sbOv').classList.toggle('open');}
+function openSB(){document.getElementById('sidebar').classList.add('open');document.getElementById('sbOv').classList.add('open');}
 function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sbOv').classList.remove('open');}
 
 function renderSB(){
@@ -502,6 +667,20 @@ function renderSB(){
 function sco(s){return s==='confirmed'?'#4BC896':s==='completed'?'#5B9BD8':s==='cancelled'?'#666':s==='wishlist'?'#9B5BD8':'#8B6914';}
 function scls(s){return'sbadge sb-'+(s||'planned');}
 function selAct(id){curActId=id;curDestId=null;renderSB();renderContent();}
+
+// Act card click from Command page → opens left pane sidebar showing that act's stops
+function selActFromCommand(id){
+  curActId=id;curDestId=null;
+  openSB();          // ensure sidebar is visible (mobile slide-in; no-op on desktop, already visible)
+  renderSB();
+  // Smooth-scroll the sidebar to the selected act for visibility
+  setTimeout(()=>{
+    const activeRow=document.querySelector('.act-row.active');
+    if(activeRow)activeRow.scrollIntoView({behavior:'smooth',block:'start'});
+  },50);
+  renderContent();
+}
+
 function switchTour(id){S.cur=id;curActId=null;curDestId=null;selBudCat=null;renderSB();renderContent();}
 function viewDestSB(id){curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));closeSB();renderSB();renderContent();}
 
@@ -542,14 +721,14 @@ function renderDash(){
   const actCards=cActs().map(act=>{
     const dd=sDests().filter(d=>d.act===act.id);
     const d=dd.reduce((s,x)=>s+dBtw(x.arrival,x.departure),0);
-    return`<div class="scard" onclick="selAct('${act.id}')" style="border-top:2px solid ${act.color}">
-      <div style="font-size:10px;color:${act.color};font-family:sans-serif;margin-bottom:3px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(act.name)}</div>
+    return`<div class="scard" onclick="selActFromCommand('${act.id}')" title="Open in sidebar" style="border-top:2px solid ${act.color}">
+      <div style="font-size:10px;color:${act.color};font-family:var(--font-ui);margin-bottom:3px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(act.name)}</div>
       <div class="sval" style="font-size:18px">${d}<span style="font-size:10px;color:var(--t3)">d</span></div>
       <div class="slbl">${dd.length} stops</div>
     </div>`;
   }).join('');
   const nextRows=sDests().filter(d=>d.arrival&&d.status!=='cancelled').slice(0,6).map(d=>`
-    <div style="display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;border-bottom:1px solid rgba(128,128,128,.1);cursor:pointer;font-family:sans-serif;transition:background .15s" onclick="selDest('${d.id}')" onmouseover="this.style.background='rgba(201,168,76,.03)'" onmouseout="this.style.background=''">
+    <div style="display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;border-bottom:1px solid rgba(128,128,128,.1);cursor:pointer;font-family:var(--font-ui);transition:background .15s" onclick="selDest('${d.id}')" onmouseover="this.style.background='rgba(201,168,76,.03)'" onmouseout="this.style.background=''">
       <span style="font-size:18px;flex-shrink:0">${d.flag||'📍'}</span>
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.city)}, ${esc(d.country)}</div>
@@ -558,14 +737,14 @@ function renderDash(){
       <span class="${scls(d.status)}">${d.status}</span>
     </div>`).join('');
   return`<div class="panel">
-    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:3px;padding:1rem;margin-bottom:1rem;position:relative;overflow:hidden">
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;position:relative;overflow:hidden;box-shadow:var(--shadow)">
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(201,168,76,.05) 0%,transparent 60%);pointer-events:none"></div>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;margin-bottom:3px">
-        <div style="font-size:17px;color:var(--t1);letter-spacing:.03em">${esc(cur().name)}</div>
+        <div style="font-size:18px;color:var(--t1);letter-spacing:.03em;font-family:var(--font-display);font-weight:600">${esc(cur().name)}</div>
         <button class="abtn" onclick="openTourEditModal()" style="flex-shrink:0;font-size:10px;margin-top:2px"><i class="ti ti-edit"></i> Edit</button>
       </div>
-      <div style="font-size:8px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:sans-serif;margin-bottom:.75rem">World Tour Command Center</div>
-      <div style="font-size:12px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;max-width:580px">${esc(cur().desc||'Add a description for this tour…')}</div>
+      <div style="font-size:8px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem">World Tour Command Center</div>
+      <div style="font-size:12px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;max-width:580px;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
     </div>
     <div class="sgrid">
       <div class="scard" onclick="goTab('map')"><div class="sval">${countries}</div><div class="slbl">Countries</div></div>
@@ -575,10 +754,10 @@ function renderDash(){
       <div class="scard" onclick="goTab('budget')"><div class="sval" style="font-size:16px">$${Math.round(totSpent/1000*10)/10}k</div><div class="slbl">Spent</div><div class="ssub">of $${Math.round(totBudget/1000)}k budget</div></div>
       <div class="scard"><div class="sval">${days}</div><div class="slbl">Days Planned</div></div>
     </div>
-    <div class="sec-ttl">Journey Acts</div>
+    <div class="sec-ttl">Journey Acts <span style="font-size:8px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(click to open in sidebar)</span></div>
     <div class="sgrid" style="margin-bottom:1rem">${actCards}</div>
     <div class="sec-ttl">Upcoming Destinations</div>
-    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:3px;overflow:hidden">${nextRows||'<div style="padding:1rem;color:var(--t3);font-family:sans-serif;font-size:12px">No destinations added yet</div>'}</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${nextRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations added yet</div>'}</div>
   </div>`;
 }
 function selDest(id){curDestId=id;curActId=dBy(id)?.act||curActId;renderSB();renderContent();}
@@ -593,7 +772,7 @@ function renderProfile(){
   const owed=d.cost>0?(d.cost-(d.paid||0)).toFixed(2):'—';
   const hp=(d.paid||0)>=d.cost&&d.cost>0,pp=(d.paid||0)>0&&(d.paid||0)<d.cost;
   const hLbl=d.cost<=0?'—':hp?'<span class="pyes">✓ Fully Paid</span>':pp?`<span class="pno">⚡ $${parseFloat(d.paid).toFixed(0)} paid · $${owed} owed</span>`:'<span class="pno">✗ Not Paid</span>';
-  let tHTML='<div style="font-size:11px;color:var(--t3);font-family:sans-serif;font-style:italic">No transportation added</div>';
+  let tHTML='<div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);font-style:italic">No transportation added</div>';
   if(d.mot){
     const tb=d.t_paid==='yes'?'<span class="pyes">✓ Paid</span>':d.t_paid==='partial'?'<span class="pno">⚡ Partial</span>':'<span class="pno">✗ Unpaid</span>';
     const dDT=d.t_dep_dt?new Date(d.t_dep_dt):null,aDT=d.t_arr_dt?new Date(d.t_arr_dt):null;
@@ -611,11 +790,11 @@ function renderProfile(){
   const todoItems=d.todo?d.todo.split('\n').filter(t=>t.trim()).map(t=>`<li class="todo-item">${esc(t)}</li>`).join(''):'';
   return`<div class="prof-wrap">
     <div class="prof-top">
-      <div style="text-align:center;flex-shrink:0"><div class="prof-flag">${d.flag||'📍'}</div><div style="font-size:9px;color:var(--t3);font-family:sans-serif;margin-top:2px">${esc(d.country)}</div></div>
+      <div style="text-align:center;flex-shrink:0"><div class="prof-flag">${d.flag||'📍'}</div><div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.country)}</div></div>
       <div class="prof-meta"><div class="prof-city">${esc(d.city)}</div><div class="prof-cntry">${esc(d.country)}</div><div class="ptags"><span class="tag gld">${esc(am.name)}</span><span class="${scls(d.status)}">${d.status}</span>${d.priority?`<span class="tag">${'★'.repeat(parseInt(d.priority))}</span>`:''}</div></div>
       <div style="display:flex;gap:4px;flex-shrink:0"><button class="abtn" onclick="openDestModal('${d.id}')"><i class="ti ti-edit"></i></button><button class="abtn del" onclick="removeDest('${d.id}')"><i class="ti ti-trash"></i></button></div>
     </div>
-    ${d.event?`<div class="ev-pill"><i class="ti ti-confetti" style="color:${am.color};font-size:15px"></i><div><div style="font-size:12px;color:var(--t1);font-family:sans-serif">${esc(d.event)}</div>${d.event_date?`<div style="font-size:10px;color:var(--gold);font-family:sans-serif">${esc(d.event_date)}</div>`:''}</div></div>`:''}
+    ${d.event?`<div class="ev-pill"><i class="ti ti-confetti" style="color:${am.color};font-size:15px"></i><div><div style="font-size:12px;color:var(--t1);font-family:var(--font-ui)">${esc(d.event)}</div>${d.event_date?`<div style="font-size:10px;color:var(--gold);font-family:var(--font-ui)">${esc(d.event_date)}</div>`:''}</div></div>`:''}
     <div class="pgrid">
       <div class="pblk"><div class="bttl">Stay Details</div>
         <div class="drow"><span class="dlbl">Arrival</span><span class="dval gld">${d.arrival?fD(d.arrival):'TBD'} <span style="color:var(--t3)">${wS(d.arrival)}</span></span></div>
@@ -636,7 +815,7 @@ function renderProfile(){
     <div class="pblk-f"><div class="bttl">Transportation</div>${tHTML}</div>
     ${d.notes?`<div class="pblk-f"><div class="bttl">Notes &amp; Memories</div><div class="notes-box">${esc(d.notes)}</div></div>`:''}
     ${todoItems?`<div class="pblk-f"><div class="bttl">Things To Do</div><ul class="todo-list">${todoItems}</ul></div>`:''}
-    <button onclick="openDestModal('${d.id}')" style="margin-top:.25rem;padding:6px 12px;background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);color:var(--gold);border-radius:3px;font-family:sans-serif;font-size:10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em"><i class="ti ti-edit"></i> Edit Destination</button>
+    <button onclick="openDestModal('${d.id}')" style="margin-top:.25rem;padding:6px 12px;background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);color:var(--gold);border-radius:var(--radius);font-family:var(--font-ui);font-size:10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em"><i class="ti ti-edit"></i> Edit Destination</button>
   </div>`;
 }
 
@@ -696,12 +875,12 @@ function renderRoute(){
       <label class="fbtn" style="cursor:pointer" title="Import from CSV/Excel"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv" style="display:none" onchange="importCSV(this)"/></label>
       <button class="fbtn" onclick="exportCSV()" title="Export to CSV"><i class="ti ti-download"></i> Export</button>
       <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:11px">Remove All</button>
-      <span style="font-family:sans-serif;font-size:11px;color:var(--t3)">${filt.length}/${sorted.length}</span>
+      <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${filt.length}/${sorted.length}</span>
     </div>
-    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:3px;overflow:hidden;overflow-x:auto">
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
       <table class="rtbl">
         <thead><tr><th></th><th>Destination</th><th class="hm">Arrival</th><th class="hm">Departure</th><th class="hm">Nights</th><th>Status</th><th class="hm">Act</th><th></th></tr></thead>
-        <tbody>${rows||'<tr><td colspan="8" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:sans-serif">No destinations match the selected filters</td></tr>'}</tbody>
+        <tbody>${rows||'<tr><td colspan="8" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations match the selected filters</td></tr>'}</tbody>
       </table>
     </div>
   </div>`;
@@ -724,7 +903,6 @@ function exportTemplate(){
   }).join(',');
   dlFile(h+'\n'+ex,'angels_eye_template.csv','text/csv');
 }
-
 function exportCSV(){
   const h=FIELDS.map(f=>'"'+f.l+'"').join(',');
   const rows=sDests().map(d=>{
@@ -737,18 +915,15 @@ function exportCSV(){
   }).join('\n');
   dlFile(h+'\n'+rows,'angels_eye_export.csv','text/csv');
 }
-
 function dlFile(content,filename,mime){
   const blob=new Blob(['\uFEFF'+content],{type:mime+';charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
 }
-
 function parseCSVRow(row){
   const r=[];let cur='',inQ=false;
   for(let i=0;i<row.length;i++){const c=row[i];if(c==='"'){if(inQ&&row[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}else if(c===','&&!inQ){r.push(cur);cur='';}else cur+=c;}
   r.push(cur);return r;
 }
-
 function importCSV(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
@@ -814,7 +989,6 @@ function renderMap(){
   const visited=new Set(dests.map(d=>d.country));
   const pts=dests.map(d=>{const g=GEO[d.country];if(!g)return null;const am=aM(d.act);return{x:lx(g.ln),y:ly(g.la),color:am.color,city:d.city,flag:d.flag,id:d.id};}).filter(Boolean);
   const lp=pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  // All known country dots
   const allDots=Object.entries(GEO).map(([name,g])=>{
     const v=visited.has(name);
     return`<circle cx="${lx(g.ln).toFixed(1)}" cy="${ly(g.la).toFixed(1)}" r="${v?2:1.2}" fill="${v?'rgba(201,168,76,.5)':'rgba(120,120,150,.22)'}"/>`;
@@ -824,7 +998,6 @@ function renderMap(){
     <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="${p.color}" opacity=".95"/>
     <text x="${(p.x+8).toFixed(1)}" y="${(p.y+4).toFixed(1)}" font-size="9" fill="${p.color}" font-family="sans-serif" font-weight="600">${esc(p.city.substring(0,12))}</text>
   </g>`).join('');
-  // Detailed world map SVG paths (Natural Earth approximation)
   const continents=`
     <path d="M 72 75 L 68 95 L 75 120 L 88 155 L 95 195 L 130 220 L 155 200 L 185 185 L 215 175 L 235 145 L 220 105 L 200 80 L 175 65 L 145 58 L 115 60 Z" fill="#1E2535" stroke="#2A3448" stroke-width="1"/>
     <path d="M 135 230 L 125 290 L 140 350 L 165 395 L 205 410 L 235 385 L 248 335 L 245 275 L 225 248 L 185 235 Z" fill="#1E2535" stroke="#2A3448" stroke-width="1"/>
@@ -839,11 +1012,11 @@ function renderMap(){
   const gridLines=Array.from({length:17},(_,i)=>`<line x1="${((i+1)*50)}" y1="0" x2="${((i+1)*50)}" y2="${H}" stroke="rgba(40,55,90,.3)" stroke-width=".4"/>`).join('')
     +Array.from({length:8},(_,i)=>`<line x1="0" y1="${((i+1)*55)}" x2="${W}" y2="${((i+1)*55)}" stroke="rgba(40,55,90,.3)" stroke-width=".4"/>`).join('');
   const eq=ly(0).toFixed(0),tp=ly(23.5).toFixed(0),tc=ly(-23.5).toFixed(0);
-  const countryList=[...visited].sort().map(c=>{const flag=dests.find(d=>d.country===c)?.flag||'🌍';return`<div style="display:flex;align-items:center;gap:6px;padding:.3rem .5rem;background:var(--sf);border:1px solid var(--bd);border-radius:3px;font-family:sans-serif;font-size:11px;color:var(--t2)"><span style="font-size:16px">${flag}</span>${esc(c)}</div>`;}).join('');
-  const legend=cActs().filter(a=>dests.some(d=>d.act===a.id)).map(a=>`<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:${a.color};font-family:sans-serif"><div style="width:8px;height:8px;border-radius:50%;background:${a.color}"></div>${esc(a.name)}</div>`).join('');
+  const countryList=[...visited].sort().map(c=>{const flag=dests.find(d=>d.country===c)?.flag||'🌍';return`<div style="display:flex;align-items:center;gap:6px;padding:.3rem .5rem;background:var(--sf);border:1px solid var(--bd);border-radius:var(--radius);font-family:var(--font-ui);font-size:11px;color:var(--t2)"><span style="font-size:16px">${flag}</span>${esc(c)}</div>`;}).join('');
+  const legend=cActs().filter(a=>dests.some(d=>d.act===a.id)).map(a=>`<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:${a.color};font-family:var(--font-ui)"><div style="width:8px;height:8px;border-radius:50%;background:${a.color}"></div>${esc(a.name)}</div>`).join('');
   return`<div style="display:flex;flex-direction:column;height:100%">
     <div style="padding:.625rem 1rem;border-bottom:1px solid var(--bd);background:var(--ink);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-      <div style="font-size:10px;color:var(--t3);font-family:sans-serif;letter-spacing:.1em;text-transform:uppercase">World Route · ${dests.length} Destinations · ${visited.size} Countries</div>
+      <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);letter-spacing:.1em;text-transform:uppercase">World Route · ${dests.length} Destinations · ${visited.size} Countries</div>
       <div style="display:flex;gap:1rem;flex-wrap:wrap">${legend}</div>
     </div>
     <div class="map-wrap">
@@ -864,7 +1037,7 @@ function renderMap(){
       </svg>
     </div>
     <div style="padding:.75rem 1rem;border-top:1px solid var(--bd);background:var(--ink)">
-      <div style="font-size:9px;color:var(--t3);font-family:sans-serif;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.5rem">Countries in this Tour · ${visited.size}</div>
+      <div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.5rem">Countries in this Tour · ${visited.size}</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">${countryList}</div>
     </div>
   </div>`;
@@ -887,14 +1060,14 @@ function renderEvents(){
       </div>
       <div style="text-align:right;flex-shrink:0">
         ${d.event_type?`<span class="ev-type" style="background:${am.color}22;color:${am.color}">${esc(d.event_type)}</span>`:''}
-        <div style="font-size:9px;color:var(--t3);font-family:sans-serif;margin-top:4px">${esc(am.name)}</div>
+        <div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);margin-top:4px">${esc(am.name)}</div>
       </div>
     </div>`;
   }).join('');
   return`<div class="panel">
     <div class="sec-ttl">Events &amp; Festivals · ${evDests.length}</div>
-    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:3px;overflow:hidden">${items||'<div style="padding:1rem;color:var(--t3);font-family:sans-serif;font-size:12px">No events yet. Add events when creating destinations.</div>'}</div>
-    <div style="margin-top:.5rem;font-family:sans-serif;font-size:10px;color:var(--t3)">Click any event to edit or get AI insights</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No events yet. Add events when creating destinations.</div>'}</div>
+    <div style="margin-top:.5rem;font-family:var(--font-ui);font-size:10px;color:var(--t3)">Click any event to edit or get AI insights</div>
   </div>`;
 }
 function showEvCtx(e,id){e.preventDefault();e.stopPropagation();ctxEvId=id;const m=document.getElementById('ctxMenu');m.style.display='block';m.style.left=Math.min(e.clientX,window.innerWidth-170)+'px';m.style.top=Math.min(e.clientY,window.innerHeight-80)+'px';}
@@ -908,7 +1081,7 @@ function ctxKnowMore(){
   renderContent();
   setTimeout(()=>{aiMsgs.push({role:'ai',content:`Here's what you should know about **${d.event}** in ${d.city}, ${d.country}:\n\nThis will connect to the Claude API to deliver real-time, detailed intelligence — traditions, history, what to wear, what to bring, tickets, best spots, and insider secrets only locals know.\n\nIn the full powered version, each answer draws from your ${cDests().length} destination records and live web data for the most current guidance.`});renderContent();const el=document.getElementById('aiMsgs');if(el)el.scrollTop=el.scrollHeight;},700);
 }
-document.addEventListener('click',()=>document.getElementById('ctxMenu').style.display='none');
+document.addEventListener('click',()=>{const m=document.getElementById('ctxMenu');if(m)m.style.display='none';});
 document.addEventListener('click',e=>{const fm=document.getElementById('fmenu');if(fm&&!fm.parentElement?.contains(e.target))fm.classList.remove('open');});
 
 // ── BUDGET ────────────────────────────────────────────────────────────────────
@@ -930,7 +1103,6 @@ function getLinked(cat){
   }
   return{budg:[],spent:[]};
 }
-
 function calcTotSpent(){
   return cur().budget.reduce((tot,cat)=>{
     const lk=getLinked(cat);
@@ -939,14 +1111,12 @@ function calcTotSpent(){
     return tot+manS+autoS;
   },0);
 }
-
 function renderBudget(){
   const bud=cur().budget;
   const order=(cur().budgetOrder||bud.map(c=>c.id));
   const ordCats=order.map(id=>bud.find(c=>c.id===id)).filter(Boolean);
   const totBudget=bud.reduce((s,c)=>s+c.budget,0);
   const totSpent=calcTotSpent();
-
   const catRows=ordCats.map(c=>{
     const lk=getLinked(c);
     const manS=c.expenses.reduce((s,e)=>s+e.amount,0);
@@ -972,7 +1142,6 @@ function renderBudget(){
       <button class="abtn del" onclick="event.stopPropagation();removeBudCat('${c.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-trash"></i></button>
     </div>`;
   }).join('');
-
   let detHTML='';
   if(selBudCat){
     const cat=bud.find(c=>c.id===selBudCat);
@@ -982,7 +1151,7 @@ function renderBudget(){
       const hasLk=lk.budg.length>0;
       let rows='';
       if(hasLk){
-        rows+=`<div style="padding:.4rem .75rem;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:${cat.color};font-family:sans-serif;background:rgba(255,255,255,.02)">Linked from destinations</div>`;
+        rows+=`<div style="padding:.4rem .75rem;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui);background:rgba(255,255,255,.02)">Linked from destinations</div>`;
         lk.budg.sort((a,b)=>b.amt-a.amt).forEach(e=>{
           const paidAmt=lk.spent.find(s=>s.id===e.id)?.amt||0;
           rows+=`<div class="bexp" style="opacity:.85">
@@ -994,12 +1163,12 @@ function renderBudget(){
           </div>`;
         });
       }
-      rows+=`<div style="padding:.4rem .75rem;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:sans-serif;background:rgba(255,255,255,.02)">Manual expenses</div>`;
-      if(manExp.length===0)rows+=`<div style="padding:.75rem;color:var(--t3);font-family:sans-serif;font-size:11px">No manual expenses recorded</div>`;
+      rows+=`<div style="padding:.4rem .75rem;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);background:rgba(255,255,255,.02)">Manual expenses</div>`;
+      if(manExp.length===0)rows+=`<div style="padding:.75rem;color:var(--t3);font-family:var(--font-ui);font-size:11px">No manual expenses recorded</div>`;
       manExp.forEach(e=>{rows+=`<div class="bexp"><div style="flex:1;min-width:0"><div style="font-size:12px;color:var(--t2)">${esc(e.label)}</div><div style="font-size:9px;color:var(--t3)">${esc(e.date||'')}</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-size:12px;color:var(--gold)">$${e.amount.toFixed(2)}</span><button class="abtn del" onclick="removeBudExp('${cat.id}','${e.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-trash"></i></button></div></div>`;});
-      detHTML=`<div style="margin-top:1rem;background:var(--sf);border:1px solid var(--bd);border-radius:3px;overflow:hidden">
+      detHTML=`<div style="margin-top:1rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
         <div style="padding:.5rem .75rem;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
-          <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:${cat.color};font-family:sans-serif">${esc(cat.name)} — Details</div>
+          <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui)">${esc(cat.name)} — Details</div>
           <button class="abtn" onclick="addBudExp('${cat.id}')" style="font-size:9px"><i class="ti ti-plus"></i> Add expense</button>
         </div>
         ${rows}
@@ -1016,11 +1185,10 @@ function renderBudget(){
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Categories <span style="font-size:9px;color:var(--t3);font-weight:400">(drag to reorder)</span></div>
       <button class="abtn" onclick="openBudgetModal()" style="font-size:10px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
     </div>
-    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:3px;overflow:hidden">${catRows||'<div style="padding:1rem;color:var(--t3);font-family:sans-serif;font-size:12px">No categories yet</div>'}</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No categories yet</div>'}</div>
     ${detHTML}
   </div>`;
 }
-
 function selBC(id){selBudCat=selBudCat===id?null:id;renderContent();}
 function bdDS(e,id){bdDragSrc=id;e.dataTransfer.effectAllowed='move';}
 function bdDO(e,id){e.preventDefault();document.querySelectorAll('.bcat').forEach(el=>el.classList.remove('drag-over'));if(id!==bdDragSrc)e.currentTarget.classList.add('drag-over');}
@@ -1054,12 +1222,30 @@ function saveBudgetCat(){
   closeBudgetModal();renderContent();
 }
 
-// ── BUCKET LIST ───────────────────────────────────────────────────────────────
+// ── BUCKET LIST (with categories + achieved/pending filter) ──────────────────
+let bktCatFilter=null; // null = all categories, or specific category id
+
 function renderBucket(){
-  const bkt=[...cur().bucket].sort((a,b)=>(a.order||0)-(b.order||0));
-  const done=bkt.filter(b=>b.done).length;
+  const allBkt=[...cur().bucket].sort((a,b)=>(a.order||0)-(b.order||0));
+  const done=allBkt.filter(b=>b.done).length;
+  // apply status filter
+  let bkt=allBkt.filter(b=>{
+    if(b.done&&!BF.includes('achieved'))return false;
+    if(!b.done&&!BF.includes('pending'))return false;
+    return true;
+  });
+  // apply category filter
+  if(bktCatFilter)bkt=bkt.filter(b=>(b.category||'')===bktCatFilter);
+
+  const cats=cBktCats();
+  const catChips=`<button class="fbtn" style="${!bktCatFilter?'border-color:var(--gold);color:var(--gold)':''}" onclick="setBktCatFilter(null)">All</button>`+
+    cats.map(c=>`<button class="fbtn" style="${bktCatFilter===c.id?'border-color:'+c.color+';color:'+c.color:''}" onclick="setBktCatFilter('${c.id}')">${esc(c.name)}</button>`).join('');
+
+  const statusItems=['pending','achieved'].map(s=>`<label class="fmi"><input type="checkbox" ${BF.includes(s)?'checked':''} onchange="toggleBF('${s}')"/> ${s==='achieved'?'Achieved':'Pending'}</label>`).join('');
+
   const items=bkt.map(b=>{
     const am=aM(b.act);
+    const bc=bktCatM(b.category);
     const stars=Array.from({length:5},(_,i)=>`<span class="star ${i<(b.rating||0)?'on':'off'}" onclick="setBktR('${b.id}',${i+1})">${i<(b.rating||0)?'★':'☆'}</span>`).join('');
     return`<div class="bkt" draggable="true" data-id="${b.id}"
       ondragstart="bktDS(event,'${b.id}')" ondragover="bktDO(event,'${b.id}')" ondrop="bktDrop(event,'${b.id}')" ondragleave="this.classList.remove('drag-over')">
@@ -1067,30 +1253,56 @@ function renderBucket(){
       <div class="bchk${b.done?' done':''}" onclick="toggleBkt('${b.id}')"></div>
       <div style="flex:1;min-width:0">
         <div class="btxt${b.done?' done':''}">${esc(b.text)}</div>
-        <div style="display:flex;align-items:center;gap:.5rem;margin-top:3px">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-top:3px;flex-wrap:wrap">
           <div class="stars">${stars}</div>
           <span style="font-size:9px;color:var(--t3)">${esc(b.country)}</span>
+          <span style="font-size:9px;padding:0 5px;border-radius:8px;background:${bc.color}22;color:${bc.color};font-family:var(--font-ui)">${esc(bc.name)}</span>
         </div>
       </div>
-      <span style="font-size:9px;padding:1px 6px;border-radius:2px;background:${am.color}22;color:${am.color};font-family:sans-serif;flex-shrink:0;margin:0 3px" class="hm">${esc(am.name)}</span>
+      <span style="font-size:9px;padding:1px 6px;border-radius:var(--radius);background:${am.color}22;color:${am.color};font-family:var(--font-ui);flex-shrink:0;margin:0 3px" class="hm">${esc(am.name)}</span>
       <button class="abtn" onclick="openBktModal('${b.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-edit"></i></button>
       <button class="abtn del" onclick="removeBktItem('${b.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-trash"></i></button>
     </div>`;
   }).join('');
+
+  const catMgmtRows=cats.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:.35rem .5rem;border-bottom:1px solid rgba(128,128,128,.1)">
+    <div style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+    <span style="flex:1;font-size:11px;color:var(--t2);font-family:var(--font-ui)">${esc(c.name)}</span>
+    <button class="abtn" onclick="openBktCatModal('${c.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-edit"></i></button>
+    <button class="abtn del" onclick="removeBktCat('${c.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-trash"></i></button>
+  </div>`).join('');
+
   return`<div class="panel">
     <div class="sgrid" style="margin-bottom:1rem">
-      <div class="scard"><div class="sval">${done}</div><div class="slbl">Completed</div></div>
-      <div class="scard"><div class="sval">${bkt.length-done}</div><div class="slbl">Remaining</div></div>
-      <div class="scard"><div class="sval">${Math.round(done/(bkt.length||1)*100)}%</div><div class="slbl">Life Score</div></div>
+      <div class="scard"><div class="sval">${done}</div><div class="slbl">Achieved</div></div>
+      <div class="scard"><div class="sval">${allBkt.length-done}</div><div class="slbl">Pending</div></div>
+      <div class="scard"><div class="sval">${Math.round(done/(allBkt.length||1)*100)}%</div><div class="slbl">Life Score</div></div>
+    </div>
+    <div class="frow">
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleBFMenu()"><i class="ti ti-filter"></i> Status <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="bfmenu">${statusItems}</div>
+      </div>
+      <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${bkt.length}/${allBkt.length} shown</span>
+    </div>
+    <div class="frow" style="margin-bottom:.5rem">${catChips}
+      <button class="abtn" onclick="openBktCatModal()" style="font-size:10px;padding:4px 9px"><i class="ti ti-plus"></i> New category</button>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Life Experiences <span style="font-size:9px;color:var(--t3);font-weight:400">(drag ⠿ to reorder)</span></div>
       <button class="abtn" onclick="openBktModal()" style="font-size:10px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
     </div>
-    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:3px;overflow:hidden">${items||'<div style="padding:1rem;color:var(--t3);font-family:sans-serif;font-size:12px">No experiences yet.</div>'}</div>
-    <div style="margin-top:.4rem;font-family:sans-serif;font-size:10px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate · drag ⠿ to reorder</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1rem">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No experiences match the current filters.</div>'}</div>
+    <div class="sec-ttl">Manage Categories</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catMgmtRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No categories yet.</div>'}</div>
+    <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:10px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate · drag ⠿ to reorder</div>
   </div>`;
 }
+
+function toggleBFMenu(){document.getElementById('bfmenu')?.classList.toggle('open');}
+function toggleBF(s){if(BF.includes(s))BF=BF.filter(x=>x!==s);else BF.push(s);saveBF();renderContent();}
+function setBktCatFilter(id){bktCatFilter=id;renderContent();}
+document.addEventListener('click',e=>{const bm=document.getElementById('bfmenu');if(bm&&!bm.parentElement?.contains(e.target))bm.classList.remove('open');});
 
 function toggleBkt(id){const b=cur().bucket.find(x=>x.id===id);if(b){b.done=!b.done;renderContent();updateHStats();}}
 function setBktR(id,r){const b=cur().bucket.find(x=>x.id===id);if(b){b.rating=b.rating===r?0:r;renderContent();}}
@@ -1110,8 +1322,10 @@ function openBktModal(editId){
   document.getElementById('bktModalTitle').textContent=editId?'Edit Experience':'Add Experience';
   const as=document.getElementById('bkt_act');
   as.innerHTML=cActs().map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
-  if(editId){const b=cur().bucket.find(x=>x.id===editId);if(b){document.getElementById('bkt_text').value=b.text;document.getElementById('bkt_country').value=b.country;as.value=b.act;document.getElementById('bkt_rating').value=b.rating||0;document.getElementById('bkt_done').value=b.done?'true':'false';}}
-  else{document.getElementById('bkt_text').value='';document.getElementById('bkt_country').value='';document.getElementById('bkt_rating').value='0';document.getElementById('bkt_done').value='false';}
+  const cs=document.getElementById('bkt_category');
+  cs.innerHTML='<option value="">— None —</option>'+cBktCats().map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  if(editId){const b=cur().bucket.find(x=>x.id===editId);if(b){document.getElementById('bkt_text').value=b.text;document.getElementById('bkt_country').value=b.country;as.value=b.act;cs.value=b.category||'';document.getElementById('bkt_rating').value=b.rating||0;document.getElementById('bkt_done').value=b.done?'true':'false';}}
+  else{document.getElementById('bkt_text').value='';document.getElementById('bkt_country').value='';cs.value='';document.getElementById('bkt_rating').value='0';document.getElementById('bkt_done').value='false';}
   document.getElementById('bucketModal').style.display='flex';
 }
 function closeBktModal(){document.getElementById('bucketModal').style.display='none';}
@@ -1119,14 +1333,40 @@ function saveBktItem(){
   const txt=document.getElementById('bkt_text').value.trim();
   const cntry=document.getElementById('bkt_country').value.trim();
   const act=document.getElementById('bkt_act').value;
+  const category=document.getElementById('bkt_category').value;
   const rating=parseInt(document.getElementById('bkt_rating').value)||0;
   const done=document.getElementById('bkt_done').value==='true';
   if(!txt){alert('Please enter an experience description.');return;}
-  if(editBktId){const b=cur().bucket.find(x=>x.id===editBktId);if(b){b.text=txt;b.country=cntry;b.act=act;b.rating=rating;b.done=done;}}
-  else{const bkt=cur().bucket;bkt.push({id:uid(),text:txt,country:cntry,act,rating,done,order:bkt.length});}
+  if(editBktId){const b=cur().bucket.find(x=>x.id===editBktId);if(b){b.text=txt;b.country=cntry;b.act=act;b.category=category;b.rating=rating;b.done=done;}}
+  else{const bkt=cur().bucket;bkt.push({id:uid(),text:txt,country:cntry,act,category,rating,done,order:bkt.length});}
   closeBktModal();renderContent();
 }
 function removeBktItem(id){if(!confirm('Remove this experience?'))return;cur().bucket=cur().bucket.filter(b=>b.id!==id);renderContent();}
+
+// Bucket categories CRUD
+function openBktCatModal(editId){
+  editBktCatId=editId||null;
+  document.getElementById('bktCatModalTitle').textContent=editId?'Edit Category':'Add Category';
+  if(editId){const c=cBktCats().find(x=>x.id===editId);if(c){document.getElementById('bktcat_name').value=c.name;document.getElementById('bktcat_color').value=c.color;}}
+  else{document.getElementById('bktcat_name').value='';document.getElementById('bktcat_color').value='#C9A84C';}
+  document.getElementById('bktCatModal').style.display='flex';
+}
+function closeBktCatModal(){document.getElementById('bktCatModal').style.display='none';}
+function saveBktCat(){
+  const nm=document.getElementById('bktcat_name').value.trim();
+  const col=document.getElementById('bktcat_color').value;
+  if(!nm){alert('Please enter a category name.');return;}
+  if(editBktCatId){const c=cBktCats().find(x=>x.id===editBktCatId);if(c){c.name=nm;c.color=col;}}
+  else cBktCats().push({id:uid(),name:nm,color:col});
+  closeBktCatModal();renderContent();
+}
+function removeBktCat(id){
+  if(!confirm('Remove this category? Experiences in it will become uncategorized.'))return;
+  cur().bktCategories=cBktCats().filter(c=>c.id!==id);
+  cur().bucket.forEach(b=>{if(b.category===id)b.category='';});
+  if(bktCatFilter===id)bktCatFilter=null;
+  renderContent();
+}
 
 // ── AI ────────────────────────────────────────────────────────────────────────
 const AI={
@@ -1137,9 +1377,9 @@ const AI={
 };
 function renderAI(){
   const sugs=Object.keys(AI).map(s=>`<button class="ai-sug" onclick="doAI(${JSON.stringify(s)})">${s} ↗</button>`).join('');
-  const msgs=aiMsgs.length===0?`<div style="color:var(--t3);font-family:sans-serif;font-size:11px;font-style:italic;text-align:center;padding:1.5rem 0">Ask anything about your journey…</div>`:aiMsgs.map(m=>`<div class="ai-msg ${m.role}"><div class="ai-msg-l">${m.role==='user'?'You':'AI Advisor'}</div>${esc(m.content)}</div>`).join('');
+  const msgs=aiMsgs.length===0?`<div style="color:var(--t3);font-family:var(--font-ui);font-size:11px;font-style:italic;text-align:center;padding:1.5rem 0">Ask anything about your journey…</div>`:aiMsgs.map(m=>`<div class="ai-msg ${m.role}"><div class="ai-msg-l">${m.role==='user'?'You':'AI Advisor'}</div>${esc(m.content)}</div>`).join('');
   return`<div class="ai-wrap">
-    <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-family:sans-serif">AI Travel Advisor — Route Intelligence</div>
+    <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-family:var(--font-ui)">AI Travel Advisor — Route Intelligence</div>
     <div style="display:flex;flex-direction:column;gap:4px">${sugs}</div>
     <div id="aiMsgs" class="ai-msgs">${msgs}</div>
     <div class="ai-row"><input class="ai-inp" id="aiInp" type="text" placeholder="Ask about visas, festivals, routes, budget…" onkeydown="if(event.key==='Enter')sendAI()"/><button class="ai-send" onclick="sendAI()">Ask</button></div>
@@ -1171,7 +1411,6 @@ function recalcH(){
   document.getElementById('f_cpnpp').textContent=nights>0&&cost>0?'$'+(cost/nights/persons).toFixed(2):'—';
   document.getElementById('f_owed').textContent=cost>0?'$'+(cost-paid).toFixed(2):'—';
 }
-
 function openDestModal(editId){
   editDestId=editId||null;
   document.getElementById('destModalTitle').textContent=editId?'Edit Destination':'Add Destination';
@@ -1251,7 +1490,7 @@ function removeAct(id){
 function openTourModal(){
   const body=document.getElementById('tourModalBody');
   body.innerHTML=Object.entries(S.tours).map(([id,t])=>`
-    <div style="display:flex;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--bd);font-family:sans-serif">
+    <div style="display:flex;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--bd);font-family:var(--font-ui)">
       <div style="flex:1;font-size:12px;color:var(--t1)">${esc(t.name)}</div>
       <button class="abtn" onclick="openTourEditModal('${id}')" style="font-size:9px"><i class="ti ti-edit"></i></button>
       <button class="abtn del" onclick="deleteTour('${id}')" style="font-size:9px"><i class="ti ti-trash"></i></button>
@@ -1263,8 +1502,8 @@ function createTour(){
   const name=prompt('Tour name:','New World Tour');if(!name)return;
   const desc=prompt('Tour description (optional):','')||'';
   const id=uid();
-  S.tours[id]={name,desc,acts:[{id:uid(),name:'Act I',subtitle:'The beginning',color:'#C9A84C'}],destinations:[],bucket:[],budget:[{id:uid(),name:'Accommodation',budget:10000,color:'#C9A84C',expenses:[],linked:'hotels'},{id:uid(),name:'Flights',budget:8000,color:'#4B8BC8',expenses:[],linked:'transport'}],budgetOrder:[]};
-  S.cur=id;curActId=null;curDestId=null;selBudCat=null;closeTourModal();renderSB();renderContent();
+  S.tours[id]={name,desc,acts:[{id:uid(),name:'Act I',subtitle:'The beginning',color:'#C9A84C'}],destinations:[],bktCategories:[],bucket:[],budget:[{id:uid(),name:'Accommodation',budget:10000,color:'#C9A84C',expenses:[],linked:'hotels'},{id:uid(),name:'Flights',budget:8000,color:'#4B8BC8',expenses:[],linked:'transport'}],budgetOrder:[]};
+  S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
 function openTourEditModal(forId){
