@@ -1246,7 +1246,7 @@ function teardownGlobe(){
 }
 
 function resetGlobeView(){svgGlobe.targetRotY=25;svgGlobe.targetRotX=-15;svgGlobe.targetZoom=1;}
-function zoomGlobe(dir){svgGlobe.targetZoom=Math.max(0.55,Math.min(2.2,svgGlobe.targetZoom+dir*0.18));}
+function zoomGlobe(dir){svgGlobe.targetZoom=Math.max(0.4,Math.min(3.2,svgGlobe.targetZoom+dir*0.22));}
 
 function attachSvgGlobeInteraction(wrap){
   const host=document.getElementById('globeSvgHost');
@@ -1285,22 +1285,32 @@ function attachSvgGlobeInteraction(wrap){
       e.preventDefault();
       const d=dist(e.touches[0],e.touches[1]);
       const ratio=d/pinchStartDist;
-      svgGlobe.targetZoom=Math.max(0.55,Math.min(2.2,pinchStartZoom*ratio));
+      // Pinch is amplified (ratio raised before applying) so small finger-spread changes produce
+      // a much bigger zoom swing — makes pinch-to-zoom feel hyper-responsive on touch devices.
+      const amplifiedRatio=ratio>1?1+(ratio-1)*1.8:1-(1-ratio)*1.8;
+      svgGlobe.targetZoom=Math.max(0.4,Math.min(3.2,pinchStartZoom*amplifiedRatio));
       return;
     }
     if(!svgGlobe.pointerActive)return;
+    const isTouch=!!e.touches;
     const p=e.touches?e.touches[0]:e;
     const dx=p.clientX-svgGlobe.lastMoveX,dy=p.clientY-svgGlobe.lastMoveY;
     if(!svgGlobe.dragging){
       // Only commit to "dragging" (and the redraw loop it triggers) once the pointer has moved
       // past a small threshold — this is what lets a stationary press-and-release register as a
-      // clean click instead of a zero-distance drag.
-      if(Math.hypot(p.clientX-svgGlobe.lastX,p.clientY-svgGlobe.lastY)<3)return;
+      // clean click instead of a zero-distance drag. Lower threshold for touch so a light finger
+      // swipe engages rotation almost instantly.
+      const threshold=isTouch?1.5:3;
+      if(Math.hypot(p.clientX-svgGlobe.lastX,p.clientY-svgGlobe.lastY)<threshold)return;
       svgGlobe.dragging=true;
     }
     if(e.cancelable)e.preventDefault();
-    svgGlobe.targetRotY+=dx*0.35;
-    svgGlobe.targetRotX=Math.max(-80,Math.min(80,svgGlobe.targetRotX-dy*0.35));
+    // Touch gets a much higher sensitivity multiplier than mouse — the same pixel delta from a
+    // finger swipe on a phone screen should spin the globe noticeably more than an equivalent
+    // mouse-drag delta on desktop, since touch swipes are typically shorter/quicker gestures.
+    const sens=isTouch?1.0:0.35;
+    svgGlobe.targetRotY+=dx*sens;
+    svgGlobe.targetRotX=Math.max(-80,Math.min(80,svgGlobe.targetRotX-dy*sens));
     svgGlobe.lastMoveX=p.clientX;svgGlobe.lastMoveY=p.clientY;
   };
   const onUp=e=>{
@@ -1361,9 +1371,14 @@ function animateSvgGlobe(){
   const dRotY=svgGlobe.targetRotY-svgGlobe.rotY;
   const dRotX=svgGlobe.targetRotX-svgGlobe.rotX;
   const dZoom=svgGlobe.targetZoom-svgGlobe.zoom;
-  svgGlobe.rotY+=dRotY*0.12;
-  svgGlobe.rotX+=dRotX*0.12;
-  svgGlobe.zoom+=dZoom*0.12;
+  // While actively dragging/pinching, track the finger almost instantly (high easing factor) so
+  // the globe feels directly attached to the touch point rather than lagging behind it. When not
+  // dragging — e.g. easing toward a flyToDest target, or a button-triggered zoom — use the
+  // smoother, slower easing so those transitions still glide nicely instead of snapping.
+  const ease=svgGlobe.dragging?0.65:0.12;
+  svgGlobe.rotY+=dRotY*ease;
+  svgGlobe.rotX+=dRotX*ease;
+  svgGlobe.zoom+=dZoom*ease;
   // Redraw only while the globe is actually settling into a new rotation/zoom, or while
   // actively being dragged/pinched. At rest, the SVG is left untouched — this keeps the DOM
   // (and its click listeners) stable, which is what makes node clicks reliable on desktop.
