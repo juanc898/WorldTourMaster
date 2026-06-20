@@ -1255,19 +1255,26 @@ function attachSvgGlobeInteraction(wrap){
   const dist=(t1,t2)=>Math.hypot(t1.clientX-t2.clientX,t1.clientY-t2.clientY);
 
   const onDown=e=>{
-    if(e.touches&&e.touches.length===2){
+    const isTouch=!!e.touches;
+    if(isTouch&&e.touches.length===2){
       if(e.cancelable)e.preventDefault();
       svgGlobe.dragging=false;
       pinchStartDist=dist(e.touches[0],e.touches[1]);
       pinchStartZoom=svgGlobe.targetZoom;
       return;
     }
-    // Calling preventDefault on touchstart itself (not just touchmove) is what actually stops
-    // mobile Safari/Chrome from deciding this gesture is a page-scroll. Browsers commit to a
-    // scroll vs. custom-gesture interpretation at touchstart time; waiting until touchmove to
-    // preventDefault is often too late and the page scrolls instead of the globe rotating.
-    if(e.cancelable)e.preventDefault();
-    svgGlobe.dragging=true;
+    // preventDefault here only for touch — calling it on a mouse 'mousedown' can suppress the
+    // browser's native synthesis of the subsequent 'click' event on some engines (this is what
+    // broke desktop click-to-select). Touch still needs it (see onMove) so mobile rotation wins
+    // over the browser's native page-scroll gesture.
+    if(isTouch&&e.cancelable)e.preventDefault();
+    // pointerActive marks "button/finger is down", but dragging (which gates the continuous
+    // redraw loop) only flips on once real movement is detected in onMove. Without this split,
+    // a plain click — mousedown with zero movement before mouseup — was setting dragging=true
+    // for its whole duration, which kept drawSvgGlobe() rebuilding the SVG every frame and could
+    // destroy the very node element the click was about to land on, silently swallowing the click.
+    svgGlobe.pointerActive=true;
+    svgGlobe.dragging=false;
     const p=e.touches?e.touches[0]:e;
     svgGlobe.lastX=p.clientX;svgGlobe.lastY=p.clientY;
     svgGlobe.lastMoveX=p.clientX;svgGlobe.lastMoveY=p.clientY;
@@ -1281,34 +1288,56 @@ function attachSvgGlobeInteraction(wrap){
       svgGlobe.targetZoom=Math.max(0.55,Math.min(2.2,pinchStartZoom*ratio));
       return;
     }
-    if(!svgGlobe.dragging)return;
-    if(e.cancelable)e.preventDefault();
+    if(!svgGlobe.pointerActive)return;
     const p=e.touches?e.touches[0]:e;
     const dx=p.clientX-svgGlobe.lastMoveX,dy=p.clientY-svgGlobe.lastMoveY;
+    if(!svgGlobe.dragging){
+      // Only commit to "dragging" (and the redraw loop it triggers) once the pointer has moved
+      // past a small threshold — this is what lets a stationary press-and-release register as a
+      // clean click instead of a zero-distance drag.
+      if(Math.hypot(p.clientX-svgGlobe.lastX,p.clientY-svgGlobe.lastY)<3)return;
+      svgGlobe.dragging=true;
+    }
+    if(e.cancelable)e.preventDefault();
     svgGlobe.targetRotY+=dx*0.35;
     svgGlobe.targetRotX=Math.max(-80,Math.min(80,svgGlobe.targetRotX-dy*0.35));
     svgGlobe.lastMoveX=p.clientX;svgGlobe.lastMoveY=p.clientY;
   };
   const onUp=e=>{
-    if(e.touches&&e.touches.length>0)return; // still one finger down after pinch ends
+    const wasTouch=!!(e.changedTouches&&e.changedTouches.length);
+    const stillTouching=e.touches&&e.touches.length>0;
+    if(stillTouching)return; // still one finger down after pinch ends
+    const wasTap=svgGlobe.pointerActive&&!svgGlobe.dragging;
+    svgGlobe.pointerActive=false;
     svgGlobe.dragging=false;pinchStartDist=null;
     host.style.cursor='grab';
+    // For touch devices, resolve tap-to-select directly here rather than waiting for the browser
+    // to synthesize a 'click' event — that synthesis isn't guaranteed across all touch/emulation
+    // environments, whereas touchend always fires reliably right when the finger lifts.
+    if(wasTouch&&wasTap){
+      const p=e.changedTouches[0];
+      hitTestAndSelect(p.clientX,p.clientY);
+    }
   };
   const onWheel=e=>{e.preventDefault();zoomGlobe(e.deltaY<0?1:-1);};
-  const onClick=e=>{
-    if(!wasClickNotDrag())return; // ignore click that ends a drag/pinch gesture
+  const hitTestAndSelect=(clientX,clientY)=>{
     const rect=host.getBoundingClientRect();
-    const cx=e.clientX-rect.left,cy=e.clientY-rect.top;
+    const cx=clientX-rect.left,cy=clientY-rect.top;
     const targets=svgGlobe.hitTargets||[];
-    // Hit-test against the last-drawn node positions by coordinates rather than e.target —
-    // this is immune to the SVG having been destroyed/recreated between mousedown and click,
-    // which is what made desktop clicks unreliable while the globe was still settling its rotation.
+    // Hit-test against the last-drawn node positions by coordinates rather than relying on a
+    // specific DOM element — this is immune to the SVG having been destroyed/recreated between
+    // the gesture starting and ending, which is what made desktop clicks unreliable while the
+    // globe was still settling its rotation.
     let best=null,bestDist=Infinity;
     targets.forEach(t=>{
       const dx=cx-t.x,dy=cy-t.y,d=Math.hypot(dx,dy);
       if(d<=t.r&&d<bestDist){best=t;bestDist=d;}
     });
     if(best)flyToDest(best.id);
+  };
+  const onClick=e=>{
+    if(!wasClickNotDrag())return; // ignore click that ends a drag/pinch gesture
+    hitTestAndSelect(e.clientX,e.clientY);
   };
   host.addEventListener('mousedown',onDown);
   window.addEventListener('mousemove',onMove);
