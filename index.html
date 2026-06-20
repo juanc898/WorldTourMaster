@@ -1225,9 +1225,58 @@ function initSvgGlobe(){
   const wrap=document.getElementById('globeWrap');
   if(!wrap)return;
   teardownGlobe();
+  buildSvgSkeleton(wrap);
   attachSvgGlobeInteraction(wrap);
   drawSvgGlobe(); // guaranteed first paint — the animation loop only redraws on subsequent changes
   animateSvgGlobe();
+}
+
+// Creates the SVG element ONCE, including the <defs> gradients/filters and the static base-sphere
+// circles, which never change frame-to-frame. Previously the entire SVG (including these static
+// parts) was rebuilt from a giant template-string via innerHTML on every single animation frame —
+// that's an expensive full re-parse + re-layout of ~27KB of markup, repeated up to 60x/sec, which
+// is what made dragging feel like it was stepping "pixel by pixel" instead of gliding smoothly.
+// Now we build the unchanging shell once, then each draw only updates attributes on a much smaller
+// set of dynamic elements (landmass paths, route arcs, destination nodes) via direct DOM mutation —
+// far cheaper than innerHTML replacement since it avoids re-parsing markup and re-resolving filters.
+function buildSvgSkeleton(wrap){
+  const host=document.getElementById('globeSvgHost');
+  if(!host)return;
+  const W=wrap.clientWidth||800,H=wrap.clientHeight||500;
+  host.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;touch-action:none">
+    <defs>
+      <radialGradient id="sphereShade" cx="35%" cy="32%" r="75%">
+        <stop offset="0%" stop-color="#1A4A66"/>
+        <stop offset="55%" stop-color="#0E2C40"/>
+        <stop offset="100%" stop-color="#050E16"/>
+      </radialGradient>
+      <radialGradient id="atmGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="80%" stop-color="#5CE8FF" stop-opacity="0"/>
+        <stop offset="92%" stop-color="#5CE8FF" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="#5CE8FF" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="nodeglow" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="2.2" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="arcglow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2.5"/>
+      </filter>
+    </defs>
+    <circle id="gAtmo" cx="0" cy="0" r="0" fill="url(#atmGlow)"/>
+    <circle id="gSphere" cx="0" cy="0" r="0" fill="url(#sphereShade)" stroke="#2E5C78" stroke-width="1"/>
+    <g id="gLand"></g>
+    <g id="gHeat"></g>
+    <g id="gArcs"></g>
+    <g id="gNodes"></g>
+  </svg>`;
+  svgGlobe.svgEl=host.querySelector('svg');
+  svgGlobe.gAtmo=host.querySelector('#gAtmo');
+  svgGlobe.gSphere=host.querySelector('#gSphere');
+  svgGlobe.gLand=host.querySelector('#gLand');
+  svgGlobe.gHeat=host.querySelector('#gHeat');
+  svgGlobe.gArcs=host.querySelector('#gArcs');
+  svgGlobe.gNodes=host.querySelector('#gNodes');
 }
 
 function teardownGlobe(){
@@ -1410,8 +1459,7 @@ function greatCirclePoints(la1,ln1,la2,ln2,n){
 }
 
 function drawSvgGlobe(){
-  const host=document.getElementById('globeSvgHost');
-  if(!host)return;
+  if(!svgGlobe.svgEl)return;
   const wrap=document.getElementById('globeWrap');
   if(!wrap)return;
   const W=wrap.clientWidth||800,H=wrap.clientHeight||500;
@@ -1421,6 +1469,18 @@ function drawSvgGlobe(){
   let dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
   if(svgGlobe.timelineIdx!=null)dests=dests.slice(0,svgGlobe.timelineIdx+1);
   const visited=new Set(dests.map(d=>d.country));
+
+  // Keep the SVG's own width/height in sync with the container (handles resize/orientation change)
+  if(svgGlobe.svgEl.getAttribute('width')!=String(W)){
+    svgGlobe.svgEl.setAttribute('width',W);svgGlobe.svgEl.setAttribute('height',H);
+    svgGlobe.svgEl.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  }
+
+  // Sphere + atmosphere: just update attributes on the two persistent circles created once in
+  // buildSvgSkeleton — no element creation/destruction here at all, the cheapest possible update.
+  const sphereR=R;
+  svgGlobe.gAtmo.setAttribute('cx',cx);svgGlobe.gAtmo.setAttribute('cy',cy);svgGlobe.gAtmo.setAttribute('r',(sphereR*1.18).toFixed(1));
+  svgGlobe.gSphere.setAttribute('cx',cx);svgGlobe.gSphere.setAttribute('cy',cy);svgGlobe.gSphere.setAttribute('r',sphereR.toFixed(1));
 
   // Project landmass rings, splitting at horizon (z<0 hidden)
   let landPaths='';
@@ -1442,10 +1502,11 @@ function drawSvgGlobe(){
       landPaths+=`<path d="${d}" fill="none" stroke="#3A6B82" stroke-width="${1.1*svgGlobe.zoom}" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>`;
     });
   });
+  svgGlobe.gLand.innerHTML=landPaths;
 
   // Heat-map country reference dots
-  let heatDots='';
   if(svgGlobe.heatMode){
+    let heatDots='';
     Object.entries(GEO).forEach(([name,g])=>{
       const p=project(g.la,g.ln);
       if(p.z<0.02)return;
@@ -1453,6 +1514,9 @@ function drawSvgGlobe(){
       const x=cx+p.x*R,y=cy+p.y*R;
       heatDots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(isVisited?3.2:1.6)*svgGlobe.zoom}" fill="${isVisited?'#FFC857':'#3A3F50'}" opacity="${isVisited?0.95:0.35}"/>`;
     });
+    svgGlobe.gHeat.innerHTML=heatDots;
+  }else if(svgGlobe.gHeat.innerHTML){
+    svgGlobe.gHeat.innerHTML=''; // clear once when turned off, not every frame
   }
 
   // Animated route arcs (great-circle, lifted above surface, hidden-side clipped)
@@ -1481,6 +1545,7 @@ function drawSvgGlobe(){
       arcPaths+=`<path d="${d}" fill="none" stroke="#BFF6FF" stroke-width="${0.6*svgGlobe.zoom}" opacity="0.9" stroke-linecap="round"/>`;
     });
   }
+  svgGlobe.gArcs.innerHTML=arcPaths;
 
   // Destination nodes (only visible-hemisphere ones, sorted back-to-front by z)
   const nodeData=dests.map((d,i)=>{
@@ -1504,39 +1569,8 @@ function drawSvgGlobe(){
       <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(baseR*0.4).toFixed(1)}" fill="#fff" opacity="0.85"/>
     </g>`;
   });
+  svgGlobe.gNodes.innerHTML=nodeMarkup;
   svgGlobe.hitTargets=hitTargets; // used by the click handler, see attachSvgGlobeInteraction
-
-  // Sphere base shading (radial gradient gives the "realistic" curved look)
-  const sphereR=R;
-  const lightX=cx-sphereR*0.32, lightY=cy-sphereR*0.35;
-
-  host.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;touch-action:none">
-    <defs>
-      <radialGradient id="sphereShade" cx="${((lightX-cx+sphereR)/(2*sphereR)*100).toFixed(0)}%" cy="${((lightY-cy+sphereR)/(2*sphereR)*100).toFixed(0)}%" r="75%">
-        <stop offset="0%" stop-color="#1A4A66"/>
-        <stop offset="55%" stop-color="#0E2C40"/>
-        <stop offset="100%" stop-color="#050E16"/>
-      </radialGradient>
-      <radialGradient id="atmGlow" cx="50%" cy="50%" r="50%">
-        <stop offset="80%" stop-color="#5CE8FF" stop-opacity="0"/>
-        <stop offset="92%" stop-color="#5CE8FF" stop-opacity="0.25"/>
-        <stop offset="100%" stop-color="#5CE8FF" stop-opacity="0"/>
-      </radialGradient>
-      <filter id="nodeglow" x="-100%" y="-100%" width="300%" height="300%">
-        <feGaussianBlur stdDeviation="2.2" result="b"/>
-        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <filter id="arcglow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="2.5"/>
-      </filter>
-    </defs>
-    <circle cx="${cx}" cy="${cy}" r="${(sphereR*1.18).toFixed(1)}" fill="url(#atmGlow)"/>
-    <circle cx="${cx}" cy="${cy}" r="${sphereR.toFixed(1)}" fill="url(#sphereShade)" stroke="#2E5C78" stroke-width="1"/>
-    ${landPaths}
-    ${heatDots}
-    ${arcPaths}
-    ${nodeMarkup}
-  </svg>`;
   // Click handling uses event delegation on the host (bound once in attachSvgGlobeInteraction),
   // not per-node listeners, so it survives the SVG being rebuilt every frame without any race condition.
 }
