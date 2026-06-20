@@ -171,11 +171,12 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 /* LAYOUT */
 .main{flex:1;display:flex;overflow:hidden}
 .sidebar{width:248px;background:var(--ink);border-right:1px solid var(--bd);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column;transition:transform .25s}
-.sidebar::-webkit-scrollbar{width:3px}
-.sidebar::-webkit-scrollbar-thumb{background:var(--bd)}
-.content{flex:1;overflow-y:auto;background:var(--bg)}
-.content::-webkit-scrollbar{width:5px}
-.content::-webkit-scrollbar-thumb{background:var(--bd2)}
+.sidebar::-webkit-scrollbar{width:8px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px}
+.content{flex:1;overflow-y:auto;background:var(--bg);-webkit-overflow-scrolling:touch}
+.content::-webkit-scrollbar{width:10px}
+.content::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:5px}
+.content::-webkit-scrollbar-track{background:var(--ink)}
 /* SIDEBAR */
 .tour-bar{padding:.4rem .625rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:4px}
 .tour-sel{flex:1;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--radius);padding:.3rem .5rem;color:var(--gold);font-family:var(--font-ui);font-size:11px;outline:none;cursor:pointer}
@@ -354,6 +355,9 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .gbtn:hover{background:rgba(92,232,255,.15);border-color:rgba(92,232,255,.5)}
 .gbtn.active{background:rgba(92,232,255,.25);border-color:#5CE8FF;color:#fff}
 .globe-timeline{position:absolute;bottom:0;left:0;right:0;padding:.6rem 1rem calc(.75rem + env(safe-area-inset-bottom,0px));z-index:10;background:linear-gradient(0deg,rgba(0,0,5,.8) 30%,transparent)}
+.globe-scroll-handle{position:absolute;bottom:74px;left:50%;transform:translateX(-50%);z-index:11;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;touch-action:auto;padding:8px 14px;min-height:32px}
+.scroll-handle-bar{width:40px;height:5px;border-radius:3px;background:rgba(92,232,255,.55)}
+.scroll-handle-label{font-size:9px;color:#8FA8C0;font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:2px}
 .timeline-track{position:relative;height:28px;display:flex;align-items:center}
 .timeline-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:rgba(92,232,255,.2);border-radius:2px;outline:none;cursor:pointer;touch-action:none}
 .timeline-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#5CE8FF;box-shadow:0 0 10px rgba(92,232,255,.8);cursor:pointer}
@@ -1200,10 +1204,14 @@ function renderMap(){
         <button class="gip-close" onclick="closeGlobeInfo()">&#x2715;</button>
         <div id="globeInfoBody"></div>
       </div>
-      <div id="globeSvgHost" style="position:absolute;inset:0"></div>
+      <div id="globeSvgHost" style="position:absolute;inset:0;touch-action:none"></div>
       <div class="globe-timeline">
         <div class="timeline-track"><input type="range" class="timeline-slider" id="timelineSlider" min="0" max="${Math.max(0,dests.length-1)}" value="${dests.length-1}" oninput="onTimelineMove(this.value)"/></div>
         <div class="timeline-label" id="timelineLabel">${dests.length?'Showing full journey through '+esc(dests[dests.length-1].city):'No destinations yet'}</div>
+      </div>
+      <div class="globe-scroll-handle" onclick="goToCountryList()">
+        <div class="scroll-handle-bar"></div>
+        <div class="scroll-handle-label"><i class="ti ti-chevron-down"></i> Countries</div>
       </div>
     </div>
     <div class="panel" id="mapCountryList">
@@ -1226,6 +1234,14 @@ function teardownGlobe(){
   if(svgGlobe.raf)cancelAnimationFrame(svgGlobe.raf);
   if(svgGlobe.storyTimer)clearInterval(svgGlobe.storyTimer);
   svgGlobe.storyMode=false;
+  // Window-level listeners (mousemove/mouseup) must be explicitly removed — they don't go away
+  // just because the SVG host they were attached alongside gets rebuilt, since they're bound to
+  // `window`, not to that host. Leaving them would stack a new pair every time the Map tab is
+  // revisited, with each stale closure fighting over svgGlobe.dragging state.
+  if(svgGlobe._listeners){
+    window.removeEventListener('mousemove',svgGlobe._listeners.onMove);
+    window.removeEventListener('mouseup',svgGlobe._listeners.onUp);
+  }
   svgGlobe._listeners=null;
 }
 
@@ -1240,11 +1256,17 @@ function attachSvgGlobeInteraction(wrap){
 
   const onDown=e=>{
     if(e.touches&&e.touches.length===2){
+      if(e.cancelable)e.preventDefault();
       svgGlobe.dragging=false;
       pinchStartDist=dist(e.touches[0],e.touches[1]);
       pinchStartZoom=svgGlobe.targetZoom;
       return;
     }
+    // Calling preventDefault on touchstart itself (not just touchmove) is what actually stops
+    // mobile Safari/Chrome from deciding this gesture is a page-scroll. Browsers commit to a
+    // scroll vs. custom-gesture interpretation at touchstart time; waiting until touchmove to
+    // preventDefault is often too late and the page scrolls instead of the globe rotating.
+    if(e.cancelable)e.preventDefault();
     svgGlobe.dragging=true;
     const p=e.touches?e.touches[0]:e;
     svgGlobe.lastX=p.clientX;svgGlobe.lastY=p.clientY;
@@ -1275,13 +1297,23 @@ function attachSvgGlobeInteraction(wrap){
   const onWheel=e=>{e.preventDefault();zoomGlobe(e.deltaY<0?1:-1);};
   const onClick=e=>{
     if(!wasClickNotDrag())return; // ignore click that ends a drag/pinch gesture
-    const nodeEl=e.target.closest('.globe-node');
-    if(nodeEl)flyToDest(nodeEl.dataset.id);
+    const rect=host.getBoundingClientRect();
+    const cx=e.clientX-rect.left,cy=e.clientY-rect.top;
+    const targets=svgGlobe.hitTargets||[];
+    // Hit-test against the last-drawn node positions by coordinates rather than e.target —
+    // this is immune to the SVG having been destroyed/recreated between mousedown and click,
+    // which is what made desktop clicks unreliable while the globe was still settling its rotation.
+    let best=null,bestDist=Infinity;
+    targets.forEach(t=>{
+      const dx=cx-t.x,dy=cy-t.y,d=Math.hypot(dx,dy);
+      if(d<=t.r&&d<bestDist){best=t;bestDist=d;}
+    });
+    if(best)flyToDest(best.id);
   };
   host.addEventListener('mousedown',onDown);
   window.addEventListener('mousemove',onMove);
   window.addEventListener('mouseup',onUp);
-  host.addEventListener('touchstart',onDown,{passive:true});
+  host.addEventListener('touchstart',onDown,{passive:false});
   host.addEventListener('touchmove',onMove,{passive:false});
   host.addEventListener('touchend',onUp,{passive:true});
   host.addEventListener('touchcancel',onUp,{passive:true});
@@ -1415,22 +1447,26 @@ function drawSvgGlobe(){
   }).filter(Boolean).filter(n=>n.p.z>-0.05).sort((a,b)=>a.p.z-b.p.z);
 
   let nodeMarkup='';
+  const hitTargets=[]; // cached screen-space hit circles for click detection, independent of DOM element lifecycle
   nodeData.forEach(n=>{
     const x=cx+n.p.x*R,y=cy+n.p.y*R;
     const baseR=(n.isLast?4.2:3)*svgGlobe.zoom;
     const haloR=baseR*2.4;
+    const tapR=Math.max(haloR,14); // generous tap/click radius, never smaller than ~14px so it's easy to hit
+    hitTargets.push({id:n.d.id,x,y,r:tapR});
     nodeMarkup+=`<g class="globe-node${n.isLast?' globe-node-current':''}" data-id="${n.d.id}" style="cursor:pointer;transform-origin:${x.toFixed(1)}px ${y.toFixed(1)}px">
       <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${haloR.toFixed(1)}" fill="${n.am.color}" opacity="0.22"/>
       <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${baseR.toFixed(1)}" fill="${n.am.color}" opacity="0.97" filter="url(#nodeglow)"/>
       <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(baseR*0.4).toFixed(1)}" fill="#fff" opacity="0.85"/>
     </g>`;
   });
+  svgGlobe.hitTargets=hitTargets; // used by the click handler, see attachSvgGlobeInteraction
 
   // Sphere base shading (radial gradient gives the "realistic" curved look)
   const sphereR=R;
   const lightX=cx-sphereR*0.32, lightY=cy-sphereR*0.35;
 
-  host.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block">
+  host.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;touch-action:none">
     <defs>
       <radialGradient id="sphereShade" cx="${((lightX-cx+sphereR)/(2*sphereR)*100).toFixed(0)}%" cy="${((lightY-cy+sphereR)/(2*sphereR)*100).toFixed(0)}%" r="75%">
         <stop offset="0%" stop-color="#1A4A66"/>
@@ -1524,7 +1560,7 @@ function toggleStoryMode(){
       const d=dests[svgGlobe.storyIdx];
       flyToDest(d.id);
       svgGlobe.storyIdx=(svgGlobe.storyIdx+1)%dests.length;
-    },3500);
+    },5000);
     if(dests.length)flyToDest(dests[0].id);
   }else{
     if(svgGlobe.storyTimer)clearInterval(svgGlobe.storyTimer);
