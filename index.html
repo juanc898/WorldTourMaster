@@ -46,22 +46,22 @@ body{font-size:14px;transition:background .3s,color .3s}
 
 /* ---------- 3. NEO FUTURIST ---------- */
 [data-theme="futurist"]{
-  --gold:#FF2E92;--gold-dim:#C71F70;
-  --bg:#0A0618;--ink:#130B28;--sf:#1B1238;--sf2:#241A47;
-  --bd:#3D2C66;--bd2:#54407F;
-  --t1:#F3ECFF;--t2:#C9B8E8;--t3:#8C78B8;
+  --gold:#00E5FF;--gold-dim:#00A8C2;
+  --bg:#070716;--ink:#0C0D24;--sf:#121532;--sf2:#181C42;
+  --bd:#2A2F5C;--bd2:#3D4480;
+  --t1:#E8F6FF;--t2:#A8C4E8;--t3:#7488B8;
   --green:#2EFFD4;--red:#FF4D6D;--blue:#00D4FF;--purple:#B355FF;
   --font-display:'Orbitron',sans-serif;
   --font-body:'Rajdhani',sans-serif;--font-ui:'Rajdhani',sans-serif;
-  --radius:8px;--shadow:0 0 36px rgba(255,46,146,.16),0 8px 28px rgba(0,0,0,.55);
-  --glow:0 0 14px rgba(0,212,255,.4);
-  --card-bg:linear-gradient(150deg,rgba(36,26,71,.92),rgba(19,11,40,.92));
-  --accent-grad:linear-gradient(90deg,#00D4FF,#B355FF,#FF2E92);
+  --radius:8px;--shadow:0 0 36px rgba(0,229,255,.18),0 8px 28px rgba(0,0,0,.55);
+  --glow:0 0 14px rgba(0,229,255,.45);
+  --card-bg:linear-gradient(150deg,rgba(24,28,66,.92),rgba(12,13,36,.92));
+  --accent-grad:linear-gradient(90deg,#00E5FF,#7B5FFF,#FF2E92);
 }
 [data-theme="futurist"] body{font-weight:600}
 [data-theme="futurist"] .dval,[data-theme="futurist"] .dlbl,[data-theme="futurist"] .fi,[data-theme="futurist"] .btxt,[data-theme="futurist"] .gstat-l,[data-theme="futurist"] .slbl,[data-theme="futurist"] .flbl{font-weight:700}
 [data-theme="futurist"] .prof-city,[data-theme="futurist"] .mttl,[data-theme="futurist"] .sval,[data-theme="futurist"] .logo-txt{font-weight:700}
-[data-theme="futurist"] body{background-image:linear-gradient(180deg,rgba(179,85,255,.07),transparent 30%),radial-gradient(ellipse at 50% 110%,rgba(255,46,146,.12),transparent 60%);background-attachment:fixed}
+[data-theme="futurist"] body{background-image:linear-gradient(180deg,rgba(0,229,255,.06),transparent 30%),radial-gradient(ellipse at 15% 15%,rgba(0,212,255,.10),transparent 50%),radial-gradient(ellipse at 85% 100%,rgba(179,85,255,.10),transparent 55%);background-attachment:fixed}
 [data-theme="futurist"] .nav-tab{font-size:13px;font-weight:800;letter-spacing:.1em}
 [data-theme="futurist"] .nav-tab.active{text-shadow:0 0 10px rgba(0,212,255,.6)}
 [data-theme="futurist"] .scard,[data-theme="futurist"] .pblk,[data-theme="futurist"] .pblk-f{border-color:var(--bd2)}
@@ -233,8 +233,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .theme-opt.active{background:rgba(201,168,76,.12)}
 .theme-swatch{width:24px;height:24px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.15)}
 .theme-opt-txt{flex:1;min-width:0}
-.theme-opt-name{font-size:11px;color:var(--t1);font-weight:600}
-.theme-opt-mood{font-size:9px;color:var(--t3)}
+.theme-opt-name{font-size:11px;color:#F2F0EC;font-weight:600}
+.theme-opt-mood{font-size:9px;color:#9B98A0}
 /* NAV */
 .nav{background:var(--ink);border-bottom:1px solid var(--bd);display:flex;overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch}
 .nav::-webkit-scrollbar{height:2px}
@@ -659,7 +659,7 @@ const today=new Date().toISOString().split('T')[0];
 const THEMES=[
   {id:'mythic',name:'Mythic Odyssey',mood:'The original — symbolic, ritual, golden.',swatch:'#C9A84C'},
   {id:'executive',name:'Dark Executive',mood:'Sophisticated, focused, productive.',swatch:'#D8D8DC'},
-  {id:'futurist',name:'Neo Futurist',mood:'Innovative, futuristic, intelligent.',swatch:'#FF2E92'},
+  {id:'futurist',name:'Neo Futurist',mood:'Innovative, futuristic, intelligent.',swatch:'#00E5FF'},
   {id:'classic',name:'Timeless Classic',mood:'Prestigious, reliable, timeless.',swatch:'#9C7A29'},
   {id:'modern',name:'Modern Professional',mood:'Professional, trustworthy, organized, efficient.',swatch:'#2563EB'},
   {id:'surreal',name:'Dark Surrealism',mood:'Mystical, emotional, thought-provoking.',swatch:'#9B5FD8'},
