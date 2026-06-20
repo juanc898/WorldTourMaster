@@ -529,6 +529,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <div class="nav-tab" data-tab="events" onclick="switchTab('events',this)"><i class="ti ti-confetti"></i> Events</div>
   <div class="nav-tab" data-tab="budget" onclick="switchTab('budget',this)"><i class="ti ti-chart-pie"></i> Budget</div>
   <div class="nav-tab" data-tab="bucket" onclick="switchTab('bucket',this)"><i class="ti ti-list-check"></i> Bucket List</div>
+  <div class="nav-tab" data-tab="visas" onclick="switchTab('visas',this)"><i class="ti ti-passport"></i> Visas</div>
   <div class="nav-tab" data-tab="ai" onclick="switchTab('ai',this)"><i class="ti ti-message-bolt"></i> AI Advisor</div>
 </nav>
 <div class="main">
@@ -587,6 +588,10 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
       <div class="f2">
         <div class="fg"><label class="flbl">Visa Type</label><select class="fi" id="f_visa_type"><option value="Physical">Physical Visa</option><option value="E-Visa">E-Visa</option><option value="On Arrival">Visa On Arrival</option></select></div>
         <div class="fg"><label class="flbl">Visa Cost ($) <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_visa_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+      </div>
+      <div class="f2">
+        <div class="fg"><label class="flbl">Visa Status</label><select class="fi" id="f_visa_status"><option value="Pending">Pending</option><option value="Obtained">Obtained</option></select></div>
+        <div class="fg"></div>
       </div>
     </div>
   </div></div>
@@ -882,6 +887,7 @@ function renderContent(){
   else if(tab==='events')el.innerHTML=renderEvents();
   else if(tab==='budget')el.innerHTML=renderBudget();
   else if(tab==='bucket')el.innerHTML=renderBucket();
+  else if(tab==='visas')el.innerHTML=renderVisas();
   else if(tab==='ai')el.innerHTML=renderAI();
 }
 
@@ -978,7 +984,7 @@ function renderProfile(){
   let visaHealthHTML='';
   if(d.visa_required||d.vaccines_required){
     visaHealthHTML=`<div class="pblk-f"><div class="bttl">Visa &amp; Health Requirements</div>`
-      +(d.visa_required?`<div class="drow"><span class="dlbl">Visa Required</span><span class="dval pyes" style="background:none;padding:0">✓ Yes — ${esc(d.visa_type||'Physical')}</span></div>${d.visa_cost>0?`<div class="drow"><span class="dlbl">Visa Cost</span><span class="dval">$${parseFloat(d.visa_cost).toFixed(2)}</span></div>`:''}`:'')
+      +(d.visa_required?`<div class="drow"><span class="dlbl">Visa Required</span><span class="dval pyes" style="background:none;padding:0">✓ Yes — ${esc(d.visa_type||'Physical')}</span></div>${d.visa_cost>0?`<div class="drow"><span class="dlbl">Visa Cost</span><span class="dval">$${parseFloat(d.visa_cost).toFixed(2)}</span></div>`:''}<div class="drow"><span class="dlbl">Visa Status</span><span class="dval ${d.visa_status==='Obtained'?'grn':''}">${d.visa_status==='Obtained'?'✓ Obtained':'⏳ Pending'}</span></div>`:'')
       +(d.vaccines_required?`<div class="drow"><span class="dlbl">Vaccines/Paperwork</span><span class="dval pyes" style="background:none;padding:0">✓ Required</span></div>${d.vaccines_detail?`<div class="drow"><span class="dlbl">Details</span><span class="dval">${esc(d.vaccines_detail)}</span></div>`:''}`:'')
       +`</div>`;
   }
@@ -1034,7 +1040,7 @@ const FIELDS=[
   {k:'t_connection',l:'Connection Info',t:'text'},{k:'t_cost',l:'Transport Cost ($)',t:'number'},
   {k:'t_paid',l:'Transport Paid (yes/no/partial)',t:'text'},
   {k:'visa_required',l:'Visa Required (yes/no)',t:'text'},{k:'visa_type',l:'Visa Type (Physical/E-Visa/On Arrival)',t:'text'},
-  {k:'visa_cost',l:'Visa Cost ($)',t:'number'},
+  {k:'visa_cost',l:'Visa Cost ($)',t:'number'},{k:'visa_status',l:'Visa Status (Obtained/Pending)',t:'text'},
   {k:'vaccines_required',l:'Vaccines/Paperwork Required (yes/no)',t:'text'},{k:'vaccines_detail',l:'Vaccines/Paperwork Detail',t:'text'},
   {k:'notes',l:'Notes & Memories',t:'text'},{k:'todo',l:'Things To Do (use | for line breaks)',t:'text'},
 ];
@@ -1142,6 +1148,7 @@ function importCSV(input){
     const MOT_OPTS=['Flight','Train','Ferry','Car Rental','Bus','Private Transfer','Cruise'];
     const TPAID_OPTS=['no','partial','yes'];
     const VISA_OPTS=['Physical','E-Visa','On Arrival'];
+    const VISA_STATUS_OPTS=['Obtained','Pending'];
     const correctionNotes=[]; // collects a human-readable log of every auto-correction made
     const newD=[];let conflict=false;
     for(let i=1;i<lines.length;i++){
@@ -1192,6 +1199,11 @@ function importCSV(input){
           const resolved=fuzzyMatch(v,VISA_OPTS);
           obj.visa_type=resolved||v;
           if(resolved&&resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Visa Type "${resolved}" (${rowLabel()})`);
+        }
+        else if(k==='visa_status'){
+          const resolved=fuzzyMatch(v,VISA_STATUS_OPTS)||'Pending';
+          obj.visa_status=resolved;
+          if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Visa Status "${resolved}" (${rowLabel()})`);
         }
         else if(k==='todo')obj[k]=v.replace(/\|/g,'\n');
         else if(k==='visa_required'||k==='vaccines_required')obj[k]=/^(yes|y|true|1)$/i.test(v);
@@ -1427,6 +1439,45 @@ const CONTINENT_LABELS=[
   {name:'ASIA',la:45,ln:90},
   {name:'OCEANIA',la:-23,ln:135},
 ];
+
+// The 29 Schengen Area member states (current as of 2026 — Bulgaria, Romania, and Croatia are
+// full members; Cyprus and Ireland are notably NOT in Schengen despite being in the EU).
+const SCHENGEN_COUNTRIES=new Set([
+  'Austria','Belgium','Bulgaria','Croatia','Czech Republic','Denmark','Estonia','Finland',
+  'France','Germany','Greece','Hungary','Iceland','Italy','Latvia','Liechtenstein',
+  'Lithuania','Luxembourg','Malta','Netherlands','Norway','Poland','Portugal','Romania',
+  'Slovakia','Slovenia','Spain','Sweden','Switzerland',
+]);
+
+// Computes the rolling 90-day-in-any-180-day-window Schengen limit across a set of date ranges.
+// This checks EVERY day actually present in the zone (not just trip-end dates) against its own
+// trailing 180-day window, since the rule can be violated mid-trip, not only at a trip's end —
+// and correctly combines multiple separate trips that fall within the same 180-day window.
+function calcSchengenUsage(ranges){
+  const presentDays=new Set();
+  ranges.forEach(r=>{
+    if(!r.start||!r.end)return;
+    let d=new Date(r.start+'T12:00:00');
+    const end=new Date(r.end+'T12:00:00');
+    if(end<d)return;
+    while(d<=end){presentDays.add(d.toISOString().split('T')[0]);d.setDate(d.getDate()+1);}
+  });
+  const allDays=[...presentDays].sort();
+  if(!allDays.length)return{maxUsed:0,violation:false,violationDate:null,totalDays:0};
+  let maxUsed=0,violationDate=null;
+  allDays.forEach(day=>{
+    const dayDate=new Date(day+'T12:00:00');
+    const windowStart=new Date(dayDate);windowStart.setDate(windowStart.getDate()-179);
+    let count=0;
+    presentDays.forEach(p=>{
+      const pd=new Date(p+'T12:00:00');
+      if(pd>=windowStart&&pd<=dayDate)count++;
+    });
+    if(count>maxUsed)maxUsed=count;
+    if(count>90&&!violationDate)violationDate=day;
+  });
+  return{maxUsed,violation:!!violationDate,violationDate,totalDays:allDays.length};
+}
 
 // World landmass outline as lat/lng polygon rings (simplified but recognizable continents)
 const LAND_RINGS=[
@@ -2340,6 +2391,116 @@ function bktDrop(e,tid){
   const[moved]=bkt.splice(si,1);bkt.splice(ti,0,moved);
   bkt.forEach((b,i)=>b.order=i);bktDragSrc=null;renderContent();
 }
+// ── VISAS ─────────────────────────────────────────────────────────────────────
+let userNationality=localStorage.getItem('ae_nationality')||'';
+
+function setNationality(code){
+  userNationality=code;
+  localStorage.setItem('ae_nationality',code);
+  renderContent();
+}
+
+function renderVisas(){
+  const dests=sDests().filter(d=>d.status!=='cancelled');
+  const visaDests=dests.filter(d=>d.visa_required);
+  const vaccineDests=dests.filter(d=>d.vaccines_required);
+  const obtainedCount=visaDests.filter(d=>d.visa_status==='Obtained').length;
+
+  const natOptions='<option value="">— Select your passport/nationality —</option>'+
+    COUNTRIES.map(([code,name])=>`<option value="${code}"${userNationality===code?' selected':''}>${esc(name)}</option>`).join('');
+  const natEntry=COUNTRIES.find(c=>c[0]===userNationality);
+  const natFlag=natEntry?codeToFlag(natEntry[0]):'';
+
+  const visaRows=visaDests.map(d=>{
+    const am=aM(d.act);
+    const statusObtained=d.visa_status==='Obtained';
+    return`<div class="ev-item" onclick="openDestModal('${d.id}')">
+      <span style="font-size:22px;flex-shrink:0">${d.flag||'📍'}</span>
+      <div style="flex:1;min-width:0">
+        <div class="ev-name">${esc(d.city)}, ${esc(d.country)}</div>
+        <div class="ev-loc">${esc(am.name)} · ${d.arrival?fD(d.arrival):'TBD'}${d.departure?' – '+fD(d.departure):''}</div>
+        <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.visa_type||'Physical')} visa${d.visa_cost>0?' · $'+parseFloat(d.visa_cost).toFixed(2):''}</div>
+      </div>
+      <span class="sbadge ${statusObtained?'sb-confirmed':'sb-planned'}" style="flex-shrink:0">${statusObtained?'✓ Obtained':'⏳ Pending'}</span>
+    </div>`;
+  }).join('');
+
+  const vaccineRows=vaccineDests.map(d=>{
+    const am=aM(d.act);
+    return`<div class="ev-item" onclick="openDestModal('${d.id}')">
+      <span style="font-size:22px;flex-shrink:0">${d.flag||'📍'}</span>
+      <div style="flex:1;min-width:0">
+        <div class="ev-name">${esc(d.city)}, ${esc(d.country)}</div>
+        <div class="ev-loc">${esc(am.name)} · ${d.arrival?fD(d.arrival):'TBD'}</div>
+        ${d.vaccines_detail?`<div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.vaccines_detail)}</div>`:''}
+      </div>
+      <span class="sbadge sb-wishlist" style="flex-shrink:0">⚕ Required</span>
+    </div>`;
+  }).join('');
+
+  // Schengen calculator: every destination whose country is in the Schengen Area, using its
+  // actual arrival/departure dates from the itinerary.
+  const schengenDests=dests.filter(d=>SCHENGEN_COUNTRIES.has(d.country)&&d.arrival&&d.departure);
+  const schengenRanges=schengenDests.map(d=>({start:d.arrival,end:d.departure}));
+  const schengenResult=calcSchengenUsage(schengenRanges);
+  const pct=Math.min(100,(schengenResult.maxUsed/90)*100);
+  const barColor=schengenResult.violation?'var(--red)':pct>75?'#D4A84C':'var(--green)';
+
+  return`<div class="panel">
+    <div class="sec-ttl">Your Passport / Nationality</div>
+    <div class="scard" style="margin-bottom:1rem;cursor:default">
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <span style="font-size:32px">${natFlag||'🛂'}</span>
+        <div style="flex:1">
+          <select class="fi" id="nationalitySelect" onchange="setNationality(this.value)" style="font-size:13px">${natOptions}</select>
+          <div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);margin-top:4px">Saved on this device — used to determine which destinations below need a visa</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sgrid">
+      <div class="scard"><div class="sval">${visaDests.length}</div><div class="slbl">Visas Needed</div></div>
+      <div class="scard"><div class="sval" style="color:var(--green)">${obtainedCount}</div><div class="slbl">Obtained</div></div>
+      <div class="scard"><div class="sval" style="color:#D4A84C">${visaDests.length-obtainedCount}</div><div class="slbl">Pending</div></div>
+      <div class="scard"><div class="sval">${vaccineDests.length}</div><div class="slbl">Vaccines/Paperwork</div></div>
+    </div>
+
+    <div class="sec-ttl">Destinations Requiring a Visa</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:.5rem">
+      ${visaRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations currently flagged as needing a visa. Mark "Visa required" in the Add/Edit Destination form to have them appear here.</div>'}
+    </div>
+    <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin-bottom:1.25rem;line-height:1.5">
+      <i class="ti ti-info-circle"></i> This list reflects what you've marked per-destination in the form — it is not a live lookup of current visa rules for your selected passport. Visa requirements and maximum stay durations change over time and vary by passport; always verify directly with the destination country's official immigration authority or embassy before you travel.
+    </div>
+
+    <div class="sec-ttl">Vaccines &amp; Other Required Paperwork</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1.5rem">
+      ${vaccineRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations currently flagged as needing vaccines or extra paperwork.</div>'}
+    </div>
+
+    <div class="sec-ttl">Schengen Calculator <span style="font-size:8px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(90 days in any rolling 180-day window)</span></div>
+    <div class="scard" style="cursor:default">
+      ${schengenDests.length?`
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem">
+          <div><span class="sval" style="color:${barColor}">${schengenResult.maxUsed}</span><span style="font-size:11px;color:var(--t3);font-family:var(--font-ui)"> / 90 days used at peak</span></div>
+          ${schengenResult.violation?'<span class="sbadge sb-cancelled">⚠ Limit Exceeded</span>':'<span class="sbadge sb-confirmed">✓ Within Limit</span>'}
+        </div>
+        <div style="height:8px;background:var(--bd2);border-radius:4px;overflow:hidden;margin-bottom:.75rem">
+          <div style="height:100%;width:${pct.toFixed(0)}%;background:${barColor};border-radius:4px;transition:width .4s"></div>
+        </div>
+        ${schengenResult.violation?`<div style="font-size:11px;color:var(--red);font-family:var(--font-ui);line-height:1.5;margin-bottom:.5rem"><i class="ti ti-alert-triangle"></i> Your planned Schengen stays exceed the 90/180-day limit — the limit is first crossed around <strong>${fD(schengenResult.violationDate)}</strong>. You may need to split your Schengen time, add longer gaps between visits, or apply for a long-stay/national visa for part of the trip.</div>`:`<div style="font-size:11px;color:var(--t2);font-family:var(--font-ui);line-height:1.5;margin-bottom:.5rem">Based on your current itinerary, your Schengen stays stay within the 90/180-day limit at every point in the trip.</div>`}
+        <div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);margin-bottom:.6rem">Counting ${schengenDests.length} Schengen destination${schengenDests.length===1?'':'s'} across ${schengenResult.totalDays} total calendar day${schengenResult.totalDays===1?'':'s'} in the zone:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${schengenDests.map(d=>`<div style="display:flex;align-items:center;gap:5px;padding:.25rem .55rem;background:var(--sf2);border:1px solid var(--bd);border-radius:14px;font-size:10px;color:var(--t2);font-family:var(--font-ui);cursor:pointer" onclick="openDestModal('${d.id}')"><span>${d.flag||'📍'}</span>${esc(d.city)} (${dBtw(d.arrival,d.departure)}n)</div>`).join('')}
+        </div>
+      `:`<div style="color:var(--t3);font-family:var(--font-ui);font-size:12px">No Schengen-area destinations with both arrival and departure dates set yet. Once you add destinations in Austria, France, Germany, Italy, Spain, or other Schengen countries, this calculator will check your planned stays against the 90/180-day rule automatically.</div>`}
+    </div>
+    <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin-top:.5rem;line-height:1.5">
+      <i class="ti ti-info-circle"></i> The Schengen 90/180 rule applies to short-stay visits by most non-EU/EEA passport holders. Some nationalities (EU/EEA/Swiss citizens, holders of long-stay visas or residence permits) are exempt or follow different rules — this calculator assumes the standard short-stay limit applies to your trip.
+    </div>
+  </div>`;
+}
+
 function openBktModal(editId){
   editBktId=editId||null;
   document.getElementById('bktModalTitle').textContent=editId?'Edit Experience':'Add Experience';
@@ -2439,7 +2600,7 @@ function openDestModal(editId){
   document.getElementById('destModalTitle').textContent=editId?'Edit Destination':'Add Destination';
   const as=document.getElementById('f_act');
   as.innerHTML=cActs().map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
-  const flds=['status','city','flag','priority','arrival','departure','nights','event','event_type','event_start','event_end','event_cost','hotel','hotel_ref','cost','persons','paid_hotel','mot','t_company','t_ref','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','visa_type','visa_cost','vaccines_detail','notes','todo'];
+  const flds=['status','city','flag','priority','arrival','departure','nights','event','event_type','event_start','event_end','event_cost','hotel','hotel_ref','cost','persons','paid_hotel','mot','t_company','t_ref','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','visa_type','visa_cost','visa_status','vaccines_detail','notes','todo'];
   flds.forEach(f=>{const el=document.getElementById('f_'+f);if(el){if(el.tagName==='SELECT')el.selectedIndex=0;else el.value='';}});
   document.getElementById('f_persons').value='2';document.getElementById('f_t_paid').value='no';
   document.getElementById('f_cpn').textContent='—';document.getElementById('f_cpnpp').textContent='—';document.getElementById('f_owed').textContent='—';
@@ -2458,7 +2619,7 @@ function openDestModal(editId){
       sv('t_dep_dt',d.t_dep_dt);sv('t_arr_dt',d.t_arr_dt);sv('t_connection',d.t_connection);
       sv('t_cost',d.t_cost||'');sv('t_paid',d.t_paid||'no');sv('t_num',d.t_num);
       document.getElementById('f_visa_required').checked=!!d.visa_required;
-      sv('visa_type',d.visa_type||'Physical');sv('visa_cost',d.visa_cost||'');
+      sv('visa_type',d.visa_type||'Physical');sv('visa_cost',d.visa_cost||'');sv('visa_status',d.visa_status||'Pending');
       toggleVisaFields();
       document.getElementById('f_vaccines_required').checked=!!d.vaccines_required;
       sv('vaccines_detail',d.vaccines_detail);
@@ -2489,7 +2650,7 @@ function saveDest(){
     mot:gv('mot'),t_company:gv('t_company'),t_ref:gv('t_ref'),t_dep_port:gv('t_dep_port'),t_arr_port:gv('t_arr_port'),
     t_dep_dt:gv('t_dep_dt'),t_arr_dt:gv('t_arr_dt'),t_connection:gv('t_connection'),
     t_cost:gn('t_cost'),t_paid:gv('t_paid'),t_num:gv('t_num'),
-    visa_required:visaRequired,visa_type:visaRequired?gv('visa_type'):'',visa_cost:visaRequired?gn('visa_cost'):0,
+    visa_required:visaRequired,visa_type:visaRequired?gv('visa_type'):'',visa_cost:visaRequired?gn('visa_cost'):0,visa_status:visaRequired?gv('visa_status'):'',
     vaccines_required:vaccinesRequired,vaccines_detail:vaccinesRequired?gv('vaccines_detail'):'',
     notes:document.getElementById('f_notes')?.value?.trim()||'',
     todo:document.getElementById('f_todo')?.value?.trim()||'',
