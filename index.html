@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>The Angel's Eye — Rituals of the World</title>
+<title>NOMAD — World Tour Planner</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital@0;1&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@300;400;500;600;700&family=Cormorant:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@300;400;500;600;700;800&family=Cormorant:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
@@ -16,7 +16,7 @@ body{font-size:14px;transition:background .3s,color .3s}
    THEME SYSTEM — 7 distinct themes via [data-theme]
    ══════════════════════════════════════════════════════ */
 
-/* ---------- 1. MYTHIC ODYSSEY (default/original) ---------- */
+/* ---------- 1. MYTHIC ODYSSEY (default/original) — always dark, no light variant ---------- */
 [data-theme="mythic"]{
   --gold:#C9A84C;--gold-dim:#8B6914;
   --bg:#0A0A0F;--ink:#12121A;--sf:#1A1A26;--sf2:#22222F;
@@ -27,10 +27,6 @@ body{font-size:14px;transition:background .3s,color .3s}
   --font-body:Georgia,serif;--font-ui:sans-serif;
   --radius:3px;--shadow:none;--glow:none;
   --card-bg:var(--sf);--accent-grad:linear-gradient(135deg,var(--gold-dim),var(--gold));
-}
-[data-theme="mythic"].light-variant{
-  --bg:#F4F2EC;--ink:#E8E6E0;--sf:#FFFFFF;--sf2:#F0EEE8;
-  --bd:#D5D2C8;--bd2:#C5C2B8;--t1:#1A1814;--t2:#42403A;--t3:#78746A;
 }
 
 /* ---------- 2. DARK EXECUTIVE ---------- */
@@ -62,6 +58,9 @@ body{font-size:14px;transition:background .3s,color .3s}
   --card-bg:linear-gradient(135deg,rgba(17,18,42,.9),rgba(22,24,54,.9));
   --accent-grad:linear-gradient(90deg,#00E5FF,#7B5FFF,#FF4D8D);
 }
+[data-theme="futurist"] body{font-weight:500}
+[data-theme="futurist"] .dval,[data-theme="futurist"] .dlbl,[data-theme="futurist"] .fi,[data-theme="futurist"] .btxt,[data-theme="futurist"] .gstat-l,[data-theme="futurist"] .slbl,[data-theme="futurist"] .flbl{font-weight:600}
+[data-theme="futurist"] .prof-city,[data-theme="futurist"] .mttl,[data-theme="futurist"] .sval,[data-theme="futurist"] .logo-txt{font-weight:700}
 
 /* ---------- 4. TIMELESS CLASSIC ---------- */
 [data-theme="classic"]{
@@ -76,6 +75,9 @@ body{font-size:14px;transition:background .3s,color .3s}
   --card-bg:var(--sf);--accent-grad:linear-gradient(135deg,var(--gold-dim),var(--gold));
   --navy:#1C2B45;
 }
+[data-theme="classic"] body{font-weight:500}
+[data-theme="classic"] .dval,[data-theme="classic"] .dlbl,[data-theme="classic"] .fi,[data-theme="classic"] .btxt,[data-theme="classic"] .gstat-l,[data-theme="classic"] .slbl,[data-theme="classic"] .flbl{font-weight:600}
+[data-theme="classic"] .prof-city,[data-theme="classic"] .mttl,[data-theme="classic"] .sval,[data-theme="classic"] .logo-txt{font-weight:700}
 
 /* ---------- 5. MODERN PROFESSIONAL ---------- */
 [data-theme="modern"]{
@@ -93,6 +95,9 @@ body{font-size:14px;transition:background .3s,color .3s}
 [data-theme="modern"] .hdr{border-bottom:1px solid var(--bd2)}
 [data-theme="modern"] .nav{border-bottom:1px solid var(--bd2)}
 [data-theme="modern"] .scard,[data-theme="modern"] .pblk,[data-theme="modern"] .pblk-f{border:1px solid var(--bd2)}
+[data-theme="modern"] body{font-weight:500}
+[data-theme="modern"] .dval,[data-theme="modern"] .dlbl,[data-theme="modern"] .fi,[data-theme="modern"] .btxt,[data-theme="modern"] .gstat-l,[data-theme="modern"] .slbl,[data-theme="modern"] .flbl{font-weight:600}
+[data-theme="modern"] .prof-city,[data-theme="modern"] .mttl,[data-theme="modern"] .sval,[data-theme="modern"] .logo-txt{font-weight:700}
 
 /* ---------- 6. DARK SURREALISM ---------- */
 [data-theme="surreal"]{
@@ -134,8 +139,8 @@ body{font-size:14px;transition:background .3s,color .3s}
 body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .app{display:flex;flex-direction:column;height:100vh}
 .hdr{background:var(--ink);border-bottom:1px solid var(--bd);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;gap:.5rem;box-shadow:var(--glow)}
-.logo-eye{width:26px;height:26px;border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--glow)}
-.logo-eye::after{content:'';width:7px;height:7px;background:var(--gold);border-radius:50%}
+.logo-eye{width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center;filter:var(--glow,none)}
+.logo-eye svg{width:100%;height:100%;display:block}
 .logo-txt{font-size:13px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;white-space:nowrap;font-family:var(--font-display);font-weight:600}
 .logo-sub{font-size:8px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);white-space:nowrap}
 .hdr-r{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
@@ -159,7 +164,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 /* NAV */
 .nav{background:var(--ink);border-bottom:1px solid var(--bd);display:flex;overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch}
 .nav::-webkit-scrollbar{height:2px}
-.nav-tab{padding:0 .75rem;height:42px;display:flex;align-items:center;gap:4px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--font-ui);flex-shrink:0;transition:color .15s}
+.nav-tab{padding:0 .85rem;height:44px;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--font-ui);flex-shrink:0;transition:color .15s}
+.nav-tab i{font-size:15px}
 .nav-tab:hover{color:var(--t2)}
 .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 /* LAYOUT */
@@ -299,17 +305,17 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .map-wrap{width:100%;overflow:hidden;background:#0C1016;position:relative}
 .map-wrap svg{width:100%;display:block}
 /* MODAL */
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .modal{background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);width:100%;max-width:580px;margin:auto;box-shadow:var(--shadow)}
 .mhdr{padding:.875rem 1rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--ink);z-index:1}
 .mttl{font-size:14px;color:var(--gold);letter-spacing:.04em;font-family:var(--font-display);font-weight:600}
 .mx{background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1}
 .mx:hover{color:var(--t1)}
-.mbody{padding:1rem;display:flex;flex-direction:column;gap:.875rem;max-height:calc(100vh - 130px);overflow-y:auto}
+.mbody{padding:1rem;display:flex;flex-direction:column;gap:.875rem;max-height:calc(100vh - 130px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .mbody::-webkit-scrollbar{width:4px}
 .mbody::-webkit-scrollbar-thumb{background:var(--bd2)}
-.msect{border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden}
-.msttl{padding:.4rem .75rem;background:var(--sf);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);border-bottom:1px solid var(--bd)}
+.msect{border:1px solid var(--bd);border-radius:var(--radius);overflow:visible;flex-shrink:0}
+.msttl{padding:.4rem .75rem;background:var(--sf);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);border-bottom:1px solid var(--bd);border-radius:calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0}
 .mflds{padding:.75rem;display:flex;flex-direction:column;gap:.625rem}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:.625rem}
 .f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.625rem}
@@ -334,26 +340,26 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .ctx-item{padding:.5rem .875rem;font-family:var(--font-ui);font-size:12px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:6px}
 .ctx-item:hover{background:rgba(201,168,76,.08);color:var(--gold)}
 /* GLOBE */
-.globe-wrap{position:relative;width:100%;height:calc(100vh - 96px);overflow:hidden;background:#000005}
-@media(max-width:599px){.globe-wrap{height:calc(100vh - 96px)}}
+.globe-wrap{position:relative;width:100%;height:calc(100vh - 96px);overflow:hidden;background:#000005;touch-action:none}
 .globe-wrap canvas{display:block;touch-action:none}
-.globe-hud{position:absolute;top:0;left:0;right:0;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;z-index:10;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,5,.55),transparent)}
+.globe-hud{position:absolute;top:0;left:0;right:0;padding:.75rem 1rem;z-index:10;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,5,.6),transparent 80%);display:flex;flex-direction:column;gap:.6rem}
 .globe-hud>*{pointer-events:auto}
+.globe-hud-row{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
 .globe-stats-bar{display:flex;gap:1rem;flex-wrap:wrap;font-family:var(--font-ui)}
 .gstat{text-align:center}
 .gstat-v{font-size:15px;color:#5CE8FF;font-weight:700;line-height:1;text-shadow:0 0 10px rgba(92,232,255,.5)}
 .gstat-l{font-size:8px;color:#8FA8C0;text-transform:uppercase;letter-spacing:.1em}
-.globe-ctrls{position:absolute;top:.75rem;right:1rem;z-index:10;display:flex;gap:6px}
+.globe-ctrls{z-index:10;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
 .gbtn{background:rgba(15,20,35,.85);border:1px solid rgba(92,232,255,.25);border-radius:6px;color:#BFE8FF;font-size:14px;padding:6px 10px;cursor:pointer;font-family:var(--font-ui);display:flex;align-items:center;gap:4px;backdrop-filter:blur(6px)}
 .gbtn:hover{background:rgba(92,232,255,.15);border-color:rgba(92,232,255,.5)}
 .gbtn.active{background:rgba(92,232,255,.25);border-color:#5CE8FF;color:#fff}
-.globe-timeline{position:absolute;bottom:0;left:0;right:0;padding:.75rem 1rem 1rem;z-index:10;background:linear-gradient(0deg,rgba(0,0,5,.7),transparent)}
-.timeline-track{position:relative;height:32px;display:flex;align-items:center}
-.timeline-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:rgba(92,232,255,.2);border-radius:2px;outline:none;cursor:pointer}
-.timeline-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#5CE8FF;box-shadow:0 0 10px rgba(92,232,255,.8);cursor:pointer}
-.timeline-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#5CE8FF;box-shadow:0 0 10px rgba(92,232,255,.8);cursor:pointer;border:none}
-.timeline-label{font-size:10px;color:#8FA8C0;font-family:var(--font-ui);text-align:center;margin-top:4px}
-.globe-info-panel{position:absolute;top:0;right:0;bottom:0;width:300px;max-width:85vw;background:rgba(10,13,22,.92);backdrop-filter:blur(10px);border-left:1px solid rgba(92,232,255,.2);z-index:20;overflow-y:auto;transform:translateX(100%);transition:transform .3s ease;padding:1rem}
+.globe-timeline{position:absolute;bottom:0;left:0;right:0;padding:.6rem 1rem calc(.75rem + env(safe-area-inset-bottom,0px));z-index:10;background:linear-gradient(0deg,rgba(0,0,5,.8) 30%,transparent)}
+.timeline-track{position:relative;height:28px;display:flex;align-items:center}
+.timeline-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:rgba(92,232,255,.2);border-radius:2px;outline:none;cursor:pointer;touch-action:none}
+.timeline-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#5CE8FF;box-shadow:0 0 10px rgba(92,232,255,.8);cursor:pointer}
+.timeline-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#5CE8FF;box-shadow:0 0 10px rgba(92,232,255,.8);cursor:pointer;border:none}
+.timeline-label{font-size:10px;color:#8FA8C0;font-family:var(--font-ui);text-align:center;margin-top:2px}
+.globe-info-panel{position:absolute;top:0;right:0;bottom:0;width:300px;max-width:85vw;background:rgba(10,13,22,.92);backdrop-filter:blur(10px);border-left:1px solid rgba(92,232,255,.2);z-index:20;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateX(100%);transition:transform .3s ease;padding:1rem}
 .globe-info-panel.open{transform:translateX(0)}
 .gip-close{position:absolute;top:.6rem;right:.6rem;background:none;border:none;color:#8FA8C0;font-size:18px;cursor:pointer}
 .gip-flag{font-size:38px;line-height:1}
@@ -364,11 +370,22 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .gip-row span:last-child{color:#D8EEFF}
 .gip-section{margin-top:.75rem;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#5CE8FF;font-family:var(--font-ui)}
 .globe-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#5CE8FF;font-family:var(--font-ui);font-size:12px;letter-spacing:.1em;text-transform:uppercase;z-index:5}
-.globe-legend{position:absolute;bottom:5.2rem;left:1rem;z-index:10;display:flex;flex-direction:column;gap:4px;background:rgba(10,13,22,.6);backdrop-filter:blur(6px);border-radius:6px;padding:.5rem .7rem;max-width:200px}
-@media(max-width:599px){
+.globe-node-current{animation:globePulse 1.8s ease-in-out infinite}
+@keyframes globePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+.globe-legend{position:absolute;bottom:5.6rem;left:1rem;z-index:10;display:flex;flex-direction:column;gap:4px;background:rgba(10,13,22,.6);backdrop-filter:blur(6px);border-radius:6px;padding:.5rem .7rem;max-width:200px}
+@media(max-width:699px){
+  .globe-wrap{height:calc(100vh - 96px)}
+  .globe-hud{padding:.5rem .6rem}
+  .globe-hud-row{flex-direction:column;align-items:stretch;gap:.5rem}
+  .globe-stats-bar{justify-content:space-between;gap:.4rem;width:100%}
+  .gstat-v{font-size:13px}
+  .gstat-l{font-size:7px}
+  .globe-ctrls{justify-content:flex-end;width:100%}
+  .gbtn{padding:5px 8px;font-size:12px}
   .globe-info-panel{width:100%}
-  .globe-stats-bar{gap:.6rem}
   .globe-legend{display:none}
+  .globe-timeline{padding:.5rem .75rem calc(.6rem + env(safe-area-inset-bottom,0px))}
+  .timeline-label{font-size:9px}
 }
 
 @media(max-width:599px){
@@ -392,15 +409,34 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <div style="display:flex;align-items:center;gap:6px">
     <button class="menu-btn" onclick="toggleSB()"><i class="ti ti-menu-2"></i></button>
     <div style="display:flex;align-items:center;gap:8px">
-      <div class="logo-eye"></div>
-      <div><div class="logo-txt" id="tourNameD">The Angel's Eye</div><div class="logo-sub">World Tour Command Center</div></div>
+      <div class="logo-eye">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <!-- Compass ring with N/S/E/W ticks -->
+          <circle cx="32" cy="32" r="22" fill="none" stroke="var(--gold)" stroke-width="2"/>
+          <path d="M32 4 L29 12 L35 12 Z" fill="var(--gold)"/>
+          <text x="32" y="13" text-anchor="middle" font-size="6" font-family="sans-serif" font-weight="700" fill="var(--bg)">N</text>
+          <path d="M4 32 L8 30 L8 34 Z" fill="var(--gold)" opacity="0.85"/>
+          <path d="M60 32 L56 30 L56 34 Z" fill="var(--gold)" opacity="0.85"/>
+          <path d="M32 60 L29 53 L35 53 Z" fill="var(--gold)" opacity="0.85"/>
+          <!-- Globe -->
+          <circle cx="32" cy="32" r="14" fill="var(--gold)" opacity="0.16"/>
+          <circle cx="32" cy="32" r="14" fill="none" stroke="var(--gold)" stroke-width="1.3"/>
+          <ellipse cx="32" cy="32" rx="6" ry="14" fill="none" stroke="var(--gold)" stroke-width="0.8" opacity="0.7"/>
+          <line x1="18" y1="32" x2="46" y2="32" stroke="var(--gold)" stroke-width="0.8" opacity="0.7"/>
+          <line x1="20" y1="24" x2="44" y2="24" stroke="var(--gold)" stroke-width="0.6" opacity="0.5"/>
+          <line x1="20" y1="40" x2="44" y2="40" stroke="var(--gold)" stroke-width="0.6" opacity="0.5"/>
+          <!-- Travel arrow swooping across -->
+          <path d="M16 40 Q32 50 50 22" fill="none" stroke="var(--t1)" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M44 16 L51 21 L45 27 Z" fill="var(--t1)"/>
+        </svg>
+      </div>
+      <div><div class="logo-txt" id="appBrandName">NOMAD</div><div class="logo-sub">World Tour Planner</div></div>
     </div>
   </div>
   <div class="hdr-r">
     <div class="hstat" onclick="goTab('map')" title="View Map"><div class="hstat-v" id="hCnt">0</div><div class="hstat-l">Countries</div></div>
     <div class="hstat" onclick="goTab('route')" title="View Route"><div class="hstat-v" id="hDst">0</div><div class="hstat-l">Destinations</div></div>
     <div class="hstat" onclick="goTab('events')" title="View Events"><div class="hstat-v" id="hEvt">0</div><div class="hstat-l">Events</div></div>
-    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark"><i class="ti ti-sun"></i></button>
     <div style="position:relative">
       <button class="icon-btn" onclick="toggleThemePop(event)" id="stylesBtn" title="Choose appearance"><i class="ti ti-palette"></i></button>
       <div class="theme-pop" id="themePop"></div>
@@ -409,7 +445,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   </div>
 </header>
 <nav class="nav">
-  <div class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Command</div>
+  <div class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Tour Overview</div>
   <div class="nav-tab" data-tab="route" onclick="switchTab('route',this)"><i class="ti ti-map-2"></i> Route</div>
   <div class="nav-tab" data-tab="map" onclick="switchTab('map',this)"><i class="ti ti-world"></i> Map</div>
   <div class="nav-tab" data-tab="events" onclick="switchTab('events',this)"><i class="ti ti-confetti"></i> Events</div>
@@ -552,14 +588,9 @@ const THEMES=[
   {id:'luxury',name:'Ultra Luxury',mood:'Exclusive, powerful, elite.',swatch:'#E8C77A'},
 ];
 let theme=localStorage.getItem('ae_visual_theme')||'mythic';
-let dark=localStorage.getItem('ae_theme')!=='light';
 function applyTheme(){
   document.body.setAttribute('data-theme',theme);
-  document.body.classList.toggle('light-variant',!dark&&theme==='mythic');
-  document.getElementById('themeBtn').innerHTML=dark?'<i class="ti ti-sun"></i>':'<i class="ti ti-moon"></i>';
-  document.getElementById('themeBtn').style.display=theme==='mythic'?'flex':'none';
 }
-function toggleTheme(){dark=!dark;localStorage.setItem('ae_theme',dark?'dark':'light');applyTheme();}
 function setVisualTheme(id){theme=id;localStorage.setItem('ae_visual_theme',id);applyTheme();renderThemePop();document.getElementById('themePop').classList.remove('open');}
 function toggleThemePop(e){e.stopPropagation();renderThemePop();document.getElementById('themePop').classList.toggle('open');}
 function renderThemePop(){
@@ -683,7 +714,8 @@ function renderSB(){
   autoStatus();
   const ts=document.getElementById('tourSel');
   ts.innerHTML=Object.entries(S.tours).map(([id,t])=>`<option value="${id}"${id===S.cur?' selected':''}>${esc(t.name)}</option>`).join('');
-  document.getElementById('tourNameD').textContent=cur().name;
+  // Header now shows the static "NOMAD" brand identity rather than the per-tour name;
+  // the tour name itself is shown prominently on the Tour Overview page body.
   let h='';
   cActs().forEach(act=>{
     const dd=sDests().filter(d=>d.act===act.id);
@@ -728,6 +760,13 @@ function switchTour(id){S.cur=id;curActId=null;curDestId=null;selBudCat=null;ren
 function viewDestSB(id){if(tab==='map'&&typeof teardownGlobe==='function')teardownGlobe();curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));closeSB();renderSB();renderContent();}
 
 function goTab(t){if(tab==='map'&&t!=='map'&&typeof teardownGlobe==='function')teardownGlobe();tab=t;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));curDestId=null;renderContent();}
+function goToCountryList(){
+  goTab('map');
+  setTimeout(()=>{
+    const el=document.getElementById('mapCountryList');
+    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+  },80);
+}
 function switchTab(t,el){if(tab==='map'&&t!=='map'&&typeof teardownGlobe==='function')teardownGlobe();tab=t;curDestId=null;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');closeSB();renderSB();renderContent();}
 
 function updateHStats(){
@@ -761,6 +800,11 @@ function renderDash(){
   const totBudget=cur().budget.reduce((s,c)=>s+c.budget,0);
   const totSpent=calcTotSpent();
   const confirmed=cDests().filter(d=>d.status==='confirmed').length;
+  const visitedCountries=[...new Set(cDests().map(d=>d.country))].sort();
+  const countryFlagChips=visitedCountries.map(c=>{
+    const flag=cDests().find(d=>d.country===c)?.flag||'🌍';
+    return`<div style="display:flex;align-items:center;gap:6px;padding:.3rem .6rem;background:var(--sf2);border:1px solid var(--bd);border-radius:20px"><span style="font-size:16px">${flag}</span><span style="font-size:11px;color:var(--t2);font-family:var(--font-ui)">${esc(c)}</span></div>`;
+  }).join('');
   const actCards=cActs().map(act=>{
     const dd=sDests().filter(d=>d.act===act.id);
     const d=dd.reduce((s,x)=>s+dBtw(x.arrival,x.departure),0);
@@ -786,11 +830,11 @@ function renderDash(){
         <div style="font-size:18px;color:var(--t1);letter-spacing:.03em;font-family:var(--font-display);font-weight:600">${esc(cur().name)}</div>
         <button class="abtn" onclick="openTourEditModal()" style="flex-shrink:0;font-size:10px;margin-top:2px"><i class="ti ti-edit"></i> Edit</button>
       </div>
-      <div style="font-size:8px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem">World Tour Command Center</div>
+      <div style="font-size:8px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem">World Tour Planner</div>
       <div style="font-size:12px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;max-width:580px;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
     </div>
     <div class="sgrid">
-      <div class="scard" onclick="goTab('map')"><div class="sval">${countries}</div><div class="slbl">Countries</div></div>
+      <div class="scard" onclick="goToCountryList()"><div class="sval">${countries}</div><div class="slbl">Countries</div></div>
       <div class="scard" onclick="goTab('route')"><div class="sval">${cDests().length}</div><div class="slbl">Destinations</div><div class="ssub">${confirmed} confirmed</div></div>
       <div class="scard" onclick="goTab('events')"><div class="sval">${evCnt}</div><div class="slbl">Events</div></div>
       <div class="scard" onclick="goTab('bucket')"><div class="sval">${bktDone}/${bktTot}</div><div class="slbl">Bucket List</div><div class="ssub">${Math.round(bktDone/(bktTot||1)*100)}% done</div></div>
@@ -800,7 +844,11 @@ function renderDash(){
     <div class="sec-ttl">Journey Acts <span style="font-size:8px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(click to open in sidebar)</span></div>
     <div class="sgrid" style="margin-bottom:1rem">${actCards}</div>
     <div class="sec-ttl">Upcoming Destinations</div>
-    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${nextRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations added yet</div>'}</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1rem">${nextRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations added yet</div>'}</div>
+    <div class="sec-ttl">Countries <span style="font-size:8px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(click to view on map)</span></div>
+    <div class="scard" onclick="goToCountryList()" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;cursor:pointer">
+      ${countryFlagChips||'<div style="color:var(--t3);font-family:var(--font-ui);font-size:12px">No countries yet — add destinations to see them here.</div>'}
+    </div>
   </div>`;
 }
 function selDest(id){curDestId=id;curActId=dBy(id)?.act||curActId;renderSB();renderContent();}
@@ -1040,26 +1088,55 @@ function continentOf(country){
 
 // World landmass outline as lat/lng polygon rings (simplified but recognizable continents)
 const LAND_RINGS=[
-  // North America
-  [[71,-156],[66,-165],[60,-165],[55,-162],[58,-152],[60,-145],[60,-140],[55,-130],[50,-128],[48,-124],[42,-124],[38,-123],[34,-120],[32,-117],[24,-110],[23,-106],[20,-105],[16,-95],[18,-94],[21,-97],[26,-97],[29,-94],[30,-89],[29,-85],[28,-82],[25,-80],[27,-80],[31,-81],[35,-76],[38,-75],[40,-74],[42,-71],[45,-67],[47,-65],[49,-67],[50,-62],[52,-56],[51,-55],[48,-52],[47,-52],[46,-60],[45,-64],[44,-66],[44,-68],[45,-67],[47,-70],[48,-70],[49,-77],[51,-80],[55,-83],[58,-93],[58,-94],[55,-90],[54,-92],[58,-95],[63,-90],[66,-86],[68,-85],[69,-95],[68,-100],[70,-100],[72,-95],[74,-95],[75,-90],[74,-80],[71,-75],[70,-70],[67,-65],[63,-65],[60,-65],[58,-67],[58,-78],[56,-78],[55,-83],[58,-93]],
+  // North America (incl. Greenland separate)
+  [[71,-156],[68,-166],[63,-164],[58,-160],[57,-154],[59,-149],[60,-142],[60,-138],[55,-133],[52,-131],[50,-128],[48,-124],[44,-124],[40,-124],[37,-122],[34,-120],[32,-117],[27,-114],[23,-110],[23,-106],[21,-105],[18,-103],[16,-95],[16,-93],[18,-94],[21,-97],[26,-97],[29,-94],[30,-89],[29,-85],[27,-82],[25,-80],[26,-80],[31,-81],[33,-79],[35,-76],[37,-76],[39,-75],[40,-74],[41,-72],[42,-70],[44,-67],[45,-67],[47,-65],[46,-60],[45,-61],[46,-64],[44,-66],[43,-66],[45,-67],[47,-69],[49,-67],[50,-64],[50,-60],[51,-57],[52,-55],[49,-53],[47,-53],[46,-53],[45,-58],[44,-64],[46,-65],[48,-70],[49,-77],[51,-79],[55,-83],[58,-93],[57,-92],[55,-83],[55,-77],[58,-78],[60,-77],[62,-78],[64,-77],[66,-72],[68,-67],[70,-68],[71,-71],[70,-78],[68,-82],[66,-84],[64,-83],[62,-80],[60,-83],[58,-85],[56,-89],[55,-90],[57,-92],[58,-94],[59,-94],[58,-93]],
+  // Greenland
+  [[83,-35],[78,-22],[72,-22],[68,-30],[64,-40],[61,-46],[60,-44],[63,-50],[68,-53],[72,-55],[76,-60],[80,-55],[83,-45],[83,-35]],
   // South America
-  [[12,-72],[10,-75],[8,-77],[6,-78],[1,-79],[-3,-80],[-6,-81],[-10,-78],[-14,-76],[-18,-71],[-22,-70],[-26,-71],[-30,-71],[-34,-72],[-38,-73],[-42,-73],[-46,-75],[-50,-74],[-53,-71],[-55,-69],[-52,-69],[-50,-69],[-48,-66],[-44,-65],[-40,-63],[-38,-62],[-34,-58],[-32,-58],[-30,-57],[-27,-58],[-22,-58],[-20,-58],[-18,-58],[-15,-60],[-13,-60],[-10,-65],[-8,-65],[-5,-68],[-3,-70],[0,-70],[4,-69],[8,-67],[10,-65],[10,-67],[12,-72]],
-  // Europe
-  [[71,28],[68,33],[66,33],[65,40],[60,38],[60,30],[58,28],[55,21],[54,20],[54,14],[55,12],[57,11],[59,11],[62,5],[63,8],[66,12],[68,17],[71,25],[71,28]],
-  [[60,5],[58,7],[56,8],[55,9],[53,7],[51,4],[50,2],[49,0],[48,-2],[47,-3],[46,-1],[44,-1],[43,-2],[42,3],[40,0],[38,-1],[37,-2],[36,-5],[37,-6],[40,-9],[42,-9],[44,-9],[45,-1],[47,-2],[49,-5],[51,3],[53,4],[55,9],[58,7],[60,5]],
-  [[45,8],[44,7],[42,9],[41,9],[38,9],[37,15],[40,18],[41,16],[44,12],[45,9],[45,8]],
-  [[42,20],[40,22],[39,23],[38,24],[37,23],[36,22],[35,25],[37,27],[39,26],[41,27],[42,28],[43,24],[42,20]],
-  // Africa
-  [[37,10],[35,1],[33,-7],[31,-9],[28,-12],[24,-15],[21,-17],[17,-16],[14,-17],[12,-16],[8,-13],[5,-10],[4,-7],[5,-3],[4,3],[2,8],[0,9],[-2,10],[-5,12],[-6,12],[-9,13],[-13,13],[-17,11],[-22,14],[-26,15],[-29,16],[-33,18],[-34,20],[-34,25],[-31,29],[-28,32],[-26,33],[-23,35],[-20,35],[-16,40],[-13,40],[-10,40],[-6,39],[-3,39],[0,42],[3,41],[5,46],[8,49],[11,51],[12,43],[15,40],[16,38],[18,38],[20,37],[22,36],[24,35],[28,33],[30,32],[31,32],[33,28],[32,25],[31,25],[31,20],[30,20],[28,15],[27,15],[24,12],[20,11],[18,12],[15,15],[15,18],[18,21],[22,22],[28,24],[30,20],[33,16],[35,9],[37,10]],
-  // Asia / Middle East / India / SE Asia
-  [[44,28],[40,29],[37,28],[36,33],[35,36],[33,35],[30,34],[29,34],[27,34],[24,38],[22,39],[18,42],[16,42],[13,43],[12,44],[15,52],[18,54],[22,59],[25,61],[28,61],[28,55],[30,49],[31,48],[33,48],[35,46],[37,42],[38,41],[40,41],[42,42],[43,46],[42,48],[40,50],[38,49],[36,53],[37,56],[40,53],[44,50],[44,40],[44,28]],
-  [[37,57],[35,60],[33,62],[30,62],[29,61],[28,61],[25,61],[24,67],[22,68],[24,70],[26,68],[29,71],[30,73],[33,73],[36,71],[37,72],[38,71],[37,66],[37,57]],
-  [[35,77],[32,75],[29,72],[26,68],[24,68],[22,69],[21,72],[19,72],[15,73],[12,75],[10,77],[8,77],[9,79],[11,79],[13,80],[16,82],[18,84],[21,87],[22,89],[23,88],[24,91],[26,91],[27,89],[28,89],[28,85],[30,80],[31,78],[35,77]],
-  [[28,89],[26,92],[24,93],[22,93],[21,93],[20,94],[18,94],[16,94],[16,98],[19,98],[21,100],[20,103],[18,103],[16,103],[14,101],[12,99],[10,99],[8,99],[7,100],[5,103],[2,104],[1,104],[-2,101],[-3,104],[-1,109],[1,110],[4,114],[6,116],[8,117],[11,123],[14,121],[18,121],[22,121],[24,118],[24,112],[22,110],[18,109],[12,109],[10,106],[16,108],[20,109],[22,113],[24,118]],
-  [[40,120],[38,122],[36,120],[35,126],[37,127],[39,125],[41,129],[43,131],[45,134],[48,138],[45,142],[42,141],[40,140],[38,141],[36,140],[35,135],[34,131],[34,129],[33,130],[31,131],[32,132],[33,135],[35,136],[34,138],[35,140],[37,141],[40,141],[42,140],[44,142],[44,145],[42,140],[40,120]],
-  [[18,109],[10,107],[8,105],[6,102],[4,98],[2,98],[-2,100],[-4,102],[-6,106],[-7,109],[-7,113],[-6,116],[-3,117],[-1,117],[1,118],[3,119],[6,118],[6,116]],
+  [[12,-72],[11,-74],[9,-75],[6,-77],[2,-79],[-2,-80],[-6,-81],[-9,-79],[-12,-77],[-14,-76],[-16,-73],[-18,-71],[-21,-70],[-24,-70],[-27,-71],[-30,-71],[-33,-72],[-36,-73],[-38,-73],[-41,-73],[-44,-74],[-47,-75],[-50,-74],[-52,-73],[-54,-71],[-55,-68],[-54,-66],[-52,-69],[-50,-69],[-48,-67],[-46,-66],[-44,-65],[-42,-64],[-40,-62],[-38,-58],[-36,-57],[-35,-57],[-34,-58],[-33,-58],[-31,-58],[-28,-58],[-25,-57],[-22,-58],[-20,-58],[-18,-58],[-16,-60],[-13,-61],[-10,-65],[-8,-66],[-5,-68],[-2,-70],[1,-71],[4,-70],[7,-67],[9,-66],[11,-68],[12,-70],[12,-72]],
+  // Europe (mainland)
+  [[71,28],[69,31],[67,33],[65,40],[62,40],[60,37],[60,30],[59,28],[57,24],[55,21],[54,20],[54,15],[55,12],[57,10],[59,10],[61,4],[63,8],[65,12],[68,15],[70,21],[71,25],[71,28]],
+  // Iberia + Western Europe
+  [[60,5],[58,6],[56,8],[54,9],[53,7],[51,3],[50,2],[49,-1],[48,-3],[47,-2],[46,-1],[44,-1],[43,-2],[42,3],[40,0],[38,-1],[37,-2],[36,-6],[37,-7],[40,-9],[42,-9],[44,-9],[45,-1],[47,-2],[49,-5],[51,2],[53,4],[55,8],[58,7],[60,5]],
+  // Italy
+  [[46,8],[45,7],[44,8],[42,9],[41,9],[40,9],[38,8],[37,12],[38,16],[39,17],[40,18],[41,16],[41,14],[43,13],[44,12],[44,9],[46,8]],
+  // Balkans/Greece
+  [[46,14],[45,19],[44,20],[43,23],[42,23],[41,26],[40,23],[39,21],[38,21],[37,23],[36,22],[35,24],[34,26],[36,27],[38,27],[39,26],[40,27],[41,28],[42,27],[43,28],[44,29],[45,28],[46,17],[46,14]],
+  // Africa (single continuous silhouette, redrawn for accuracy)
+  [[37,11],[35,2],[33,-6],[32,-9],[29,-10],[27,-13],[24,-16],[21,-17],[18,-16],[15,-17],[13,-16],[10,-15],[7,-12],[5,-9],[4,-7],[5,-4],[4,2],[2,7],[0,9],[-3,10],[-5,11],[-6,12],[-9,13],[-13,12],[-17,11],[-22,14],[-26,15],[-29,16],[-32,18],[-34,20],[-34,25],[-31,29],[-29,31],[-26,33],[-24,35],[-20,35],[-17,37],[-14,40],[-11,40],[-8,40],[-5,39],[-2,40],[0,42],[2,41],[4,44],[6,48],[8,49],[10,51],[11,43],[13,42],[15,40],[17,38],[19,37],[21,37],[23,36],[26,34],[29,32],[31,32],[32,28],[31,25],[31,22],[31,20],[30,20],[28,15],[27,14],[24,12],[21,11],[18,12],[15,15],[15,18],[18,21],[22,22],[28,24],[31,20],[33,17],[35,10],[37,11]],
+  // Madagascar
+  [[-12,49],[-15,50],[-18,49],[-22,47],[-25,46],[-25,44],[-22,43],[-18,44],[-15,46],[-12,49]],
+  // Arabian Peninsula
+  [[30,35],[29,35],[28,35],[26,34],[24,37],[22,39],[19,41],[17,42],[14,43],[13,44],[14,49],[17,52],[20,58],[23,59],[25,57],[26,56],[24,52],[23,49],[24,47],[26,48],[28,49],[29,48],[30,48],[31,47],[32,44],[33,42],[33,38],[31,35],[30,35]],
+  // Turkey / Levant
+  [[42,28],[41,32],[39,31],[37,28],[36,33],[35,36],[34,36],[33,35],[31,34],[30,34],[31,33],[33,35],[35,33],[36,36],[38,35],[39,38],[40,41],[41,40],[42,35],[42,28]],
+  // Iran / Central plateau bridging to India
+  [[40,44],[38,48],[37,50],[36,53],[37,54],[38,49],[39,46],[40,44]],
+  [[38,46],[35,46],[33,48],[30,49],[28,51],[26,56],[25,57],[26,52],[28,50],[31,48],[34,46],[37,42],[38,46]],
+  // India subcontinent (clean triangular shape)
+  [[35,76],[33,73],[31,71],[28,70],[24,68],[22,69],[21,72],[20,73],[17,73],[14,74],[12,75],[10,76],[8,77],[8,78],[10,79],[13,80],[16,81],[18,84],[20,87],[21,88],[22,89],[23,89],[22,91],[24,92],[26,91],[27,89],[28,88],[28,85],[29,81],[30,79],[31,78],[33,77],[35,76]],
+  // Sri Lanka
+  [[10,80],[8,80],[6,80],[6,81],[8,82],[9,81],[10,80]],
+  // Myanmar / Indochina
+  [[28,97],[26,98],[24,98],[21,98],[19,94],[17,94],[16,98],[18,98],[20,100],[19,104],[16,103],[13,103],[11,105],[10,104],[9,105],[8,104],[10,106],[12,109],[14,109],[16,108],[18,106],[20,103],[22,103],[24,103],[25,99],[27,98],[28,97]],
+  // China / East Asia
+  [[44,87],[42,82],[40,80],[37,78],[35,77],[33,79],[31,80],[28,89],[27,89],[26,92],[25,98],[24,98],[26,100],[27,103],[26,106],[24,108],[22,108],[22,113],[24,116],[23,117],[22,114],[21,110],[20,109],[20,111],[22,113],[23,116],[24,118],[26,119],[28,121],[30,121],[32,121],[33,120],[34,119],[35,120],[36,120],[38,118],[39,122],[37,122],[38,119],[37,115],[35,115],[34,113],[34,116],[36,118],[35,120],[33,119],[31,121],[29,122],[30,121],[28,121],[26,119],[24,117],[23,113],[22,109],[24,103],[26,99],[27,87],[30,81],[33,79],[36,76],[38,75],[40,75],[42,80],[44,87]],
+  // Korea
+  [[43,131],[41,129],[39,128],[37,127],[36,126],[35,126],[34,127],[35,129],[37,129],[38,128],[40,129],[42,130],[43,131]],
+  // Japan
+  [[45,142],[43,141],[42,140],[40,140],[39,141],[37,141],[36,140],[35,140],[34,135],[33,131],[31,130],[31,131],[33,134],[34,135],[35,137],[36,138],[37,138],[38,139],[40,140],[41,141],[43,144],[45,142]],
+  // Sumatra/Indonesia (separate islands)
+  [[6,95],[4,97],[1,98],[-2,101],[-5,103],[-6,105],[-4,105],[-2,103],[1,102],[3,99],[5,97],[6,95]],
+  [[-6,106],[-7,109],[-8,113],[-8,116],[-7,114],[-6,110],[-6,106]],
+  [[1,109],[1,111],[3,114],[5,116],[6,117],[4,114],[2,111],[1,109]],
+  [[-1,120],[-3,121],[-5,120],[-3,119],[-1,120]],
+  // Philippines
+  [[18,121],[16,120],[14,121],[12,124],[10,125],[8,124],[7,125],[9,126],[12,124],[14,122],[16,122],[18,121]],
   // Australia
-  [[-11,131],[-12,136],[-14,136],[-16,139],[-17,141],[-15,143],[-12,143],[-11,143],[-13,146],[-17,146],[-20,149],[-23,151],[-25,153],[-28,153],[-31,153],[-34,151],[-35,150],[-37,150],[-38,148],[-38,145],[-38,141],[-35,138],[-35,136],[-32,134],[-32,131],[-31,129],[-26,127],[-22,123],[-20,119],[-18,122],[-16,123],[-14,126],[-13,128],[-11,131]],
+  [[-11,131],[-12,135],[-14,136],[-16,139],[-17,141],[-15,143],[-12,143],[-11,142],[-13,143],[-16,145],[-19,147],[-21,149],[-24,151],[-27,153],[-30,153],[-33,152],[-35,150],[-37,150],[-38,147],[-38,144],[-38,141],[-36,138],[-35,137],[-33,135],[-32,132],[-31,129],[-26,127],[-22,123],[-20,118],[-18,122],[-16,123],[-14,126],[-13,129],[-11,131]],
+  // New Zealand
+  [[-35,173],[-37,175],[-39,175],[-41,174],[-41,173],[-39,174],[-37,176],[-35,174],[-35,173]],
+  [[-41,174],[-43,173],[-45,167],[-46,168],[-44,171],[-42,173],[-41,174]],
 ];
 
 // Compass-style country reference dots when no full polygon available (decorative anchors)
@@ -1091,31 +1168,47 @@ function renderMap(){
   const continents=new Set();
   dests.forEach(d=>{const c=continentOf(d.country);if(c)continents.add(c);});
   const legend=cActs().filter(a=>dests.some(d=>d.act===a.id)).map(a=>`<div style="display:flex;align-items:center;gap:5px;font-size:9px;color:${a.color};font-family:var(--font-ui)"><div style="width:7px;height:7px;border-radius:50%;background:${a.color};box-shadow:0 0 4px ${a.color}"></div>${esc(a.name)}</div>`).join('');
-  return`<div class="globe-wrap" id="globeWrap">
-    <div class="globe-hud">
-      <div class="globe-stats-bar">
-        <div class="gstat"><div class="gstat-v">${visited.size}</div><div class="gstat-l">Countries</div></div>
-        <div class="gstat"><div class="gstat-v">${dests.length}</div><div class="gstat-l">Cities</div></div>
-        <div class="gstat"><div class="gstat-v">${totalDays}</div><div class="gstat-l">Days</div></div>
-        <div class="gstat"><div class="gstat-v">${continents.size}</div><div class="gstat-l">Continents</div></div>
+  const countryCards=[...visited].sort().map(c=>{
+    const flag=dests.find(d=>d.country===c)?.flag||'🌍';
+    const citiesInC=dests.filter(d=>d.country===c).map(d=>d.city).join(', ');
+    return`<div style="display:flex;align-items:center;gap:10px;padding:.7rem .9rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);box-shadow:var(--shadow)">
+      <span style="font-size:26px;flex-shrink:0">${flag}</span>
+      <div style="min-width:0"><div style="font-size:13px;color:var(--t1);font-family:var(--font-ui);font-weight:600">${esc(c)}</div><div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(citiesInC)}</div></div>
+    </div>`;
+  }).join('');
+  return`<div>
+    <div class="globe-wrap" id="globeWrap">
+      <div class="globe-hud">
+        <div class="globe-hud-row">
+          <div class="globe-stats-bar">
+            <div class="gstat"><div class="gstat-v">${visited.size}</div><div class="gstat-l">Countries</div></div>
+            <div class="gstat"><div class="gstat-v">${dests.length}</div><div class="gstat-l">Cities</div></div>
+            <div class="gstat"><div class="gstat-v">${totalDays}</div><div class="gstat-l">Days</div></div>
+            <div class="gstat"><div class="gstat-v">${continents.size}</div><div class="gstat-l">Continents</div></div>
+          </div>
+          <div class="globe-ctrls">
+            <button class="gbtn" id="heatBtn" onclick="toggleHeatMode()" title="Heat map mode"><i class="ti ti-map-2"></i></button>
+            <button class="gbtn" id="storyBtn" onclick="toggleStoryMode()" title="Story mode — auto-fly the journey"><i class="ti ti-player-play"></i></button>
+            <button class="gbtn" onclick="resetGlobeView()" title="Reset view"><i class="ti ti-refresh"></i></button>
+            <button class="gbtn" onclick="zoomGlobe(1)" title="Zoom in"><i class="ti ti-zoom-in"></i></button>
+            <button class="gbtn" onclick="zoomGlobe(-1)" title="Zoom out"><i class="ti ti-zoom-out"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="globe-legend">${legend}</div>
+      <div class="globe-info-panel" id="globeInfoPanel">
+        <button class="gip-close" onclick="closeGlobeInfo()">&#x2715;</button>
+        <div id="globeInfoBody"></div>
+      </div>
+      <div id="globeSvgHost" style="position:absolute;inset:0"></div>
+      <div class="globe-timeline">
+        <div class="timeline-track"><input type="range" class="timeline-slider" id="timelineSlider" min="0" max="${Math.max(0,dests.length-1)}" value="${dests.length-1}" oninput="onTimelineMove(this.value)"/></div>
+        <div class="timeline-label" id="timelineLabel">${dests.length?'Showing full journey through '+esc(dests[dests.length-1].city):'No destinations yet'}</div>
       </div>
     </div>
-    <div class="globe-ctrls">
-      <button class="gbtn" id="heatBtn" onclick="toggleHeatMode()" title="Heat map mode"><i class="ti ti-map-2"></i></button>
-      <button class="gbtn" id="storyBtn" onclick="toggleStoryMode()" title="Story mode — auto-fly the journey"><i class="ti ti-player-play"></i></button>
-      <button class="gbtn" onclick="resetGlobeView()" title="Reset view"><i class="ti ti-refresh"></i></button>
-      <button class="gbtn" onclick="zoomGlobe(1)" title="Zoom in"><i class="ti ti-zoom-in"></i></button>
-      <button class="gbtn" onclick="zoomGlobe(-1)" title="Zoom out"><i class="ti ti-zoom-out"></i></button>
-    </div>
-    <div class="globe-legend">${legend}</div>
-    <div class="globe-info-panel" id="globeInfoPanel">
-      <button class="gip-close" onclick="closeGlobeInfo()">&#x2715;</button>
-      <div id="globeInfoBody"></div>
-    </div>
-    <div id="globeSvgHost" style="position:absolute;inset:0"></div>
-    <div class="globe-timeline">
-      <div class="timeline-track"><input type="range" class="timeline-slider" id="timelineSlider" min="0" max="${Math.max(0,dests.length-1)}" value="${dests.length-1}" oninput="onTimelineMove(this.value)"/></div>
-      <div class="timeline-label" id="timelineLabel">${dests.length?'Showing full journey through '+esc(dests[dests.length-1].city):'No destinations yet'}</div>
+    <div class="panel" id="mapCountryList">
+      <div class="sec-ttl">Countries in this Tour · ${visited.size}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem">${countryCards||'<div style="color:var(--t3);font-family:var(--font-ui);font-size:12px">No countries yet — add destinations to see them here.</div>'}</div>
     </div>
   </div>`;
 }
@@ -1125,6 +1218,7 @@ function initSvgGlobe(){
   if(!wrap)return;
   teardownGlobe();
   attachSvgGlobeInteraction(wrap);
+  drawSvgGlobe(); // guaranteed first paint — the animation loop only redraws on subsequent changes
   animateSvgGlobe();
 }
 
@@ -1141,7 +1235,16 @@ function zoomGlobe(dir){svgGlobe.targetZoom=Math.max(0.55,Math.min(2.2,svgGlobe.
 function attachSvgGlobeInteraction(wrap){
   const host=document.getElementById('globeSvgHost');
   if(!host)return;
+  let pinchStartDist=null,pinchStartZoom=1;
+  const dist=(t1,t2)=>Math.hypot(t1.clientX-t2.clientX,t1.clientY-t2.clientY);
+
   const onDown=e=>{
+    if(e.touches&&e.touches.length===2){
+      svgGlobe.dragging=false;
+      pinchStartDist=dist(e.touches[0],e.touches[1]);
+      pinchStartZoom=svgGlobe.targetZoom;
+      return;
+    }
     svgGlobe.dragging=true;
     const p=e.touches?e.touches[0]:e;
     svgGlobe.lastX=p.clientX;svgGlobe.lastY=p.clientY;
@@ -1149,24 +1252,43 @@ function attachSvgGlobeInteraction(wrap){
     host.style.cursor='grabbing';
   };
   const onMove=e=>{
+    if(e.touches&&e.touches.length===2&&pinchStartDist){
+      e.preventDefault();
+      const d=dist(e.touches[0],e.touches[1]);
+      const ratio=d/pinchStartDist;
+      svgGlobe.targetZoom=Math.max(0.55,Math.min(2.2,pinchStartZoom*ratio));
+      return;
+    }
     if(!svgGlobe.dragging)return;
+    if(e.cancelable)e.preventDefault();
     const p=e.touches?e.touches[0]:e;
     const dx=p.clientX-svgGlobe.lastMoveX,dy=p.clientY-svgGlobe.lastMoveY;
     svgGlobe.targetRotY+=dx*0.35;
     svgGlobe.targetRotX=Math.max(-80,Math.min(80,svgGlobe.targetRotX-dy*0.35));
     svgGlobe.lastMoveX=p.clientX;svgGlobe.lastMoveY=p.clientY;
   };
-  const onUp=()=>{svgGlobe.dragging=false;host.style.cursor='grab';};
+  const onUp=e=>{
+    if(e.touches&&e.touches.length>0)return; // still one finger down after pinch ends
+    svgGlobe.dragging=false;pinchStartDist=null;
+    host.style.cursor='grab';
+  };
   const onWheel=e=>{e.preventDefault();zoomGlobe(e.deltaY<0?1:-1);};
+  const onClick=e=>{
+    if(!wasClickNotDrag())return; // ignore click that ends a drag/pinch gesture
+    const nodeEl=e.target.closest('.globe-node');
+    if(nodeEl)flyToDest(nodeEl.dataset.id);
+  };
   host.addEventListener('mousedown',onDown);
   window.addEventListener('mousemove',onMove);
   window.addEventListener('mouseup',onUp);
   host.addEventListener('touchstart',onDown,{passive:true});
-  host.addEventListener('touchmove',onMove,{passive:true});
-  host.addEventListener('touchend',onUp);
+  host.addEventListener('touchmove',onMove,{passive:false});
+  host.addEventListener('touchend',onUp,{passive:true});
+  host.addEventListener('touchcancel',onUp,{passive:true});
   host.addEventListener('wheel',onWheel,{passive:false});
+  host.addEventListener('click',onClick);
   host.style.cursor='grab';
-  svgGlobe._listeners={onDown,onMove,onUp,onWheel};
+  svgGlobe._listeners={onDown,onMove,onUp,onWheel,onClick};
 }
 
 function wasClickNotDrag(){
@@ -1181,13 +1303,13 @@ function animateSvgGlobe(){
   svgGlobe.rotY+=dRotY*0.12;
   svgGlobe.rotX+=dRotX*0.12;
   svgGlobe.zoom+=dZoom*0.12;
-  svgGlobe.pulseT+=0.05;
-  // Only redraw if something is actually moving (rotation/zoom settling) or the pulse animation needs a frame.
-  // This avoids needlessly rebuilding the SVG 60x/sec when the globe is fully at rest, which keeps
-  // interaction snappy and avoids any pointer-event interception flicker on the node markers.
+  // Redraw only while the globe is actually settling into a new rotation/zoom, or while
+  // actively being dragged/pinched. At rest, the SVG is left untouched — this keeps the DOM
+  // (and its click listeners) stable, which is what makes node clicks reliable on desktop.
+  // The "alive" pulse on the current destination is handled by a pure CSS animation instead
+  // of a per-frame redraw (see .globe-node-current keyframes).
   const isSettled=Math.abs(dRotY)<0.01&&Math.abs(dRotX)<0.01&&Math.abs(dZoom)<0.0005;
-  const hasPulsingNode=true; // last-destination node always pulses gently
-  if(!isSettled||hasPulsingNode||svgGlobe.dragging){
+  if(!isSettled||svgGlobe.dragging){
     drawSvgGlobe();
   }
 }
@@ -1285,7 +1407,6 @@ function drawSvgGlobe(){
   }
 
   // Destination nodes (only visible-hemisphere ones, sorted back-to-front by z)
-  const pulse=1+Math.sin(svgGlobe.pulseT)*0.22;
   const nodeData=dests.map((d,i)=>{
     const g=destLatLng(d);if(!g)return null;
     const p=project(g.la,g.ln);
@@ -1296,9 +1417,9 @@ function drawSvgGlobe(){
   let nodeMarkup='';
   nodeData.forEach(n=>{
     const x=cx+n.p.x*R,y=cy+n.p.y*R;
-    const baseR=(n.isLast?4.2:3)*svgGlobe.zoom*(n.isLast?pulse:1);
+    const baseR=(n.isLast?4.2:3)*svgGlobe.zoom;
     const haloR=baseR*2.4;
-    nodeMarkup+=`<g class="globe-node" data-id="${n.d.id}" style="cursor:pointer">
+    nodeMarkup+=`<g class="globe-node${n.isLast?' globe-node-current':''}" data-id="${n.d.id}" style="cursor:pointer;transform-origin:${x.toFixed(1)}px ${y.toFixed(1)}px">
       <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${haloR.toFixed(1)}" fill="${n.am.color}" opacity="0.22"/>
       <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${baseR.toFixed(1)}" fill="${n.am.color}" opacity="0.97" filter="url(#nodeglow)"/>
       <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(baseR*0.4).toFixed(1)}" fill="#fff" opacity="0.85"/>
@@ -1336,23 +1457,14 @@ function drawSvgGlobe(){
     ${arcPaths}
     ${nodeMarkup}
   </svg>`;
-
-  // attach click handlers to nodes (re-bind each draw since innerHTML replaced)
-  host.querySelectorAll('.globe-node').forEach(g=>{
-    g.addEventListener('click',e=>{
-      e.stopPropagation();
-      if(svgGlobe.dragging)return;
-      flyToDest(g.dataset.id);
-    });
-  });
-  host.querySelector('svg')?.addEventListener('click',()=>{
-    if(!wasClickNotDrag())return;
-  });
+  // Click handling uses event delegation on the host (bound once in attachSvgGlobeInteraction),
+  // not per-node listeners, so it survives the SVG being rebuilt every frame without any race condition.
 }
 
 function toggleHeatMode(){
   svgGlobe.heatMode=!svgGlobe.heatMode;
   const btn=document.getElementById('heatBtn');if(btn)btn.classList.toggle('active',svgGlobe.heatMode);
+  drawSvgGlobe();
 }
 
 function flyToDest(id){
@@ -1396,6 +1508,7 @@ function onTimelineMove(val){
   const d=dests[svgGlobe.timelineIdx];
   const lbl=document.getElementById('timelineLabel');
   if(lbl)lbl.textContent=d?("Showing journey through "+d.city+", "+d.country+" ("+(fD(d.arrival)||'TBD')+")"):'No destinations yet';
+  drawSvgGlobe();
 }
 
 function toggleStoryMode(){
