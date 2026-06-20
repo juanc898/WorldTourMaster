@@ -1018,7 +1018,7 @@ function renderProfile(){
 // ── FIELD DEFINITIONS (import/export sync) ───────────────────────────────────
 const FIELDS=[
   {k:'act',l:'Act Name',t:'text'},{k:'country',l:'Country',t:'text'},{k:'city',l:'City/Region',t:'text'},
-  {k:'flag',l:'Flag Emoji',t:'text'},{k:'status',l:'Status (planned/confirmed/wishlist/completed/cancelled)',t:'text'},
+  {k:'status',l:'Status (planned/confirmed/wishlist/completed/cancelled)',t:'text'},
   {k:'priority',l:'Priority (1-5)',t:'number'},{k:'arrival',l:'Arrival Date (YYYY-MM-DD)',t:'date'},
   {k:'departure',l:'Departure Date (YYYY-MM-DD)',t:'date'},{k:'event',l:'Event Name',t:'text'},
   {k:'event_start',l:'Event Start Date (YYYY-MM-DD)',t:'date'},{k:'event_end',l:'Event End Date (YYYY-MM-DD)',t:'date'},
@@ -1096,7 +1096,7 @@ function exportTemplate(){
   const h=FIELDS.map(f=>'"'+f.l+'"').join(',');
   const ex=FIELDS.map(f=>{
     if(f.k==='act')return'"The Prelude"';if(f.k==='country')return'"Spain"';
-    if(f.k==='city')return'"Barcelona"';if(f.k==='flag')return'"🇪🇸"';
+    if(f.k==='city')return'"Barcelona"';
     if(f.k==='status')return'"planned"';if(f.k==='priority')return'"3"';
     if(f.k==='arrival')return'"2027-08-01"';if(f.k==='departure')return'"2027-08-05"';
     if(f.k==='visa_required')return'"no"';if(f.k==='vaccines_required')return'"no"';
@@ -1138,26 +1138,82 @@ function importCSV(input){
       const f=FIELDS.find(x=>x.l.toLowerCase()===h.trim().toLowerCase()||x.k.toLowerCase()===h.trim().toLowerCase());
       return f?f.k:null;
     });
+    const STATUS_OPTS=['planned','confirmed','wishlist','completed','cancelled'];
+    const MOT_OPTS=['Flight','Train','Ferry','Car Rental','Bus','Private Transfer','Cruise'];
+    const TPAID_OPTS=['no','partial','yes'];
+    const VISA_OPTS=['Physical','E-Visa','On Arrival'];
+    const correctionNotes=[]; // collects a human-readable log of every auto-correction made
     const newD=[];let conflict=false;
     for(let i=1;i<lines.length;i++){
       if(!lines[i].trim())continue;
       const vals=parseCSVRow(lines[i]);
       const obj={id:uid(),status:'planned',persons:2,priority:3,event_cost:0,t_paid:'no'};
+      const rowLabel=()=>obj.city||`row ${i}`;
       fkeys.forEach((k,j)=>{
         if(!k||vals[j]===undefined)return;
         const v=vals[j].trim();if(!v)return;
-        if(k==='act'){const m=cActs().find(a=>a.name.toLowerCase()===v.toLowerCase());obj.act=m?m.id:cActs()[0]?.id;}
+        if(k==='act'){
+          const exactM=cActs().find(a=>a.name.toLowerCase()===v.toLowerCase());
+          if(exactM){obj.act=exactM.id;}
+          else{
+            const fuzzyName=fuzzyMatch(v,cActs().map(a=>a.name));
+            if(fuzzyName){const m=cActs().find(a=>a.name===fuzzyName);obj.act=m.id;correctionNotes.push(`"${v}" → Act "${fuzzyName}" (${rowLabel()})`);}
+            else obj.act=cActs()[0]?.id;
+          }
+        }
+        else if(k==='country'){
+          const resolved=resolveCountryName(v);
+          if(resolved){
+            obj.country=resolved;
+            obj.flag=flagForCountryName(resolved); // flag is always derived, never read from the file
+            if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Country "${resolved}"`);
+          }else{
+            obj.country=v; // no close match found — keep the original text rather than discarding it
+          }
+        }
+        else if(k==='status'){
+          const resolved=fuzzyMatch(v,STATUS_OPTS)||'planned';
+          obj.status=resolved;
+          if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Status "${resolved}" (${rowLabel()})`);
+        }
+        else if(k==='mot'){
+          if(v){
+            const resolved=fuzzyMatch(v,MOT_OPTS);
+            obj.mot=resolved||v;
+            if(resolved&&resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Transport Mode "${resolved}" (${rowLabel()})`);
+          }
+        }
+        else if(k==='t_paid'){
+          const resolved=fuzzyMatch(v,TPAID_OPTS)||'no';
+          obj.t_paid=resolved;
+          if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Transport Paid "${resolved}" (${rowLabel()})`);
+        }
+        else if(k==='visa_type'){
+          const resolved=fuzzyMatch(v,VISA_OPTS);
+          obj.visa_type=resolved||v;
+          if(resolved&&resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Visa Type "${resolved}" (${rowLabel()})`);
+        }
         else if(k==='todo')obj[k]=v.replace(/\|/g,'\n');
         else if(k==='visa_required'||k==='vaccines_required')obj[k]=/^(yes|y|true|1)$/i.test(v);
         else if(FIELDS.find(f=>f.k===k)?.t==='number')obj[k]=parseFloat(v)||0;
         else obj[k]=v;
       });
       if(!obj.city)continue;
+      if(!obj.flag&&obj.country)obj.flag=flagForCountryName(obj.country)||'📍';
       if(obj.arrival&&obj.departure){const ex=cDests().find(d=>d.city?.toLowerCase()===obj.city?.toLowerCase()&&d.arrival===obj.arrival);if(ex)conflict=true;}
       newD.push(obj);
     }
     const go=!conflict||confirm(`⚠️ Some destinations may conflict with existing ones (same city + arrival date).\n\nImport ${newD.length} destinations anyway?`);
-    if(go){cur().destinations.push(...newD);renderSB();renderContent();alert(`✓ Imported ${newD.length} destinations.`);}
+    if(go){
+      cur().destinations.push(...newD);renderSB();renderContent();
+      let msg=`✓ Imported ${newD.length} destinations.`;
+      if(correctionNotes.length){
+        const shown=correctionNotes.slice(0,8).join('\n');
+        const more=correctionNotes.length>8?`\n…and ${correctionNotes.length-8} more`:'';
+        msg+=`\n\nAuto-corrected ${correctionNotes.length} likely typo(s):\n${shown}${more}`;
+      }
+      alert(msg);
+    }
     input.value='';
   };
   reader.readAsText(file,'UTF-8');
@@ -1219,6 +1275,81 @@ function flagForCountryName(name){
   const entry=COUNTRIES.find(c=>c[1]===name);
   return entry?codeToFlag(entry[0]):'';
 }
+
+// ── FUZZY MATCHING (for CSV import typo tolerance) ───────────────────────────
+// Classic Levenshtein edit-distance: counts the minimum number of single-character
+// insertions/deletions/substitutions needed to turn string a into string b.
+function levenshtein(a,b){
+  a=a.toLowerCase();b=b.toLowerCase();
+  if(a===b)return 0;
+  const m=a.length,n=b.length;
+  if(m===0)return n;if(n===0)return m;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){
+    const cur=[i];
+    for(let j=1;j<=n;j++){
+      const cost=a[i-1]===b[j-1]?0:1;
+      cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+cost);
+    }
+    prev=cur;
+  }
+  return prev[n];
+}
+// Finds the closest match to `input` among `candidates` (array of strings). Accepts the match
+// only if it's "close enough" relative to the input's length — short strings need a tighter
+// tolerance than long ones, otherwise something like "USA" could fuzzy-match almost anything.
+// Returns the matched candidate string, or null if nothing is close enough.
+// Damerau-Levenshtein distance: like ordinary Levenshtein, but treats swapping two ADJACENT
+// letters (a transposition, e.g. "ia"→"ai" as in "Spian"→"Spain") as a single edit instead of
+// two. Transpositions are by far the most common real-world typo, so weighting them this way
+// is what correctly resolves "Spian"→"Spain" over "Sudan", and "Chila"→"Chile" over "China" —
+// both of which are coincidental same-distance matches under plain Levenshtein but are clearly
+// not what a transposed-letter typo was reaching for.
+function damerauLevenshtein(a,b){
+  a=a.toLowerCase();b=b.toLowerCase();
+  if(a===b)return 0;
+  const m=a.length,n=b.length;
+  const d=Array.from({length:m+1},()=>new Array(n+1).fill(0));
+  for(let i=0;i<=m;i++)d[i][0]=i;
+  for(let j=0;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++){
+    for(let j=1;j<=n;j++){
+      const cost=a[i-1]===b[j-1]?0:1;
+      d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+cost);
+      if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]){
+        d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1);
+      }
+    }
+  }
+  return d[m][n];
+}
+function fuzzyMatch(input,candidates){
+  if(!input)return null;
+  const norm=s=>s.toLowerCase().trim();
+  const target=norm(input);
+  // exact match (case/whitespace-insensitive) always wins first
+  const exact=candidates.find(c=>norm(c)===target);
+  if(exact)return exact;
+  // substring containment is a strong signal too (e.g. "Korea" typed for "South Korea")
+  const contains=candidates.find(c=>norm(c).includes(target)||target.includes(norm(c)));
+  if(contains&&target.length>=3)return contains;
+  // Compute distance to every candidate, then check for ties at the best distance — if two or
+  // more genuinely different candidates are equally close, refuse to guess rather than silently
+  // picking one and risking a wrong real-world match. Only return a match when there's a single
+  // unambiguous winner.
+  let bestDist=Infinity;
+  candidates.forEach(c=>{const d=damerauLevenshtein(target,norm(c));if(d<bestDist)bestDist=d;});
+  const maxAllowed=Math.max(2,Math.ceil(target.length*0.34)); // roughly 1/3 of characters may differ, minimum tolerance of 2 edits so short names with a transposed letter (e.g. "Spian"→"Spain") still match
+  if(bestDist>maxAllowed)return null;
+  const winners=candidates.filter(c=>damerauLevenshtein(target,norm(c))===bestDist);
+  return winners.length===1?winners[0]:null;
+}
+// Fuzzy-resolves a typed country name to the closest official country name in COUNTRIES.
+function resolveCountryName(input){
+  if(!input)return null;
+  return fuzzyMatch(input,COUNTRIES.map(c=>c[1]));
+}
+
 function onCountryChange(){
   const sel=document.getElementById('f_country');
   const flagInp=document.getElementById('f_flag');
