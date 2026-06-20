@@ -2268,7 +2268,7 @@ function createTour(){
   const name=prompt('Tour name:','New World Tour');if(!name)return;
   const desc=prompt('Tour description (optional):','')||'';
   const id=uid();
-  S.tours[id]={name,desc,acts:[{id:uid(),name:'Act I',subtitle:'The beginning',color:'#C9A84C'}],destinations:[],bktCategories:[],bucket:[],budget:[{id:uid(),name:'Accommodation',budget:10000,color:'#C9A84C',expenses:[],linked:'hotels'},{id:uid(),name:'Flights',budget:8000,color:'#4B8BC8',expenses:[],linked:'transport'}],budgetOrder:[]};
+  S.tours[id]={name,desc,acts:[{id:uid(),name:'Act I',subtitle:'The beginning',color:'#C9A84C'}],destinations:[],bktCategories:[],bucket:[],budget:[{id:uid(),name:'Accommodation',budget:0,color:'#C9A84C',expenses:[],linked:'hotels'},{id:uid(),name:'Flights',budget:0,color:'#4B8BC8',expenses:[],linked:'transport'}],budgetOrder:[]};
   S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
