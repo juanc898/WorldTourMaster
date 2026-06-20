@@ -1165,6 +1165,16 @@ function continentOf(country){
   return map[country]||null;
 }
 
+// Anchor points for continent-level labels, shown only at low zoom (see drawSvgGlobe labels tier)
+const CONTINENT_LABELS=[
+  {name:'NORTH AMERICA',la:45,ln:-100},
+  {name:'SOUTH AMERICA',la:-15,ln:-60},
+  {name:'EUROPE',la:50,ln:15},
+  {name:'AFRICA',la:5,ln:20},
+  {name:'ASIA',la:45,ln:90},
+  {name:'OCEANIA',la:-23,ln:135},
+];
+
 // World landmass outline as lat/lng polygon rings (simplified but recognizable continents)
 const LAND_RINGS=[
   // North America (incl. Greenland separate)
@@ -1321,9 +1331,9 @@ function buildSvgSkeleton(wrap){
   host.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;touch-action:none">
     <defs>
       <radialGradient id="sphereShade" cx="35%" cy="32%" r="75%">
-        <stop offset="0%" stop-color="#1A4A66"/>
-        <stop offset="55%" stop-color="#0E2C40"/>
-        <stop offset="100%" stop-color="#050E16"/>
+        <stop offset="0%" stop-color="#1E5C82"/>
+        <stop offset="55%" stop-color="#123A56"/>
+        <stop offset="100%" stop-color="#061522"/>
       </radialGradient>
       <radialGradient id="atmGlow" cx="50%" cy="50%" r="50%">
         <stop offset="80%" stop-color="#5CE8FF" stop-opacity="0"/>
@@ -1344,6 +1354,7 @@ function buildSvgSkeleton(wrap){
     <g id="gHeat"></g>
     <g id="gArcs"></g>
     <g id="gNodes"></g>
+    <g id="gLabels"></g>
   </svg>`;
   svgGlobe.svgEl=host.querySelector('svg');
   svgGlobe.gAtmo=host.querySelector('#gAtmo');
@@ -1352,6 +1363,7 @@ function buildSvgSkeleton(wrap){
   svgGlobe.gHeat=host.querySelector('#gHeat');
   svgGlobe.gArcs=host.querySelector('#gArcs');
   svgGlobe.gNodes=host.querySelector('#gNodes');
+  svgGlobe.gLabels=host.querySelector('#gLabels');
 }
 
 function teardownGlobe(){
@@ -1557,7 +1569,9 @@ function drawSvgGlobe(){
   svgGlobe.gAtmo.setAttribute('cx',cx);svgGlobe.gAtmo.setAttribute('cy',cy);svgGlobe.gAtmo.setAttribute('r',(sphereR*1.18).toFixed(1));
   svgGlobe.gSphere.setAttribute('cx',cx);svgGlobe.gSphere.setAttribute('cy',cy);svgGlobe.gSphere.setAttribute('r',sphereR.toFixed(1));
 
-  // Project landmass rings, splitting at horizon (z<0 hidden)
+  // Project landmass rings, splitting at horizon (z<0 hidden). Filled with a latitude-aware
+  // terrain tint (green near temperate/tropical bands, tan/ochre near deserts and poles) so the
+  // globe reads like a satellite image of Earth rather than a wireframe outline.
   let landPaths='';
   LAND_RINGS.forEach(ring=>{
     let segs=[];let cur=[];
@@ -1571,10 +1585,18 @@ function drawSvgGlobe(){
       }
     });
     if(cur.length>1)segs.push(cur);
+    // Average latitude of this ring drives its terrain tint
+    const avgLat=ring.reduce((s,[la])=>s+la,0)/ring.length;
+    const absLat=Math.abs(avgLat);
+    let fillCol;
+    if(absLat>55)fillCol='#7A8A6E';        // near-polar: muted tundra green-grey
+    else if(absLat>30)fillCol='#5C8A52';   // temperate: green
+    else if(absLat>15)fillCol='#8FA85C';   // subtropical: olive
+    else fillCol='#B89B5E';                // tropical/desert band: tan/ochre
     segs.forEach(seg=>{
       if(seg.length<2)return;
-      const d='M'+seg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L');
-      landPaths+=`<path d="${d}" fill="none" stroke="#3A6B82" stroke-width="${1.1*svgGlobe.zoom}" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>`;
+      const d='M'+seg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L')+'Z';
+      landPaths+=`<path d="${d}" fill="${fillCol}" stroke="#2E4A2E" stroke-width="${0.6*svgGlobe.zoom}" stroke-linejoin="round" opacity="0.88"/>`;
     });
   });
   svgGlobe.gLand.innerHTML=landPaths;
@@ -1648,6 +1670,47 @@ function drawSvgGlobe(){
   svgGlobe.hitTargets=hitTargets; // used by the click handler, see attachSvgGlobeInteraction
   // Click handling uses event delegation on the host (bound once in attachSvgGlobeInteraction),
   // not per-node listeners, so it survives the SVG being rebuilt every frame without any race condition.
+
+  // ── ZOOM-TIERED LABELS ──────────────────────────────────────────────────────
+  // Mirrors how Mapbox/Polarsteps-style globes reveal detail: continents only when zoomed out,
+  // country names once you zoom in a bit, and individual city/destination names once you're in
+  // close — so the globe always shows just enough detail for the current zoom level, building
+  // toward "the places you're going" as you approach them.
+  const z=svgGlobe.zoom;
+  let labelMarkup='';
+  if(z<1.15){
+    // Tier 1 — continents only
+    CONTINENT_LABELS.forEach(c=>{
+      const p=project(c.la,c.ln);
+      if(p.z<0.15)return; // only label continents facing the viewer head-on, avoids edge clutter
+      const x=cx+p.x*R,y=cy+p.y*R;
+      const op=Math.min(1,(p.z-0.15)*2.5);
+      labelMarkup+=`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="${(11*Math.min(z,1)).toFixed(1)}" font-family="var(--font-ui)" font-weight="700" letter-spacing="1.5" fill="#EAF6FF" opacity="${(op*0.8).toFixed(2)}" style="text-shadow:0 0 4px rgba(0,0,0,.8)">${esc(c.name)}</text>`;
+    });
+  }
+  if(z>=1.15&&z<2.1){
+    // Tier 2 — country names fade in, but only for countries that are actually part of the trip
+    // (keeps the globe readable instead of plastering every nation on Earth)
+    const fadeIn=Math.min(1,(z-1.15)/0.4);
+    Object.entries(GEO).forEach(([name,g])=>{
+      if(!visited.has(name))return;
+      const p=project(g.la,g.ln);
+      if(p.z<0.1)return;
+      const x=cx+p.x*R,y=cy+p.y*R-10*z;
+      labelMarkup+=`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="${(9*z*0.6+6).toFixed(1)}" font-family="var(--font-ui)" font-weight="600" fill="#D8ECFF" opacity="${(fadeIn*0.9).toFixed(2)}" style="text-shadow:0 0 3px rgba(0,0,0,.85)">${esc(name.toUpperCase())}</text>`;
+    });
+  }
+  if(z>=1.9){
+    // Tier 3 — your actual destination cities, the real payoff: as you zoom in toward a place
+    // you're going, its name appears right next to the glowing node.
+    const fadeIn=Math.min(1,(z-1.9)/0.5);
+    nodeData.forEach(n=>{
+      const x=cx+n.p.x*R,y=cy+n.p.y*R;
+      const baseR=(n.isLast?4.2:3)*z;
+      labelMarkup+=`<text x="${(x+baseR+5).toFixed(1)}" y="${(y+3.5).toFixed(1)}" font-size="${(10*Math.min(z,2.6)*0.5+8).toFixed(1)}" font-family="var(--font-ui)" font-weight="700" fill="#fff" opacity="${fadeIn.toFixed(2)}" style="text-shadow:0 0 4px rgba(0,0,0,.9),0 0 8px ${n.am.color}">${esc(n.d.city)}</text>`;
+    });
+  }
+  svgGlobe.gLabels.innerHTML=labelMarkup;
 }
 
 function toggleHeatMode(){
