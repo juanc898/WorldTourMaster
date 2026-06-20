@@ -553,8 +553,8 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 <div class="mbody">
   <div class="msect"><div class="msttl">Destination</div><div class="mflds">
     <div class="f2"><div class="fg"><label class="flbl">Act</label><select class="fi" id="f_act"></select></div><div class="fg"><label class="flbl">Status</label><select class="fi" id="f_status"><option value="planned">Planned</option><option value="confirmed">Confirmed</option><option value="wishlist">Wishlist</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></div></div>
-    <div class="f2"><div class="fg"><label class="flbl">Country</label><input class="fi" id="f_country" type="text" placeholder="e.g. Spain"/></div><div class="fg"><label class="flbl">City / Region</label><input class="fi" id="f_city" type="text" placeholder="e.g. Barcelona"/></div></div>
-    <div class="f2"><div class="fg"><label class="flbl">Flag emoji</label><input class="fi" id="f_flag" type="text" placeholder="🇪🇸"/></div><div class="fg"><label class="flbl">Priority (1-5)</label><select class="fi" id="f_priority"><option value="5">★★★★★ Must do</option><option value="4">★★★★ High</option><option value="3" selected>★★★ Medium</option><option value="2">★★ Low</option><option value="1">★ Someday</option></select></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Country</label><select class="fi" id="f_country" onchange="onCountryChange()"><option value="">— Select country —</option></select></div><div class="fg"><label class="flbl">City / Region</label><input class="fi" id="f_city" type="text" placeholder="e.g. Barcelona"/></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Flag</label><input class="fi" id="f_flag" type="text" readonly placeholder="Auto-filled from country" style="cursor:default;opacity:.85"/></div><div class="fg"><label class="flbl">Priority (1-5)</label><select class="fi" id="f_priority"><option value="5">★★★★★ Must do</option><option value="4">★★★★ High</option><option value="3" selected>★★★ Medium</option><option value="2">★★ Low</option><option value="1">★ Someday</option></select></div></div>
   </div></div>
   <div class="msect"><div class="msttl">Dates &amp; Stay</div><div class="mflds">
     <div class="f3">
@@ -564,8 +564,9 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     </div>
   </div></div>
   <div class="msect"><div class="msttl">Event / Festival / Experience</div><div class="mflds">
-    <div class="f2"><div class="fg"><label class="flbl">Event Name</label><input class="fi" id="f_event" type="text" placeholder="e.g. Running of the Bulls"/></div><div class="fg"><label class="flbl">Event Date(s)</label><input class="fi" id="f_event_date" type="text" placeholder="e.g. Jul 6–14, 2027"/></div></div>
-    <div class="f2"><div class="fg"><label class="flbl">Event Type</label><input class="fi" id="f_event_type" type="text" placeholder="e.g. Cultural / Music / Sport"/></div><div class="fg"><label class="flbl">Event Cost ($)</label><input class="fi" id="f_event_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Event Name</label><input class="fi" id="f_event" type="text" placeholder="e.g. Running of the Bulls"/></div><div class="fg"><label class="flbl">Event Type</label><input class="fi" id="f_event_type" type="text" placeholder="e.g. Cultural / Music / Sport"/></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Event Start Date</label><input class="fi" id="f_event_start" type="date"/></div><div class="fg"><label class="flbl">Event End Date <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_event_end" type="date"/></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Event Cost ($)</label><input class="fi" id="f_event_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"></div></div>
   </div></div>
   <div class="msect"><div class="msttl">Accommodation</div><div class="mflds">
     <div class="f2"><div class="fg"><label class="flbl">Hotel / Property</label><input class="fi" id="f_hotel" type="text" placeholder="Hotel name"/></div><div class="fg"><label class="flbl">Booking Ref #</label><input class="fi" id="f_hotel_ref" type="text" placeholder="Booking #"/></div></div>
@@ -573,11 +574,27 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     <div class="f3"><div class="fg"><label class="flbl">Cost/Night</label><div class="fc" id="f_cpn">—</div></div><div class="fg"><label class="flbl">Cost/Night/Person</label><div class="fc" id="f_cpnpp">—</div></div><div class="fg"><label class="flbl">Balance Owed</label><div class="fc" id="f_owed">—</div></div></div>
   </div></div>
   <div class="msect"><div class="msttl">Transportation</div><div class="mflds">
-    <div class="f2"><div class="fg"><label class="flbl">Mode</label><select class="fi" id="f_mot"><option value="">— None —</option><option value="Flight">✈ Flight</option><option value="Train">🚆 Train</option><option value="Ferry">⛴ Ferry</option><option value="Car Rental">🚗 Car Rental</option><option value="Bus">🚌 Bus</option><option value="Private Transfer">🚐 Transfer</option><option value="Cruise">🛳 Cruise</option></select></div><div class="fg"><label class="flbl">Flight/Train #</label><input class="fi" id="f_t_num" type="text" placeholder="e.g. FR3921"/></div></div>
-    <div class="f2"><div class="fg"><label class="flbl">Booking #</label><input class="fi" id="f_t_ref" type="text" placeholder="Confirmation #"/></div><div class="fg"><label class="flbl">Connection Info</label><input class="fi" id="f_t_connection" type="text" placeholder="e.g. Stop in ZRH 2h30m"/></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Mode</label><select class="fi" id="f_mot"><option value="">— None —</option><option value="Flight">✈ Flight</option><option value="Train">🚆 Train</option><option value="Ferry">⛴ Ferry</option><option value="Car Rental">🚗 Car Rental</option><option value="Bus">🚌 Bus</option><option value="Private Transfer">🚐 Transfer</option><option value="Cruise">🛳 Cruise</option></select></div><div class="fg"><label class="flbl">Company</label><input class="fi" id="f_t_company" type="text" placeholder="e.g. Lufthansa, Eurail, Hertz"/></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Flight/Train #</label><input class="fi" id="f_t_num" type="text" placeholder="e.g. FR3921"/></div><div class="fg"><label class="flbl">Booking #</label><input class="fi" id="f_t_ref" type="text" placeholder="Confirmation #"/></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Connection Info</label><input class="fi" id="f_t_connection" type="text" placeholder="e.g. Stop in ZRH 2h30m"/></div><div class="fg"></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Dep. Airport/Station</label><input class="fi" id="f_t_dep_port" type="text" placeholder="e.g. ORD"/></div><div class="fg"><label class="flbl">Arr. Airport/Port</label><input class="fi" id="f_t_arr_port" type="text" placeholder="e.g. VCE"/></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Departure Date &amp; Time</label><input class="fi" id="f_t_dep_dt" type="datetime-local"/></div><div class="fg"><label class="flbl">Arrival Date &amp; Time</label><input class="fi" id="f_t_arr_dt" type="datetime-local"/></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Transport Cost ($)</label><input class="fi" id="f_t_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"><label class="flbl">Transport Paid?</label><select class="fi" id="f_t_paid"><option value="no">Not paid</option><option value="partial">Partially paid</option><option value="yes">Fully paid</option></select></div></div>
+  </div></div>
+  <div class="msect"><div class="msttl">Visa Requirements</div><div class="mflds">
+    <div class="fg" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="f_visa_required" onchange="toggleVisaFields()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer"/><label class="flbl" for="f_visa_required" style="cursor:pointer">Visa required for this destination?</label></div>
+    <div id="visaExtraFields" style="display:none">
+      <div class="f2">
+        <div class="fg"><label class="flbl">Visa Type</label><select class="fi" id="f_visa_type"><option value="Physical">Physical Visa</option><option value="E-Visa">E-Visa</option><option value="On Arrival">Visa On Arrival</option></select></div>
+        <div class="fg"><label class="flbl">Visa Cost ($) <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_visa_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="msect"><div class="msttl">Vaccines / Other Paperwork Required</div><div class="mflds">
+    <div class="fg" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="f_vaccines_required" onchange="toggleVaccineFields()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer"/><label class="flbl" for="f_vaccines_required" style="cursor:pointer">Vaccines or other paperwork required?</label></div>
+    <div id="vaccineExtraFields" style="display:none">
+      <div class="fg"><label class="flbl">Which vaccines / paperwork <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_vaccines_detail" type="text" placeholder="e.g. Yellow Fever, Typhoid, proof of vaccination card"/></div>
+    </div>
   </div></div>
   <div class="msect"><div class="msttl">Notes &amp; Things To Do</div><div class="mflds">
     <div class="fg"><label class="flbl">Notes, Memories &amp; Intel</label><textarea class="fi" id="f_notes" style="min-height:72px" placeholder="Research, memories, what to pack…"></textarea></div>
@@ -756,7 +773,7 @@ let S={
         {id:'bc3',name:'Food & Drink',budget:8000,color:'#4BC896',expenses:[]},
         {id:'bc4',name:'Events & Tickets',budget:5000,color:'#C84B6B',expenses:[],linked:'events'},
         {id:'bc5',name:'Entertainment',budget:3000,color:'#C8734B',expenses:[]},
-        {id:'bc6',name:'Visas & Docs',budget:1000,color:'#C8C84B',expenses:[]},
+        {id:'bc6',name:'Visas & Docs',budget:1000,color:'#C8C84B',expenses:[],linked:'visas'},
         {id:'bc7',name:'Insurance',budget:1000,color:'#6B8080',expenses:[]},
       ],
       budgetOrder:['bc1','bc2','bc3','bc4','bc5','bc6','bc7'],
@@ -948,7 +965,8 @@ function renderProfile(){
     const dDT=d.t_dep_dt?new Date(d.t_dep_dt):null,aDT=d.t_arr_dt?new Date(d.t_arr_dt):null;
     const dStr=dDT?dDT.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+WD[dDT.getDay()]+' '+dDT.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
     const aStr=aDT?aDT.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+WD[aDT.getDay()]+' '+aDT.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
-    tHTML=`${d.t_num?`<div class="drow"><span class="dlbl">Number</span><span class="dval">${esc(d.t_num)}</span></div>`:''}`
+    tHTML=`${d.t_company?`<div class="drow"><span class="dlbl">Company</span><span class="dval gld">${esc(d.t_company)}</span></div>`:''}`
+      +`${d.t_num?`<div class="drow"><span class="dlbl">Number</span><span class="dval">${esc(d.t_num)}</span></div>`:''}`
       +`${d.t_ref?`<div class="drow"><span class="dlbl">Booking #</span><span class="dval">${esc(d.t_ref)}</span></div>`:''}`
       +`<div class="drow"><span class="dlbl">Mode</span><span class="dval gld">${esc(d.mot)}</span></div>`
       +`<div class="drow"><span class="dlbl">Departs</span><span class="dval">${esc(d.t_dep_port||'—')} · ${dStr}</span></div>`
@@ -956,6 +974,13 @@ function renderProfile(){
       +`${d.t_connection?`<div class="drow"><span class="dlbl">Connection</span><span class="dval">${esc(d.t_connection)}</span></div>`:''}`
       +`<div class="drow"><span class="dlbl">Cost</span><span class="dval">${d.t_cost>0?'$'+d.t_cost.toFixed(2):'—'}</span></div>`
       +`<div class="drow"><span class="dlbl">Payment</span><span class="dval">${tb}</span></div>`;
+  }
+  let visaHealthHTML='';
+  if(d.visa_required||d.vaccines_required){
+    visaHealthHTML=`<div class="pblk-f"><div class="bttl">Visa &amp; Health Requirements</div>`
+      +(d.visa_required?`<div class="drow"><span class="dlbl">Visa Required</span><span class="dval pyes" style="background:none;padding:0">✓ Yes — ${esc(d.visa_type||'Physical')}</span></div>${d.visa_cost>0?`<div class="drow"><span class="dlbl">Visa Cost</span><span class="dval">$${parseFloat(d.visa_cost).toFixed(2)}</span></div>`:''}`:'')
+      +(d.vaccines_required?`<div class="drow"><span class="dlbl">Vaccines/Paperwork</span><span class="dval pyes" style="background:none;padding:0">✓ Required</span></div>${d.vaccines_detail?`<div class="drow"><span class="dlbl">Details</span><span class="dval">${esc(d.vaccines_detail)}</span></div>`:''}`:'')
+      +`</div>`;
   }
   const todoItems=d.todo?d.todo.split('\n').filter(t=>t.trim()).map(t=>`<li class="todo-item">${esc(t)}</li>`).join(''):'';
   return`<div class="prof-wrap">
@@ -983,6 +1008,7 @@ function renderProfile(){
       </div>
     </div>
     <div class="pblk-f"><div class="bttl">Transportation</div>${tHTML}</div>
+    ${visaHealthHTML}
     ${d.notes?`<div class="pblk-f"><div class="bttl">Notes &amp; Memories</div><div class="notes-box">${esc(d.notes)}</div></div>`:''}
     ${todoItems?`<div class="pblk-f"><div class="bttl">Things To Do</div><ul class="todo-list">${todoItems}</ul></div>`:''}
     <button onclick="openDestModal('${d.id}')" style="margin-top:.25rem;padding:6px 12px;background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);color:var(--gold);border-radius:var(--radius);font-family:var(--font-ui);font-size:10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em"><i class="ti ti-edit"></i> Edit Destination</button>
@@ -995,17 +1021,21 @@ const FIELDS=[
   {k:'flag',l:'Flag Emoji',t:'text'},{k:'status',l:'Status (planned/confirmed/wishlist/completed/cancelled)',t:'text'},
   {k:'priority',l:'Priority (1-5)',t:'number'},{k:'arrival',l:'Arrival Date (YYYY-MM-DD)',t:'date'},
   {k:'departure',l:'Departure Date (YYYY-MM-DD)',t:'date'},{k:'event',l:'Event Name',t:'text'},
-  {k:'event_date',l:'Event Date(s)',t:'text'},{k:'event_type',l:'Event Type',t:'text'},
+  {k:'event_start',l:'Event Start Date (YYYY-MM-DD)',t:'date'},{k:'event_end',l:'Event End Date (YYYY-MM-DD)',t:'date'},
+  {k:'event_type',l:'Event Type',t:'text'},
   {k:'event_cost',l:'Event Cost ($)',t:'number'},{k:'hotel',l:'Hotel/Property',t:'text'},
   {k:'hotel_ref',l:'Hotel Booking Ref',t:'text'},{k:'cost',l:'Hotel Total Cost ($)',t:'number'},
   {k:'persons',l:'Persons Sharing',t:'number'},{k:'paid',l:'Hotel Amount Paid ($)',t:'number'},
-  {k:'mot',l:'Transport Mode',t:'text'},{k:'t_num',l:'Flight/Train Number',t:'text'},
+  {k:'mot',l:'Transport Mode',t:'text'},{k:'t_company',l:'Transport Company',t:'text'},{k:'t_num',l:'Flight/Train Number',t:'text'},
   {k:'t_ref',l:'Transport Booking #',t:'text'},{k:'t_dep_port',l:'Departure Airport/Station',t:'text'},
   {k:'t_arr_port',l:'Arrival Airport/Station',t:'text'},
   {k:'t_dep_dt',l:'Departure DateTime (YYYY-MM-DDTHH:MM)',t:'text'},
   {k:'t_arr_dt',l:'Arrival DateTime (YYYY-MM-DDTHH:MM)',t:'text'},
   {k:'t_connection',l:'Connection Info',t:'text'},{k:'t_cost',l:'Transport Cost ($)',t:'number'},
   {k:'t_paid',l:'Transport Paid (yes/no/partial)',t:'text'},
+  {k:'visa_required',l:'Visa Required (yes/no)',t:'text'},{k:'visa_type',l:'Visa Type (Physical/E-Visa/On Arrival)',t:'text'},
+  {k:'visa_cost',l:'Visa Cost ($)',t:'number'},
+  {k:'vaccines_required',l:'Vaccines/Paperwork Required (yes/no)',t:'text'},{k:'vaccines_detail',l:'Vaccines/Paperwork Detail',t:'text'},
   {k:'notes',l:'Notes & Memories',t:'text'},{k:'todo',l:'Things To Do (use | for line breaks)',t:'text'},
 ];
 
@@ -1069,6 +1099,7 @@ function exportTemplate(){
     if(f.k==='city')return'"Barcelona"';if(f.k==='flag')return'"🇪🇸"';
     if(f.k==='status')return'"planned"';if(f.k==='priority')return'"3"';
     if(f.k==='arrival')return'"2027-08-01"';if(f.k==='departure')return'"2027-08-05"';
+    if(f.k==='visa_required')return'"no"';if(f.k==='vaccines_required')return'"no"';
     return'""';
   }).join(',');
   dlFile(h+'\n'+ex,'angels_eye_template.csv','text/csv');
@@ -1079,6 +1110,7 @@ function exportCSV(){
     return FIELDS.map(f=>{
       if(f.k==='act')return'"'+(aM(d.act)?.name||'').replace(/"/g,'""')+'"';
       if(f.k==='todo')return'"'+(d.todo||'').replace(/\n/g,'|').replace(/"/g,'""')+'"';
+      if(f.k==='visa_required'||f.k==='vaccines_required')return'"'+(d[f.k]?'yes':'no')+'"';
       const v=d[f.k]!=null?String(d[f.k]):'';
       return'"'+v.replace(/"/g,'""')+'"';
     }).join(',');
@@ -1116,6 +1148,7 @@ function importCSV(input){
         const v=vals[j].trim();if(!v)return;
         if(k==='act'){const m=cActs().find(a=>a.name.toLowerCase()===v.toLowerCase());obj.act=m?m.id:cActs()[0]?.id;}
         else if(k==='todo')obj[k]=v.replace(/\|/g,'\n');
+        else if(k==='visa_required'||k==='vaccines_required')obj[k]=/^(yes|y|true|1)$/i.test(v);
         else if(FIELDS.find(f=>f.k===k)?.t==='number')obj[k]=parseFloat(v)||0;
         else obj[k]=v;
       });
@@ -1131,6 +1164,95 @@ function importCSV(input){
 }
 
 // ── SVG GLOBE (zero external dependencies, pure math) ─────────────────────────
+const COUNTRIES=[
+["AF","Afghanistan"],["AL","Albania"],["DZ","Algeria"],["AD","Andorra"],["AO","Angola"],
+["AG","Antigua and Barbuda"],["AR","Argentina"],["AM","Armenia"],["AU","Australia"],["AT","Austria"],
+["AZ","Azerbaijan"],["BS","Bahamas"],["BH","Bahrain"],["BD","Bangladesh"],["BB","Barbados"],
+["BY","Belarus"],["BE","Belgium"],["BZ","Belize"],["BJ","Benin"],["BT","Bhutan"],
+["BO","Bolivia"],["BA","Bosnia and Herzegovina"],["BW","Botswana"],["BR","Brazil"],["BN","Brunei"],
+["BG","Bulgaria"],["BF","Burkina Faso"],["BI","Burundi"],["CV","Cabo Verde"],["KH","Cambodia"],
+["CM","Cameroon"],["CA","Canada"],["CF","Central African Republic"],["TD","Chad"],["CL","Chile"],
+["CN","China"],["CO","Colombia"],["KM","Comoros"],["CG","Congo"],["CD","Congo (DRC)"],
+["CR","Costa Rica"],["CI","Cote d'Ivoire"],["HR","Croatia"],["CU","Cuba"],["CY","Cyprus"],
+["CZ","Czech Republic"],["DK","Denmark"],["DJ","Djibouti"],["DM","Dominica"],["DO","Dominican Republic"],
+["EC","Ecuador"],["EG","Egypt"],["SV","El Salvador"],["GQ","Equatorial Guinea"],["ER","Eritrea"],
+["EE","Estonia"],["SZ","Eswatini"],["ET","Ethiopia"],["FJ","Fiji"],["FI","Finland"],
+["FR","France"],["GA","Gabon"],["GM","Gambia"],["GE","Georgia"],["DE","Germany"],
+["GH","Ghana"],["GR","Greece"],["GD","Grenada"],["GT","Guatemala"],["GN","Guinea"],
+["GW","Guinea-Bissau"],["GY","Guyana"],["HT","Haiti"],["HN","Honduras"],["HU","Hungary"],
+["IS","Iceland"],["IN","India"],["ID","Indonesia"],["IR","Iran"],["IQ","Iraq"],
+["IE","Ireland"],["IL","Israel"],["IT","Italy"],["JM","Jamaica"],["JP","Japan"],
+["JO","Jordan"],["KZ","Kazakhstan"],["KE","Kenya"],["KI","Kiribati"],["KW","Kuwait"],
+["KG","Kyrgyzstan"],["LA","Laos"],["LV","Latvia"],["LB","Lebanon"],["LS","Lesotho"],
+["LR","Liberia"],["LY","Libya"],["LI","Liechtenstein"],["LT","Lithuania"],["LU","Luxembourg"],
+["MG","Madagascar"],["MW","Malawi"],["MY","Malaysia"],["MV","Maldives"],["ML","Mali"],
+["MT","Malta"],["MH","Marshall Islands"],["MR","Mauritania"],["MU","Mauritius"],["MX","Mexico"],
+["FM","Micronesia"],["MD","Moldova"],["MC","Monaco"],["MN","Mongolia"],["ME","Montenegro"],
+["MA","Morocco"],["MZ","Mozambique"],["MM","Myanmar"],["NA","Namibia"],["NR","Nauru"],
+["NP","Nepal"],["NL","Netherlands"],["NZ","New Zealand"],["NI","Nicaragua"],["NE","Niger"],
+["NG","Nigeria"],["KP","North Korea"],["MK","North Macedonia"],["NO","Norway"],["OM","Oman"],
+["PK","Pakistan"],["PW","Palau"],["PA","Panama"],["PG","Papua New Guinea"],["PY","Paraguay"],
+["PE","Peru"],["PH","Philippines"],["PL","Poland"],["PT","Portugal"],["QA","Qatar"],
+["RO","Romania"],["RU","Russia"],["RW","Rwanda"],["KN","Saint Kitts and Nevis"],["LC","Saint Lucia"],
+["VC","Saint Vincent and the Grenadines"],["WS","Samoa"],["SM","San Marino"],["ST","Sao Tome and Principe"],["SA","Saudi Arabia"],
+["SN","Senegal"],["RS","Serbia"],["SC","Seychelles"],["SL","Sierra Leone"],["SG","Singapore"],
+["SK","Slovakia"],["SI","Slovenia"],["SB","Solomon Islands"],["SO","Somalia"],["ZA","South Africa"],
+["KR","South Korea"],["SS","South Sudan"],["ES","Spain"],["LK","Sri Lanka"],["SD","Sudan"],
+["SR","Suriname"],["SE","Sweden"],["CH","Switzerland"],["SY","Syria"],["TJ","Tajikistan"],
+["TZ","Tanzania"],["TH","Thailand"],["TL","Timor-Leste"],["TG","Togo"],["TO","Tonga"],
+["TT","Trinidad and Tobago"],["TN","Tunisia"],["TR","Turkey"],["TM","Turkmenistan"],["TV","Tuvalu"],
+["UG","Uganda"],["UA","Ukraine"],["AE","United Arab Emirates"],["GB","United Kingdom"],["US","United States"],
+["UY","Uruguay"],["UZ","Uzbekistan"],["VU","Vanuatu"],["VA","Vatican City"],["VE","Venezuela"],
+["VN","Vietnam"],["YE","Yemen"],["ZM","Zambia"],["ZW","Zimbabwe"],["PS","Palestine"],["XK","Kosovo"],
+];
+
+
+// Derives a flag emoji from an ISO 3166-1 alpha-2 country code via Unicode regional indicators.
+function codeToFlag(code){
+  if(!code)return'';
+  if(code==='XK')return'🇽🇰'; // Kosovo isn't an official ISO code but its flag emoji works in modern systems
+  return code.toUpperCase().replace(/./g,c=>String.fromCodePoint(127397+c.charCodeAt(0)));
+}
+// Looks up a country's flag by name (used when loading existing destinations for editing, where
+// only the country name was stored, not its ISO code).
+function flagForCountryName(name){
+  const entry=COUNTRIES.find(c=>c[1]===name);
+  return entry?codeToFlag(entry[0]):'';
+}
+function onCountryChange(){
+  const sel=document.getElementById('f_country');
+  const flagInp=document.getElementById('f_flag');
+  if(!sel||!flagInp)return;
+  const code=sel.value;
+  flagInp.value=code?codeToFlag(code):'';
+}
+function populateCountryDropdown(selectedCountryName){
+  const sel=document.getElementById('f_country');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— Select country —</option>'+COUNTRIES.map(([code,name])=>`<option value="${code}" data-name="${esc(name)}">${esc(name)}</option>`).join('');
+  if(selectedCountryName){
+    const entry=COUNTRIES.find(c=>c[1]===selectedCountryName);
+    if(entry)sel.value=entry[0];
+    else{
+      // Destination was saved before the dropdown existed, or has a custom/free-text country name —
+      // add it as a one-off option so editing doesn't silently lose the original value.
+      const opt=document.createElement('option');
+      opt.value='';opt.textContent=selectedCountryName;opt.selected=true;opt.setAttribute('data-name',selectedCountryName);
+      sel.appendChild(opt);
+    }
+  }
+}
+function toggleVisaFields(){
+  const checked=document.getElementById('f_visa_required')?.checked;
+  const box=document.getElementById('visaExtraFields');
+  if(box)box.style.display=checked?'block':'none';
+}
+function toggleVaccineFields(){
+  const checked=document.getElementById('f_vaccines_required')?.checked;
+  const box=document.getElementById('vaccineExtraFields');
+  if(box)box.style.display=checked?'block':'none';
+}
+
 const GEO={
   'Switzerland':{la:46.8,ln:8.2},'Austria':{la:47.5,ln:14.5},'Italy':{la:41.9,ln:12.5},
   'Finland':{la:64,ln:26},'Spain':{la:40,ln:-3.5},'France':{la:46.2,ln:2.2},
@@ -1863,6 +1985,10 @@ function getLinked(cat){
     const budg=dd.filter(d=>d.event_cost>0).map(d=>({id:'ae_'+d.id,lbl:`${d.event||'Event'}: ${d.city}`,amt:d.event_cost,paid:0,isPaid:false}));
     return{budg,spent:[]};
   }
+  if(cat.linked==='visas'){
+    const budg=dd.filter(d=>d.visa_required&&d.visa_cost>0).map(d=>({id:'av_'+d.id,lbl:`Visa (${d.visa_type||'Physical'}): ${d.city}`,amt:d.visa_cost,paid:0,isPaid:false}));
+    return{budg,spent:[]};
+  }
   return{budg:[],spent:[]};
 }
 function calcTotSpent(){
@@ -2182,44 +2308,64 @@ function openDestModal(editId){
   document.getElementById('destModalTitle').textContent=editId?'Edit Destination':'Add Destination';
   const as=document.getElementById('f_act');
   as.innerHTML=cActs().map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
-  const flds=['status','country','city','flag','priority','arrival','departure','nights','event','event_date','event_type','event_cost','hotel','hotel_ref','cost','persons','paid_hotel','mot','t_ref','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','notes','todo'];
+  const flds=['status','city','flag','priority','arrival','departure','nights','event','event_type','event_start','event_end','event_cost','hotel','hotel_ref','cost','persons','paid_hotel','mot','t_company','t_ref','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','visa_type','visa_cost','vaccines_detail','notes','todo'];
   flds.forEach(f=>{const el=document.getElementById('f_'+f);if(el){if(el.tagName==='SELECT')el.selectedIndex=0;else el.value='';}});
   document.getElementById('f_persons').value='2';document.getElementById('f_t_paid').value='no';
   document.getElementById('f_cpn').textContent='—';document.getElementById('f_cpnpp').textContent='—';document.getElementById('f_owed').textContent='—';
   document.getElementById('f_awd').textContent='';document.getElementById('f_dwd').textContent='';document.getElementById('f_ncalc').textContent='';
+  document.getElementById('f_visa_required').checked=false;toggleVisaFields();
+  document.getElementById('f_vaccines_required').checked=false;toggleVaccineFields();
   if(editId){
     const d=dBy(editId);
     if(d){
       const sv=(fid,val)=>{const el=document.getElementById('f_'+fid);if(el&&val!=null)el.value=val;};
-      as.value=d.act;sv('status',d.status);sv('country',d.country);sv('city',d.city);sv('flag',d.flag);
+      as.value=d.act;sv('status',d.status);populateCountryDropdown(d.country);sv('city',d.city);sv('flag',d.flag);
       sv('priority',d.priority||3);sv('arrival',d.arrival);sv('departure',d.departure);
-      sv('event',d.event);sv('event_date',d.event_date);sv('event_type',d.event_type);sv('event_cost',d.event_cost||'');
+      sv('event',d.event);sv('event_start',d.event_start||'');sv('event_end',d.event_end||'');sv('event_type',d.event_type);sv('event_cost',d.event_cost||'');
       sv('hotel',d.hotel);sv('hotel_ref',d.hotel_ref);sv('cost',d.cost||'');sv('persons',d.persons||2);sv('paid_hotel',d.paid||'');
-      sv('mot',d.mot);sv('t_ref',d.t_ref);sv('t_dep_port',d.t_dep_port);sv('t_arr_port',d.t_arr_port);
+      sv('mot',d.mot);sv('t_company',d.t_company);sv('t_ref',d.t_ref);sv('t_dep_port',d.t_dep_port);sv('t_arr_port',d.t_arr_port);
       sv('t_dep_dt',d.t_dep_dt);sv('t_arr_dt',d.t_arr_dt);sv('t_connection',d.t_connection);
       sv('t_cost',d.t_cost||'');sv('t_paid',d.t_paid||'no');sv('t_num',d.t_num);
+      document.getElementById('f_visa_required').checked=!!d.visa_required;
+      sv('visa_type',d.visa_type||'Physical');sv('visa_cost',d.visa_cost||'');
+      toggleVisaFields();
+      document.getElementById('f_vaccines_required').checked=!!d.vaccines_required;
+      sv('vaccines_detail',d.vaccines_detail);
+      toggleVaccineFields();
       sv('notes',d.notes);sv('todo',d.todo);
       recalcD();
     }
-  }else if(curActId)as.value=curActId;
+  }else{
+    populateCountryDropdown();
+    if(curActId)as.value=curActId;
+  }
   document.getElementById('destModal').style.display='flex';
 }
 function closeDestModal(){document.getElementById('destModal').style.display='none';editDestId=null;}
 function saveDest(){
   const gv=id=>document.getElementById('f_'+id)?.value?.trim()||'';
   const gn=id=>parseFloat(document.getElementById('f_'+id)?.value)||0;
+  const countrySel=document.getElementById('f_country');
+  const countryName=countrySel.selectedOptions[0]?.textContent?.trim()||countrySel.selectedOptions[0]?.getAttribute('data-name')||'';
+  const visaRequired=document.getElementById('f_visa_required').checked;
+  const vaccinesRequired=document.getElementById('f_vaccines_required').checked;
   const d={
     id:editDestId||uid(),act:document.getElementById('f_act').value||cActs()[0]?.id,
-    status:gv('status')||'planned',country:gv('country'),city:gv('city'),flag:gv('flag')||'📍',
+    status:gv('status')||'planned',country:countryName,city:gv('city'),flag:gv('flag')||'📍',
     priority:parseInt(gv('priority'))||3,arrival:gv('arrival'),departure:gv('departure'),
-    event:gv('event'),event_date:gv('event_date'),event_type:gv('event_type'),event_cost:gn('event_cost'),
+    event:gv('event'),event_start:gv('event_start'),event_end:gv('event_end'),event_type:gv('event_type'),event_cost:gn('event_cost'),
     hotel:gv('hotel'),hotel_ref:gv('hotel_ref'),cost:gn('cost'),persons:parseInt(gv('persons'))||2,paid:gn('paid_hotel'),
-    mot:gv('mot'),t_ref:gv('t_ref'),t_dep_port:gv('t_dep_port'),t_arr_port:gv('t_arr_port'),
+    mot:gv('mot'),t_company:gv('t_company'),t_ref:gv('t_ref'),t_dep_port:gv('t_dep_port'),t_arr_port:gv('t_arr_port'),
     t_dep_dt:gv('t_dep_dt'),t_arr_dt:gv('t_arr_dt'),t_connection:gv('t_connection'),
     t_cost:gn('t_cost'),t_paid:gv('t_paid'),t_num:gv('t_num'),
+    visa_required:visaRequired,visa_type:visaRequired?gv('visa_type'):'',visa_cost:visaRequired?gn('visa_cost'):0,
+    vaccines_required:vaccinesRequired,vaccines_detail:vaccinesRequired?gv('vaccines_detail'):'',
     notes:document.getElementById('f_notes')?.value?.trim()||'',
     todo:document.getElementById('f_todo')?.value?.trim()||'',
   };
+  // event_date kept in sync as a derived display string from the start/end pickers, for any
+  // older rendering paths that still expect a single human-readable event date string.
+  d.event_date=d.event_start?(d.event_end&&d.event_end!==d.event_start?fD(d.event_start)+'–'+fD(d.event_end):fD(d.event_start)):'';
   if(!d.city){alert('Please enter a city name.');return;}
   if(editDestId){const idx=cDests().findIndex(x=>x.id===editDestId);if(idx>=0)cur().destinations[idx]=d;}
   else cur().destinations.push(d);
@@ -2268,7 +2414,7 @@ function createTour(){
   const name=prompt('Tour name:','New World Tour');if(!name)return;
   const desc=prompt('Tour description (optional):','')||'';
   const id=uid();
-  S.tours[id]={name,desc,acts:[{id:uid(),name:'Act I',subtitle:'The beginning',color:'#C9A84C'}],destinations:[],bktCategories:[],bucket:[],budget:[{id:uid(),name:'Accommodation',budget:0,color:'#C9A84C',expenses:[],linked:'hotels'},{id:uid(),name:'Flights',budget:0,color:'#4B8BC8',expenses:[],linked:'transport'}],budgetOrder:[]};
+  S.tours[id]={name,desc,acts:[{id:uid(),name:'Act I',subtitle:'The beginning',color:'#C9A84C'}],destinations:[],bktCategories:[],bucket:[],budget:[{id:uid(),name:'Accommodation',budget:0,color:'#C9A84C',expenses:[],linked:'hotels'},{id:uid(),name:'Flights',budget:0,color:'#4B8BC8',expenses:[],linked:'transport'},{id:uid(),name:'Visas & Docs',budget:0,color:'#C8C84B',expenses:[],linked:'visas'}],budgetOrder:[]};
   S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
