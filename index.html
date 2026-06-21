@@ -569,7 +569,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <div class="msect"><div class="msttl">Event / Festival / Experience</div><div class="mflds">
     <div class="f2"><div class="fg"><label class="flbl">Event Name</label><input class="fi" id="f_event" type="text" placeholder="e.g. Running of the Bulls"/></div><div class="fg"><label class="flbl">Event Type</label><input class="fi" id="f_event_type" type="text" placeholder="e.g. Cultural / Music / Sport"/></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Event Start Date</label><input class="fi" id="f_event_start" type="date"/></div><div class="fg"><label class="flbl">Event End Date <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_event_end" type="date"/></div></div>
-    <div class="f2"><div class="fg"><label class="flbl">Event Cost ($)</label><input class="fi" id="f_event_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Event Cost ($)</label><input class="fi" id="f_event_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"><label class="flbl">Persons Sharing</label><input class="fi" id="f_event_persons" type="number" min="1" value="2"/></div></div>
   </div></div>
   <div class="msect"><div class="msttl">Accommodation</div><div class="mflds">
     <div class="f2"><div class="fg"><label class="flbl">Hotel / Property</label><input class="fi" id="f_hotel" type="text" placeholder="Hotel name"/></div><div class="fg"><label class="flbl">Booking Ref #</label><input class="fi" id="f_hotel_ref" type="text" placeholder="Booking #"/></div></div>
@@ -582,7 +582,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     <div class="f2"><div class="fg"><label class="flbl">Connection Info</label><input class="fi" id="f_t_connection" type="text" placeholder="e.g. Stop in ZRH 2h30m"/></div><div class="fg"></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Dep. Airport/Station</label><input class="fi" id="f_t_dep_port" type="text" placeholder="e.g. ORD"/></div><div class="fg"><label class="flbl">Arr. Airport/Port</label><input class="fi" id="f_t_arr_port" type="text" placeholder="e.g. VCE"/></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Departure Date &amp; Time</label><input class="fi" id="f_t_dep_dt" type="datetime-local"/></div><div class="fg"><label class="flbl">Arrival Date &amp; Time</label><input class="fi" id="f_t_arr_dt" type="datetime-local"/></div></div>
-    <div class="f2"><div class="fg"><label class="flbl">Transport Cost ($)</label><input class="fi" id="f_t_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"><label class="flbl">Transport Paid?</label><select class="fi" id="f_t_paid"><option value="no">Not paid</option><option value="partial">Partially paid</option><option value="yes">Fully paid</option></select></div></div>
+    <div class="f3"><div class="fg"><label class="flbl">Transport Cost ($)</label><input class="fi" id="f_t_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"><label class="flbl">Persons Sharing</label><input class="fi" id="f_t_persons" type="number" min="1" value="2"/></div><div class="fg"><label class="flbl">Transport Paid?</label><select class="fi" id="f_t_paid"><option value="no">Not paid</option><option value="partial">Partially paid</option><option value="yes">Fully paid</option></select></div></div>
   </div></div>
   <div class="msect"><div class="msttl">Visa Requirements</div><div class="mflds">
     <div class="fg" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="f_visa_required" onchange="toggleVisaFields()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer"/><label class="flbl" for="f_visa_required" style="cursor:pointer">Visa required for this destination?</label></div>
@@ -592,8 +592,9 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
         <div class="fg"><label class="flbl">Visa Cost ($) <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_visa_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div>
       </div>
       <div class="f2">
+        <div class="fg"><label class="flbl">Persons Sharing</label><input class="fi" id="f_visa_persons" type="number" min="1" value="2"/></div>
         <div class="fg"><label class="flbl">Visa Status</label><select class="fi" id="f_visa_status"><option value="Pending">Pending</option><option value="Obtained">Obtained</option></select></div>
-        <div class="fg"></div>
+      </div>
       </div>
     </div>
   </div></div>
@@ -1031,7 +1032,7 @@ const FIELDS=[
   {k:'departure',l:'Departure Date (YYYY-MM-DD)',t:'date'},{k:'event',l:'Event Name',t:'text'},
   {k:'event_start',l:'Event Start Date (YYYY-MM-DD)',t:'date'},{k:'event_end',l:'Event End Date (YYYY-MM-DD)',t:'date'},
   {k:'event_type',l:'Event Type',t:'text'},
-  {k:'event_cost',l:'Event Cost ($)',t:'number'},{k:'hotel',l:'Hotel/Property',t:'text'},
+  {k:'event_cost',l:'Event Cost ($)',t:'number'},{k:'event_persons',l:'Event Persons Sharing',t:'number'},{k:'hotel',l:'Hotel/Property',t:'text'},
   {k:'hotel_ref',l:'Hotel Booking Ref',t:'text'},{k:'cost',l:'Hotel Total Cost ($)',t:'number'},
   {k:'persons',l:'Persons Sharing',t:'number'},{k:'paid',l:'Hotel Amount Paid ($)',t:'number'},
   {k:'mot',l:'Transport Mode',t:'text'},{k:'t_company',l:'Transport Company',t:'text'},{k:'t_num',l:'Flight/Train Number',t:'text'},
@@ -1040,9 +1041,9 @@ const FIELDS=[
   {k:'t_dep_dt',l:'Departure DateTime (YYYY-MM-DDTHH:MM)',t:'text'},
   {k:'t_arr_dt',l:'Arrival DateTime (YYYY-MM-DDTHH:MM)',t:'text'},
   {k:'t_connection',l:'Connection Info',t:'text'},{k:'t_cost',l:'Transport Cost ($)',t:'number'},
-  {k:'t_paid',l:'Transport Paid (yes/no/partial)',t:'text'},
+  {k:'t_paid',l:'Transport Paid (yes/no/partial)',t:'text'},{k:'t_persons',l:'Transport Persons Sharing',t:'number'},
   {k:'visa_required',l:'Visa Required (yes/no)',t:'text'},{k:'visa_type',l:'Visa Type (Physical/E-Visa/On Arrival)',t:'text'},
-  {k:'visa_cost',l:'Visa Cost ($)',t:'number'},{k:'visa_status',l:'Visa Status (Obtained/Pending)',t:'text'},
+  {k:'visa_cost',l:'Visa Cost ($)',t:'number'},{k:'visa_status',l:'Visa Status (Obtained/Pending)',t:'text'},{k:'visa_persons',l:'Visa Persons Sharing',t:'number'},
   {k:'vaccines_required',l:'Vaccines/Paperwork Required (yes/no)',t:'text'},{k:'vaccines_detail',l:'Vaccines/Paperwork Detail',t:'text'},
   {k:'notes',l:'Notes & Memories',t:'text'},{k:'todo',l:'Things To Do (use | for line breaks)',t:'text'},
 ];
@@ -2627,45 +2628,78 @@ document.addEventListener('click',()=>{const m=document.getElementById('ctxMenu'
 document.addEventListener('click',e=>{const fm=document.getElementById('fmenu');if(fm&&!fm.parentElement?.contains(e.target))fm.classList.remove('open');});
 
 // ── BUDGET ────────────────────────────────────────────────────────────────────
+// budgetViewMode controls whether every figure in the Budget section is shown per-person or as
+// the all-travelers total. Persisted so it stays put across sessions, same pattern as other
+// view-state toggles in this app (theme, filters, etc).
+let budgetViewMode=localStorage.getItem('ae_budget_view')||'per';
+function setBudgetViewMode(mode){budgetViewMode=mode;localStorage.setItem('ae_budget_view',mode);renderContent();}
+
 function getLinked(cat){
   const dd=cDests();
+  const perPerson=budgetViewMode==='per';
   if(cat.linked==='hotels'){
-    const budg=dd.filter(d=>d.cost>0).map(d=>({id:'ah_'+d.id,lbl:`Hotel: ${d.city} — ${d.hotel||'TBD'}`,amt:d.cost,paid:d.paid||0,isPaid:(d.paid||0)>=d.cost}));
-    const spent=dd.filter(d=>d.cost>0&&(d.paid||0)>0).map(d=>({id:'ah_'+d.id,lbl:`Hotel: ${d.city}`,amt:d.paid||0}));
+    const budg=dd.filter(d=>d.cost>0).map(d=>{
+      const persons=d.persons>0?d.persons:1;
+      const amt=perPerson?d.cost/persons:d.cost,paid=perPerson?(d.paid||0)/persons:(d.paid||0);
+      return{id:'ah_'+d.id,lbl:`Hotel: ${d.city} — ${d.hotel||'TBD'}`,amt,paid,isPaid:paid>=amt,persons};
+    });
+    const spent=dd.filter(d=>d.cost>0&&(d.paid||0)>0).map(d=>{
+      const persons=d.persons>0?d.persons:1;
+      return{id:'ah_'+d.id,lbl:`Hotel: ${d.city}`,amt:perPerson?(d.paid||0)/persons:(d.paid||0)};
+    });
     return{budg,spent};
   }
   if(cat.linked==='transport'){
-    const budg=dd.filter(d=>d.t_cost>0).map(d=>({id:'at_'+d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt:d.t_cost,paid:d.t_paid==='yes'?d.t_cost:0,isPaid:d.t_paid==='yes'}));
-    const spent=dd.filter(d=>d.t_cost>0&&d.t_paid==='yes').map(d=>({id:'at_'+d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt:d.t_cost}));
+    const budg=dd.filter(d=>d.t_cost>0).map(d=>{
+      const persons=d.t_persons>0?d.t_persons:1;
+      const amt=perPerson?d.t_cost/persons:d.t_cost;
+      const paid=d.t_paid==='yes'?amt:0;
+      return{id:'at_'+d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt,paid,isPaid:d.t_paid==='yes',persons};
+    });
+    const spent=dd.filter(d=>d.t_cost>0&&d.t_paid==='yes').map(d=>{
+      const persons=d.t_persons>0?d.t_persons:1;
+      return{id:'at_'+d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt:perPerson?d.t_cost/persons:d.t_cost};
+    });
     return{budg,spent};
   }
   if(cat.linked==='events'){
-    const budg=dd.filter(d=>d.event_cost>0).map(d=>({id:'ae_'+d.id,lbl:`${d.event||'Event'}: ${d.city}`,amt:d.event_cost,paid:0,isPaid:false}));
+    const budg=dd.filter(d=>d.event_cost>0).map(d=>{
+      const persons=d.event_persons>0?d.event_persons:1;
+      return{id:'ae_'+d.id,lbl:`${d.event||'Event'}: ${d.city}`,amt:perPerson?d.event_cost/persons:d.event_cost,paid:0,isPaid:false,persons};
+    });
     return{budg,spent:[]};
   }
   if(cat.linked==='visas'){
-    const budg=dd.filter(d=>d.visa_required&&d.visa_cost>0).map(d=>({id:'av_'+d.id,lbl:`Visa (${d.visa_type||'Physical'}): ${d.city}`,amt:d.visa_cost,paid:0,isPaid:false}));
+    const budg=dd.filter(d=>d.visa_required&&d.visa_cost>0).map(d=>{
+      const persons=d.visa_persons>0?d.visa_persons:1;
+      return{id:'av_'+d.id,lbl:`Visa (${d.visa_type||'Physical'}): ${d.city}`,amt:perPerson?d.visa_cost/persons:d.visa_cost,paid:0,isPaid:false,persons};
+    });
     return{budg,spent:[]};
   }
   return{budg:[],spent:[]};
 }
 function calcTotSpent(){
+  const perPerson=budgetViewMode==='per';
   return cur().budget.reduce((tot,cat)=>{
     const lk=getLinked(cat);
-    const manS=cat.expenses.reduce((s,e)=>s+e.amount,0);
+    const manS=(cat.expenses||[]).reduce((s,e)=>{
+      const persons=e.persons>0?e.persons:1;
+      return s+(perPerson?e.amount/persons:e.amount);
+    },0);
     const autoS=lk.spent.reduce((s,e)=>s+e.amt,0);
     return tot+manS+autoS;
   },0);
 }
 function renderBudget(){
   const bud=cur().budget;
+  const perPerson=budgetViewMode==='per';
   const order=(cur().budgetOrder&&cur().budgetOrder.length?cur().budgetOrder:bud.map(c=>c.id));
   const ordCats=order.map(id=>bud.find(c=>c.id===id)).filter(Boolean);
   const totBudget=bud.reduce((s,c)=>s+c.budget,0);
   const totSpent=calcTotSpent();
   const catRows=ordCats.map(c=>{
     const lk=getLinked(c);
-    const manS=c.expenses.reduce((s,e)=>s+e.amount,0);
+    const manS=(c.expenses||[]).reduce((s,e)=>{const persons=e.persons>0?e.persons:1;return s+(perPerson?e.amount/persons:e.amount);},0);
     const autoS=lk.spent.reduce((s,e)=>s+e.amt,0);
     const totS=manS+autoS;
     const autoBudg=lk.budg.reduce((s,e)=>s+e.amt,0);
@@ -2700,8 +2734,9 @@ function renderBudget(){
         rows+=`<div style="padding:.4rem .75rem;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui);background:rgba(255,255,255,.02)">Linked from destinations</div>`;
         lk.budg.sort((a,b)=>b.amt-a.amt).forEach(e=>{
           const paidAmt=lk.spent.find(s=>s.id===e.id)?.amt||0;
+          const personsNote=e.persons>1?`<div style="font-size:9px;color:var(--t3);margin-top:1px">${perPerson?`Split ${e.persons} ways`:`${e.persons} people total`}</div>`:'';
           rows+=`<div class="bexp" style="opacity:.85">
-            <div style="flex:1;min-width:0"><div style="font-size:12px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.lbl)}</div><div style="font-size:9px;color:var(--t3)">From destination record</div></div>
+            <div style="flex:1;min-width:0"><div style="font-size:12px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.lbl)}</div><div style="font-size:9px;color:var(--t3)">From destination record</div>${personsNote}</div>
             <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
               <span style="font-size:11px;color:${paidAmt>=e.amt?'var(--green)':'var(--t3)'}">$${paidAmt.toFixed(0)} / $${e.amt.toFixed(0)}</span>
               ${e.isPaid?'<span class="pyes" style="font-size:8px">✓ Paid</span>':'<span class="pno" style="font-size:8px">Unpaid</span>'}
@@ -2711,7 +2746,12 @@ function renderBudget(){
       }
       rows+=`<div style="padding:.4rem .75rem;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);background:rgba(255,255,255,.02)">Manual expenses</div>`;
       if(manExp.length===0)rows+=`<div style="padding:.75rem;color:var(--t3);font-family:var(--font-ui);font-size:11px">No manual expenses recorded</div>`;
-      manExp.forEach(e=>{rows+=`<div class="bexp"><div style="flex:1;min-width:0"><div style="font-size:12px;color:var(--t2)">${esc(e.label)}</div><div style="font-size:9px;color:var(--t3)">${esc(e.date||'')}</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-size:12px;color:var(--gold)">$${e.amount.toFixed(2)}</span><button class="abtn del" onclick="removeBudExp('${cat.id}','${e.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-trash"></i></button></div></div>`;});
+      manExp.forEach(e=>{
+        const persons=e.persons>0?e.persons:1;
+        const shown=perPerson?e.amount/persons:e.amount;
+        const personsNote=persons>1?`<div style="font-size:9px;color:var(--t3)">${perPerson?`Split ${persons} ways`:`${persons} people`}</div>`:'';
+        rows+=`<div class="bexp"><div style="flex:1;min-width:0"><div style="font-size:12px;color:var(--t2)">${esc(e.label)}</div><div style="font-size:9px;color:var(--t3)">${esc(e.date||'')}</div>${personsNote}</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-size:12px;color:var(--gold)">$${shown.toFixed(2)}</span><button class="abtn del" onclick="removeBudExp('${cat.id}','${e.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-trash"></i></button></div></div>`;
+      });
       detHTML=`<div style="margin-top:1rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
         <div style="padding:.5rem .75rem;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
           <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui)">${esc(cat.name)} — Details</div>
@@ -2722,10 +2762,19 @@ function renderBudget(){
     }
   }
   return`<div class="panel">
+    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:.75rem">
+      <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:2px">
+        <button onclick="setBudgetViewMode('per')" style="border:none;background:${perPerson?'var(--gold)':'transparent'};color:${perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">Per Person</button>
+        <button onclick="setBudgetViewMode('all')" style="border:none;background:${!perPerson?'var(--gold)':'transparent'};color:${!perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">All Travelers</button>
+      </div>
+    </div>
     <div class="sgrid">
       <div class="scard"><div class="sval">$${Math.round(totBudget/1000)}k</div><div class="slbl">Total Budget</div></div>
       <div class="scard"><div class="sval" style="color:var(--red)">$${Math.round(totSpent).toLocaleString()}</div><div class="slbl">Spent</div></div>
       <div class="scard"><div class="sval" style="color:var(--green)">$${Math.round(totBudget-totSpent).toLocaleString()}</div><div class="slbl">Remaining</div></div>
+    </div>
+    <div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);margin:-.5rem 0 .75rem;line-height:1.5">
+      <i class="ti ti-info-circle"></i> Showing destination-linked costs and manual expenses ${perPerson?'split per person sharing each cost':'as full totals for all travelers'}. Manually-set category budget ceilings are entered as flat amounts and are not affected by this toggle.
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Categories</div>
@@ -2747,7 +2796,7 @@ function bdDrop(e,tid){
   order.splice(si,1);order.splice(ti,0,bdDragSrc);
   cur().budgetOrder=order;bdDragSrc=null;renderContent();
 }
-function addBudExp(catId){const lbl=prompt('Expense description:');if(!lbl)return;const amt=parseFloat(prompt('Amount ($):'));if(isNaN(amt))return;const date=prompt('Date (optional):','')||'';const cat=cur().budget.find(c=>c.id===catId);if(cat){cat.expenses=cat.expenses||[];cat.expenses.push({id:uid(),label:lbl,amount:amt,date});renderContent();}}
+function addBudExp(catId){const lbl=prompt('Expense description:');if(!lbl)return;const amt=parseFloat(prompt('Amount ($):'));if(isNaN(amt))return;const persons=parseInt(prompt('Persons sharing this expense:','1'))||1;const date=prompt('Date (optional):','')||'';const cat=cur().budget.find(c=>c.id===catId);if(cat){cat.expenses=cat.expenses||[];cat.expenses.push({id:uid(),label:lbl,amount:amt,persons,date});renderContent();}}
 function removeBudExp(catId,expId){const cat=cur().budget.find(c=>c.id===catId);if(cat){cat.expenses=cat.expenses.filter(e=>e.id!==expId);renderContent();}}
 function removeBudCat(id){if(!confirm('Remove this budget category?'))return;cur().budget=cur().budget.filter(c=>c.id!==id);if(selBudCat===id)selBudCat=null;renderContent();}
 function openBudgetModal(editId){
@@ -3262,9 +3311,10 @@ function openDestModal(editId){
   document.getElementById('destModalTitle').textContent=editId?'Edit Destination':'Add Destination';
   const as=document.getElementById('f_act');
   as.innerHTML=cActs().map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
-  const flds=['status','city','flag','priority','arrival','departure','nights','event','event_type','event_start','event_end','event_cost','hotel','hotel_ref','cost','persons','paid_hotel','mot','t_company','t_ref','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','visa_type','visa_cost','visa_status','vaccines_detail','notes','todo'];
+  const flds=['status','city','flag','priority','arrival','departure','nights','event','event_type','event_start','event_end','event_cost','event_persons','hotel','hotel_ref','cost','persons','paid_hotel','mot','t_company','t_ref','t_persons','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','visa_type','visa_cost','visa_status','visa_persons','vaccines_detail','notes','todo'];
   flds.forEach(f=>{const el=document.getElementById('f_'+f);if(el){if(el.tagName==='SELECT')el.selectedIndex=0;else el.value='';}});
   document.getElementById('f_persons').value='2';document.getElementById('f_t_paid').value='no';
+  document.getElementById('f_event_persons').value='2';document.getElementById('f_t_persons').value='2';document.getElementById('f_visa_persons').value='2';
   document.getElementById('f_cpn').textContent='—';document.getElementById('f_cpnpp').textContent='—';document.getElementById('f_owed').textContent='—';
   document.getElementById('f_awd').textContent='';document.getElementById('f_dwd').textContent='';document.getElementById('f_ncalc').textContent='';
   document.getElementById('f_visa_required').checked=false;toggleVisaFields();
@@ -3275,13 +3325,13 @@ function openDestModal(editId){
       const sv=(fid,val)=>{const el=document.getElementById('f_'+fid);if(el&&val!=null)el.value=val;};
       as.value=d.act;sv('status',d.status);populateCountryDropdown(d.country);sv('city',d.city);sv('flag',d.flag);
       sv('priority',d.priority||3);sv('arrival',d.arrival);sv('departure',d.departure);
-      sv('event',d.event);sv('event_start',d.event_start||'');sv('event_end',d.event_end||'');sv('event_type',d.event_type);sv('event_cost',d.event_cost||'');
+      sv('event',d.event);sv('event_start',d.event_start||'');sv('event_end',d.event_end||'');sv('event_type',d.event_type);sv('event_cost',d.event_cost||'');sv('event_persons',d.event_persons||2);
       sv('hotel',d.hotel);sv('hotel_ref',d.hotel_ref);sv('cost',d.cost||'');sv('persons',d.persons||2);sv('paid_hotel',d.paid||'');
       sv('mot',d.mot);sv('t_company',d.t_company);sv('t_ref',d.t_ref);sv('t_dep_port',d.t_dep_port);sv('t_arr_port',d.t_arr_port);
       sv('t_dep_dt',d.t_dep_dt);sv('t_arr_dt',d.t_arr_dt);sv('t_connection',d.t_connection);
-      sv('t_cost',d.t_cost||'');sv('t_paid',d.t_paid||'no');sv('t_num',d.t_num);
+      sv('t_cost',d.t_cost||'');sv('t_paid',d.t_paid||'no');sv('t_num',d.t_num);sv('t_persons',d.t_persons||2);
       document.getElementById('f_visa_required').checked=!!d.visa_required;
-      sv('visa_type',d.visa_type||'Physical');sv('visa_cost',d.visa_cost||'');sv('visa_status',d.visa_status||'Pending');
+      sv('visa_type',d.visa_type||'Physical');sv('visa_cost',d.visa_cost||'');sv('visa_status',d.visa_status||'Pending');sv('visa_persons',d.visa_persons||2);
       toggleVisaFields();
       document.getElementById('f_vaccines_required').checked=!!d.vaccines_required;
       sv('vaccines_detail',d.vaccines_detail);
@@ -3307,12 +3357,12 @@ function saveDest(){
     id:editDestId||uid(),act:document.getElementById('f_act').value||cActs()[0]?.id,
     status:gv('status')||'planned',country:countryName,city:gv('city'),flag:gv('flag')||'📍',
     priority:parseInt(gv('priority'))||3,arrival:gv('arrival'),departure:gv('departure'),
-    event:gv('event'),event_start:gv('event_start'),event_end:gv('event_end'),event_type:gv('event_type'),event_cost:gn('event_cost'),
+    event:gv('event'),event_start:gv('event_start'),event_end:gv('event_end'),event_type:gv('event_type'),event_cost:gn('event_cost'),event_persons:parseInt(gv('event_persons'))||2,
     hotel:gv('hotel'),hotel_ref:gv('hotel_ref'),cost:gn('cost'),persons:parseInt(gv('persons'))||2,paid:gn('paid_hotel'),
     mot:gv('mot'),t_company:gv('t_company'),t_ref:gv('t_ref'),t_dep_port:gv('t_dep_port'),t_arr_port:gv('t_arr_port'),
     t_dep_dt:gv('t_dep_dt'),t_arr_dt:gv('t_arr_dt'),t_connection:gv('t_connection'),
-    t_cost:gn('t_cost'),t_paid:gv('t_paid'),t_num:gv('t_num'),
-    visa_required:visaRequired,visa_type:visaRequired?gv('visa_type'):'',visa_cost:visaRequired?gn('visa_cost'):0,visa_status:visaRequired?gv('visa_status'):'',
+    t_cost:gn('t_cost'),t_paid:gv('t_paid'),t_num:gv('t_num'),t_persons:parseInt(gv('t_persons'))||2,
+    visa_required:visaRequired,visa_type:visaRequired?gv('visa_type'):'',visa_cost:visaRequired?gn('visa_cost'):0,visa_status:visaRequired?gv('visa_status'):'',visa_persons:visaRequired?(parseInt(gv('visa_persons'))||2):2,
     vaccines_required:vaccinesRequired,vaccines_detail:vaccinesRequired?gv('vaccines_detail'):'',
     notes:document.getElementById('f_notes')?.value?.trim()||'',
     todo:document.getElementById('f_todo')?.value?.trim()||'',
