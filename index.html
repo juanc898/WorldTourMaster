@@ -479,6 +479,9 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   .hm{display:none}
   .rt-mobile-dates{display:block}
   .theme-pop{right:-40px;max-width:90vw}
+  #routeEditTbl input[type="date"]{font-size:10px;padding:.25rem .2rem}
+  #routeEditTbl input[type="number"]{width:42px!important;padding:.25rem .3rem}
+  #routeEditTbl td{padding-left:.3rem;padding-right:.3rem}
 }
 @media(max-width:380px){.sgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -1391,11 +1394,9 @@ function renderRouteEdit(){
     return`<tr data-id="${r.id}">
       <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:10px">${i+1}</td>
       <td style="padding:.4rem .6rem"><span style="font-size:14px;margin-right:4px">${d.flag||'📍'}</span><span style="font-size:12px;color:var(--t1)">${esc(d.city)}</span><div style="font-size:9px;color:${am.color}">${esc(am.name)}</div></td>
-      <td><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:11px;padding:.3rem .4rem"/></td>
-      <td style="color:var(--t3);font-family:var(--font-ui);font-size:10px;text-align:center" id="rwd_a_${r.id}">${wS(r.arrival)}</td>
-      <td><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:11px;padding:.3rem .4rem"/></td>
-      <td style="color:var(--t3);font-family:var(--font-ui);font-size:10px;text-align:center" id="rwd_d_${r.id}">${wS(r.departure)}</td>
-      <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:11px;padding:.3rem .4rem;width:64px"/></td>
+      <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:11px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:9px;flex-shrink:0;width:26px" id="rwd_a_${r.id}">${wS(r.arrival)}</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:11px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:9px;flex-shrink:0;width:26px" id="rwd_d_${r.id}">${wS(r.departure)}</span></div></td>
+      <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:11px;padding:.3rem .4rem;width:56px"/></td>
     </tr>`;
   }).join('');
   return`<div class="panel">
@@ -1422,8 +1423,8 @@ function renderRouteEdit(){
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
       <table class="rtbl" id="routeEditTbl">
-        <thead><tr><th></th><th>Destination</th><th>Arrival</th><th>Day</th><th>Departure</th><th>Day</th><th>Nights</th></tr></thead>
-        <tbody>${rows||'<tr><td colspan="7" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations yet</td></tr>'}</tbody>
+        <thead><tr><th></th><th>Destination</th><th>Arrival</th><th>Departure</th><th>Nights</th></tr></thead>
+        <tbody>${rows||'<tr><td colspan="5" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations yet</td></tr>'}</tbody>
       </table>
     </div>
   </div>`;
@@ -1458,8 +1459,16 @@ function updateRouteField(id,field,value){
   if(routeAutoCalc){
     // Auto-calculate ON: every keystroke that finalizes a date/nights value re-previews the
     // whole downstream draft instantly, same logic as Fix Dates Gaps, just running continuously.
+    // Preserve horizontal scroll across the re-render — on narrow screens the table can still
+    // be scrolled sideways, and renderContent() rebuilding the table from scratch would
+    // otherwise silently snap it back to the left edge every time, which is disorienting when
+    // you're mid-edit on a row that's currently scrolled into view.
+    const wrap=document.querySelector('#routeEditTbl')?.closest('div');
+    const scrollLeft=wrap?wrap.scrollLeft:0;
     fixDateGapsOn(routeDraft);
-    renderContent(); // full re-render since potentially every row below this one just shifted
+    renderContent();
+    const newWrap=document.querySelector('#routeEditTbl')?.closest('div');
+    if(newWrap)newWrap.scrollLeft=scrollLeft;
     return;
   }
   // Auto-calculate OFF: only touch this one row's own cells, preserving focus on whatever
@@ -1467,8 +1476,8 @@ function updateRouteField(id,field,value){
   const tr=document.querySelector(`#routeEditTbl tr[data-id="${id}"]`);
   if(tr){
     const n=dBtw(r.arrival,r.departure);
-    const depInput=tr.children[4].querySelector('input');
-    const nightsInput=tr.children[6].querySelector('input');
+    const depInput=tr.children[3].querySelector('input');
+    const nightsInput=tr.children[4].querySelector('input');
     if(document.activeElement!==depInput)depInput.value=r.departure||'';
     if(document.activeElement!==nightsInput)nightsInput.value=n>=0?n:'';
     const awd=document.getElementById('rwd_a_'+id),dwd=document.getElementById('rwd_d_'+id);
