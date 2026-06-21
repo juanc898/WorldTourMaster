@@ -1342,7 +1342,7 @@ function renderRoute(){
       <label class="fbtn" style="cursor:pointer" title="Import from Excel or CSV"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importCSV(this)"/></label>
       <button class="fbtn" onclick="exportCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
       <button class="fbtn" onclick="toggleRouteEditMode()" title="Quickly edit dates and nights for every destination in one grid"><i class="ti ti-calendar-time"></i> Edit Route</button>
-      <button class="add-btn" onclick="confirmRecalculateDates()" title="Close any gaps or overlaps between destinations, in chronological order, after editing dates or nights"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
+      <button class="fbtn" onclick="confirmRecalculateDates()" title="Close any gaps or overlaps between destinations, in chronological order, after editing dates or nights"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
       <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:11px">Remove All</button>
       <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${filt.length}/${sorted.length}</span>
     </div>
@@ -1401,7 +1401,9 @@ function renderRouteEdit(){
   return`<div class="panel">
     <div class="frow">
       <button class="fbtn" onclick="toggleRouteEditMode()"><i class="ti ti-arrow-left"></i> Back to Route</button>
-      <button class="add-btn" onclick="confirmFixDateGaps()" title="Close gaps/overlaps in the draft — keeps each destination's own night count, lines everything up in order"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
+      <button class="fbtn" onclick="confirmFixDateGaps()" title="Close gaps/overlaps in the draft — keeps each destination's own night count, lines everything up in order"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
+      <button class="abtn del" onclick="confirmCancelRouteChanges()" style="padding:5px 10px;font-size:11px"><i class="ti ti-x"></i> Cancel Changes</button>
+      <button class="add-btn" onclick="confirmSaveRouteChanges()"><i class="ti ti-check"></i> Save Changes</button>
       <div class="ato" style="display:inline-flex;align-items:center;gap:6px;background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:4px 10px 4px 4px">
         <button onclick="setRouteAutoCalc(!routeAutoCalc)" style="border:none;background:none;padding:0;cursor:pointer;display:flex;align-items:center" title="${routeAutoCalc?'Auto-calculate is ON: every edit instantly re-previews downstream dates':'Auto-calculate is OFF: edits stay manual until you click Fix Dates Gaps'}">
           <span style="width:30px;height:17px;border-radius:9px;background:${routeAutoCalc?'var(--gold)':'var(--bd2)'};position:relative;display:inline-block;transition:background .15s">
@@ -1418,15 +1420,11 @@ function renderRouteEdit(){
         :'Auto-calculate is OFF — edits stay exactly as typed. Click <strong>Fix Dates Gaps</strong> any time to close gaps/overlaps across what you\'ve changed so far.'}
       Everything here is a <strong>draft</strong> — your real itinerary is untouched until you click <strong>Save Changes</strong>.
     </div>
-    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow);margin-bottom:.75rem">
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
       <table class="rtbl" id="routeEditTbl">
         <thead><tr><th></th><th>Destination</th><th>Arrival</th><th>Day</th><th>Departure</th><th>Day</th><th>Nights</th></tr></thead>
         <tbody>${rows||'<tr><td colspan="7" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations yet</td></tr>'}</tbody>
       </table>
-    </div>
-    <div class="frow" style="justify-content:flex-end">
-      <button class="btng" onclick="confirmCancelRouteChanges()"><i class="ti ti-x"></i> Cancel Changes</button>
-      <button class="btnp" onclick="confirmSaveRouteChanges()"><i class="ti ti-check"></i> Save Changes</button>
     </div>
   </div>`;
 }
