@@ -672,7 +672,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 <script>
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const fD=s=>{if(!s)return'';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});};
+const fD=s=>{if(!s)return'';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});};
 const wS=s=>{if(!s)return'';return WD[new Date(s+'T12:00:00').getDay()];};
 const dBtw=(a,b)=>{if(!a||!b)return 0;return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5);};
 const uid=()=>'i'+Date.now()+Math.floor(Math.random()*9999);
@@ -844,7 +844,7 @@ function renderSB(){
 }
 function sco(s){return s==='confirmed'?'#4BC896':s==='completed'?'#5B9BD8':s==='cancelled'?'#666':s==='wishlist'?'#9B5BD8':'#8B6914';}
 function scls(s){return'sbadge sb-'+(s||'planned');}
-function selAct(id){curActId=id;curDestId=null;renderSB();renderContent();}
+function selAct(id){curActId=curActId===id?null:id;curDestId=null;renderSB();renderContent();}
 
 // Act card click from Command page → opens left pane sidebar showing that act's stops
 function selActFromCommand(id){
@@ -971,8 +971,8 @@ function renderProfile(){
   if(d.mot){
     const tb=d.t_paid==='yes'?'<span class="pyes">✓ Paid</span>':d.t_paid==='partial'?'<span class="pno">⚡ Partial</span>':'<span class="pno">✗ Unpaid</span>';
     const dDT=d.t_dep_dt?new Date(d.t_dep_dt):null,aDT=d.t_arr_dt?new Date(d.t_arr_dt):null;
-    const dStr=dDT?dDT.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+WD[dDT.getDay()]+' '+dDT.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
-    const aStr=aDT?aDT.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+WD[aDT.getDay()]+' '+aDT.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
+    const dStr=dDT?dDT.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+WD[dDT.getDay()]+' '+dDT.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
+    const aStr=aDT?aDT.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+WD[aDT.getDay()]+' '+aDT.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
     tHTML=`${d.t_company?`<div class="drow"><span class="dlbl">Company</span><span class="dval gld">${esc(d.t_company)}</span></div>`:''}`
       +`${d.t_num?`<div class="drow"><span class="dlbl">Number</span><span class="dval">${esc(d.t_num)}</span></div>`:''}`
       +`${d.t_ref?`<div class="drow"><span class="dlbl">Booking #</span><span class="dval">${esc(d.t_ref)}</span></div>`:''}`
@@ -1605,25 +1605,23 @@ function processImportedRows(rows,input){
         const v=vals[j].trim();if(!v)return;
         if(k==='act'){
           const exactM=cActs().find(a=>a.name.toLowerCase()===v.toLowerCase());
-          if(exactM){obj.act=exactM.id;}
-          else{
-            const fuzzyName=fuzzyMatch(v,cActs().map(a=>a.name));
-            if(fuzzyName){
-              const m=cActs().find(a=>a.name===fuzzyName);obj.act=m.id;
-              correctionNotes.push(`"${v}" → Act "${fuzzyName}" (${rowLabel()})`);
-            }else{
-              // No existing act matches even loosely — the file is naming a new act that doesn't
-              // exist in this tour yet. Create it (once per unique name per import) instead of
-              // silently dumping the destination into whichever act happens to be first.
-              let newAct=newActsCreated.find(a=>a.name.toLowerCase()===v.toLowerCase());
-              if(!newAct){
-                const palette=['#C9A84C','#C84B6B','#4BC896','#8B4BC8','#4B8BC8','#C8734B','#C8C84B','#5BD8C8'];
-                newAct={id:uid(),name:v,subtitle:'',color:palette[newActsCreated.length%palette.length]};
-                cActs().push(newAct);newActsCreated.push(newAct);
-                correctionNotes.push(`Created new Act "${v}" (not found in this tour)`);
-              }
-              obj.act=newAct.id;
+          if(exactM){
+            obj.act=exactM.id;
+          }else{
+            // No existing act has this exact name — always create a new one rather than fuzzy-
+            // matching against existing acts. Act names are arbitrary user-defined labels (not a
+            // fixed vocabulary like country names or status values), so there's no safe way to
+            // tell a genuine typo apart from a deliberately different act — e.g. "Act I - The
+            // Prelude" and "Act 0 - The Overture" share a lot of incidental text ("Act", "The")
+            // but are clearly meant to be two different acts, not a misspelling of one another.
+            let newAct=newActsCreated.find(a=>a.name.toLowerCase()===v.toLowerCase());
+            if(!newAct){
+              const palette=['#C9A84C','#C84B6B','#4BC896','#8B4BC8','#4B8BC8','#C8734B','#C8C84B','#5BD8C8'];
+              newAct={id:uid(),name:v,subtitle:'',color:palette[newActsCreated.length%palette.length]};
+              cActs().push(newAct);newActsCreated.push(newAct);
+              correctionNotes.push(`Created new Act "${v}" (not found in this tour)`);
             }
+            obj.act=newAct.id;
           }
         }
         else if(k==='country'){
@@ -3075,6 +3073,11 @@ function recalcH(){
 }
 function openDestModal(editId){
   editDestId=editId||null;
+  if(!editId&&cActs().length===0){
+    // A freshly created tour with no acts yet (e.g. before any import or manual "+ Add Act")
+    // would leave this dropdown empty — give it one sensible starting act automatically.
+    cActs().push({id:uid(),name:'Act I',subtitle:'',color:'#C9A84C'});
+  }
   document.getElementById('destModalTitle').textContent=editId?'Edit Destination':'Add Destination';
   const as=document.getElementById('f_act');
   as.innerHTML=cActs().map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
@@ -3184,7 +3187,7 @@ function createTour(){
   const name=prompt('Tour name:','New World Tour');if(!name)return;
   const desc=prompt('Tour description (optional):','')||'';
   const id=uid();
-  S.tours[id]={name,desc,acts:[{id:uid(),name:'Act I',subtitle:'The beginning',color:'#C9A84C'}],destinations:[],bktCategories:[],bucket:[],budget:[{id:uid(),name:'Accommodation',budget:0,color:'#C9A84C',expenses:[],linked:'hotels'},{id:uid(),name:'Flights',budget:0,color:'#4B8BC8',expenses:[],linked:'transport'},{id:uid(),name:'Visas & Docs',budget:0,color:'#C8C84B',expenses:[],linked:'visas'}],budgetOrder:[]};
+  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:[],bucket:[],budget:[{id:uid(),name:'Accommodation',budget:0,color:'#C9A84C',expenses:[],linked:'hotels'},{id:uid(),name:'Flights',budget:0,color:'#4B8BC8',expenses:[],linked:'transport'},{id:uid(),name:'Visas & Docs',budget:0,color:'#C8C84B',expenses:[],linked:'visas'}],budgetOrder:[]};
   S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
