@@ -902,7 +902,7 @@ function renderDash(){
   const evCnt=cDests().filter(d=>d.event).length;
   const bktDone=cur().bucket.filter(b=>b.done).length;
   const bktTot=cur().bucket.length;
-  const totBudget=cur().budget.reduce((s,c)=>s+c.budget,0);
+  const totBudget=calcTotBudget();
   const totSpent=calcTotSpent();
   const confirmed=cDests().filter(d=>d.status==='confirmed').length;
   const visitedCountries=[...new Set(cDests().map(d=>d.country))].sort();
@@ -2690,12 +2690,25 @@ function calcTotSpent(){
     return tot+manS+autoS;
   },0);
 }
+// Total budget across all categories — each category's effective ceiling is its own manually-set
+// amount PLUS whatever destination-linked costs (hotels/transport/events/visas) feed into it, the
+// same way each category row already computes its own totB. Previously this just summed the flat
+// c.budget numbers and ignored linked costs entirely, so a freshly imported tour with real
+// destination costs but no manually-typed category ceilings showed "$0 Total Budget" even though
+// Spent correctly showed a real number.
+function calcTotBudget(){
+  return cur().budget.reduce((tot,cat)=>{
+    const lk=getLinked(cat);
+    const autoBudg=lk.budg.reduce((s,e)=>s+e.amt,0);
+    return tot+cat.budget+autoBudg;
+  },0);
+}
 function renderBudget(){
   const bud=cur().budget;
   const perPerson=budgetViewMode==='per';
   const order=(cur().budgetOrder&&cur().budgetOrder.length?cur().budgetOrder:bud.map(c=>c.id));
   const ordCats=order.map(id=>bud.find(c=>c.id===id)).filter(Boolean);
-  const totBudget=bud.reduce((s,c)=>s+c.budget,0);
+  const totBudget=calcTotBudget();
   const totSpent=calcTotSpent();
   const catRows=ordCats.map(c=>{
     const lk=getLinked(c);
