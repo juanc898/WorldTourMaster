@@ -1057,6 +1057,7 @@ function autoStatus(){cDests().forEach(d=>{if(d.departure&&d.departure<today&&d.
 
 // ── UI STATE ──────────────────────────────────────────────────────────────────
 let tab='dashboard',curActId=null,curDestId=null;
+let routeEditMode=false; // toggles the Route section between the normal table and the inline-editable "Edit Route" grid
 let editDestId=null,editActId=null,editBktId=null,editBudCatId=null,editTourId=null,editBktCatId=null;
 let aiMsgs=[],selBudCat=null,ctxEvId=null;
 let bdDragSrc=null,bktDragSrc=null;
@@ -1302,6 +1303,7 @@ const FIELDS=[
 
 // ── ROUTE ─────────────────────────────────────────────────────────────────────
 function renderRoute(){
+  if(routeEditMode)return renderRouteEdit();
   const sorted=sDests();
   const sts=['planned','confirmed','wishlist','completed','cancelled'];
   const fitems=sts.map(s=>`<label class="fmi"><input type="checkbox" ${AF.includes(s)?'checked':''} onchange="toggleF('${s}')"/> ${s.charAt(0).toUpperCase()+s.slice(1)}</label>`).join('');
@@ -1337,6 +1339,7 @@ function renderRoute(){
       <button class="fbtn" onclick="exportTemplate()" title="Download Excel template"><i class="ti ti-file-spreadsheet"></i> Template</button>
       <label class="fbtn" style="cursor:pointer" title="Import from Excel or CSV"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importCSV(this)"/></label>
       <button class="fbtn" onclick="exportCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
+      <button class="fbtn" onclick="toggleRouteEditMode()" title="Quickly edit dates and nights for every destination in one grid"><i class="ti ti-calendar-time"></i> Edit Route</button>
       <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:11px">Remove All</button>
       <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${filt.length}/${sorted.length}</span>
     </div>
@@ -1347,6 +1350,106 @@ function renderRoute(){
       </table>
     </div>
   </div>`;
+}
+function toggleRouteEditMode(){routeEditMode=!routeEditMode;renderContent();}
+
+// ── EDIT ROUTE (inline-editable date/nights grid) ──────────────────────────────
+function renderRouteEdit(){
+  const sorted=sDests(); // chronological order — this IS the cascade order Recalculate Dates uses
+  const rows=sorted.map((d,i)=>{
+    const n=dBtw(d.arrival,d.departure);
+    const am=aM(d.act);
+    return`<tr data-id="${d.id}">
+      <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:10px">${i+1}</td>
+      <td style="padding:.4rem .6rem"><span style="font-size:14px;margin-right:4px">${d.flag||'📍'}</span><span style="font-size:12px;color:var(--t1)">${esc(d.city)}</span><div style="font-size:9px;color:${am.color}">${esc(am.name)}</div></td>
+      <td><input class="fi" type="date" value="${d.arrival||''}" oninput="updateRouteField('${d.id}','arrival',this.value)" style="font-size:11px;padding:.3rem .4rem"/></td>
+      <td><input class="fi" type="date" value="${d.departure||''}" oninput="updateRouteField('${d.id}','departure',this.value)" style="font-size:11px;padding:.3rem .4rem"/></td>
+      <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" oninput="updateRouteField('${d.id}','nights',this.value)" style="font-size:11px;padding:.3rem .4rem;width:64px"/></td>
+    </tr>`;
+  }).join('');
+  return`<div class="panel">
+    <div class="frow">
+      <button class="fbtn" onclick="toggleRouteEditMode()"><i class="ti ti-arrow-left"></i> Back to Route</button>
+      <button class="add-btn" onclick="confirmRecalculateDates()" title="Shift every upcoming destination's dates to follow on from whatever you've just changed"><i class="ti ti-refresh"></i> Recalculate Dates</button>
+      <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${sorted.length} destinations · sorted by current arrival date</span>
+    </div>
+    <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin:-.5rem 0 .75rem;line-height:1.5">
+      <i class="ti ti-info-circle"></i> Edit any date or night count directly in the grid below. Nothing downstream shifts automatically — once you're done editing, click <strong>Recalculate Dates</strong> to push the change through every destination that comes after it, keeping each one's own night count but moving its arrival to follow on from the one before it.
+    </div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
+      <table class="rtbl" id="routeEditTbl">
+        <thead><tr><th></th><th>Destination</th><th>Arrival</th><th>Departure</th><th>Nights</th></tr></thead>
+        <tbody>${rows||'<tr><td colspan="5" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations yet</td></tr>'}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+// Updates a single destination's arrival/departure/nights from the inline grid, keeping all
+// three values mutually consistent the same way the main Add/Edit Destination form does —
+// editing nights recalculates departure from arrival; editing either date recalculates nights.
+// This does NOT touch any other destination — that only happens when Recalculate Dates is
+// explicitly clicked, per the requirement that cascading only ever happens on that one action.
+function updateRouteField(id,field,value){
+  const d=dBy(id);if(!d)return;
+  if(field==='arrival'){
+    d.arrival=value;
+    if(d.arrival&&d.departure&&d.departure<d.arrival){
+      // keep nights non-negative if the user is mid-edit and arrival temporarily passes departure
+      const n=dBtw(d.arrival,d.departure);
+      if(n<0){const nd=new Date(d.arrival+'T12:00:00');nd.setDate(nd.getDate()+1);d.departure=nd.toISOString().split('T')[0];}
+    }
+  }else if(field==='departure'){
+    d.departure=value;
+  }else if(field==='nights'){
+    const n=parseInt(value);
+    if(d.arrival&&!isNaN(n)&&n>=0){
+      const nd=new Date(d.arrival+'T12:00:00');nd.setDate(nd.getDate()+n);
+      d.departure=nd.toISOString().split('T')[0];
+    }
+  }
+  // Re-render just enough to refresh the nights/departure columns without losing focus on
+  // whichever input the user is actively typing in — full renderContent() would rebuild the
+  // whole table and yank focus away mid-keystroke.
+  const tr=document.querySelector(`#routeEditTbl tr[data-id="${id}"]`);
+  if(tr){
+    const n=dBtw(d.arrival,d.departure);
+    const depInput=tr.children[3].querySelector('input');
+    const nightsInput=tr.children[4].querySelector('input');
+    if(document.activeElement!==depInput)depInput.value=d.departure||'';
+    if(document.activeElement!==nightsInput)nightsInput.value=n>=0?n:'';
+  }
+}
+function confirmRecalculateDates(){
+  if(confirm('Recalculate dates for every upcoming destination?\n\nThis will shift the arrival/departure dates of every destination that comes after each one you\'ve edited, keeping each destination\'s own night count but lining them up back-to-back in order.\n\nThis cannot be undone automatically — are you sure?')){
+    recalculateDates();
+  }
+}
+// Walks the destination list in chronological order and, wherever a destination's departure
+// doesn't match the next destination's arrival, pushes the next one's arrival forward (or back)
+// to close that gap — preserving the next destination's own night count by recomputing its
+// departure from its (now-shifted) arrival. This naturally cascades: shifting one destination's
+// departure shifts the next one's arrival, which shifts ITS departure, which shifts the one
+// after that, and so on down the whole remaining itinerary.
+function recalculateDates(){
+  const sorted=sDests();
+  let shifted=0;
+  for(let i=0;i<sorted.length-1;i++){
+    const cur=sorted[i],next=sorted[i+1];
+    if(!cur.departure||!next.arrival)continue;
+    if(next.arrival!==cur.departure){
+      const nights=dBtw(next.arrival,next.departure); // preserve however many nights were planned here
+      next.arrival=cur.departure;
+      if(nights>0){
+        const nd=new Date(next.arrival+'T12:00:00');nd.setDate(nd.getDate()+nights);
+        next.departure=nd.toISOString().split('T')[0];
+      }else{
+        next.departure=next.arrival; // zero-night stopover stays zero-night
+      }
+      shifted++;
+    }
+  }
+  renderContent();
+  alert(shifted>0?`✓ Recalculated — ${shifted} destination${shifted===1?'':'s'} shifted to follow on in order.`:'✓ All destinations already line up back-to-back — nothing needed to change.');
 }
 
 function toggleFMenu(){document.getElementById('fmenu')?.classList.toggle('open');}
