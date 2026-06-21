@@ -1082,7 +1082,7 @@ function renderRoute(){
         <div class="fmenu" id="fmenu">${fitems}</div>
       </div>
       <button class="fbtn" onclick="exportTemplate()" title="Download CSV template"><i class="ti ti-file-spreadsheet"></i> Template</button>
-      <label class="fbtn" style="cursor:pointer" title="Import from CSV/Excel"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv" style="display:none" onchange="importCSV(this)"/></label>
+      <label class="fbtn" style="cursor:pointer" title="Import from CSV/Excel"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importCSV(this)"/></label>
       <button class="fbtn" onclick="exportCSV()" title="Export to CSV"><i class="ti ti-download"></i> Export</button>
       <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:11px">Remove All</button>
       <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${filt.length}/${sorted.length}</span>
@@ -1131,19 +1131,268 @@ function dlFile(content,filename,mime){
   const blob=new Blob(['\uFEFF'+content],{type:mime+';charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
 }
+// Parses an ENTIRE CSV file text (not just one line) into rows of fields, correctly handling:
+//  - quoted fields that span multiple physical lines (e.g. a Notes field with embedded line breaks)
+//  - any line-ending style: \r\n (Windows/Excel), \r (old Mac), or \n (Unix) — mixing is fine too
+//  - "" as an escaped quote inside a quoted field
+// This replaces the previous approach of splitting the whole file on bare "\n" first and parsing
+// quotes per-line, which silently desynced every column whenever the file used \r\n endings or
+// contained a quoted field with an embedded newline — explaining why status/act/dates could come
+// out looking shuffled even though each individual value was typed correctly in the spreadsheet.
+function parseCSVFile(text,delimiter){
+  const rows=[];
+  let row=[],field='',inQ=false,i=0;
+  while(i<text.length){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){
+        if(text[i+1]==='"'){field+='"';i+=2;continue;}
+        inQ=false;i++;continue;
+      }
+      field+=c;i++;continue;
+    }
+    if(c==='"'){inQ=true;i++;continue;}
+    if(c===delimiter){row.push(field);field='';i++;continue;}
+    if(c==='\r'){
+      if(text[i+1]==='\n')i++;
+      row.push(field);field='';rows.push(row);row=[];i++;continue;
+    }
+    if(c==='\n'){row.push(field);field='';rows.push(row);row=[];i++;continue;}
+    field+=c;i++;
+  }
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>!(r.length===1&&r[0]===''));
+}
+// Detects whether the file uses comma or semicolon as its field delimiter by checking which is
+// more frequent in the header line — many non-US Excel locales default to semicolons since comma
+// is their decimal separator.
+function detectDelimiter(text){
+  const firstLine=text.split(/\r\n|\r|\n/)[0]||'';
+  const commaCount=(firstLine.match(/,/g)||[]).length;
+  const semiCount=(firstLine.match(/;/g)||[]).length;
+  return semiCount>commaCount?';':',';
+}
+// Parses a date string in essentially any common format (ISO YYYY-MM-DD, slash/dash-separated
+// MM/DD/YYYY or DD/MM/YYYY, 2-digit years, Excel serial date numbers, or text like "Jan 22 2027")
+// into the canonical YYYY-MM-DD format the rest of the app expects. Disambiguates MM/DD vs DD/MM
+// by checking which interpretation is actually valid when the day component exceeds 12.
+function parseFlexibleDate(input,dayFirstHint){
+  if(!input)return'';
+  const s=String(input).trim();
+  const pad=n=>String(n).padStart(2,'0');
+  const validYMD=(y,mo,d)=>{if(mo<1||mo>12||d<1||d>31)return false;const dt=new Date(y,mo-1,d);return dt.getFullYear()===y&&dt.getMonth()===mo-1&&dt.getDate()===d;};
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m){const[,y,mo,d]=m;return validYMD(+y,+mo,+d)?`${y}-${pad(mo)}-${pad(d)}`:'';}
+  m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if(m){
+    let[,a,b,y]=m;a=+a;b=+b;y=+y;
+    if(y<100)y+=y<50?2000:1900;
+    if(a>12&&b<=12)return validYMD(y,b,a)?`${y}-${pad(b)}-${pad(a)}`:''; // must be DD/MM/YYYY
+    if(b>12&&a<=12)return validYMD(y,a,b)?`${y}-${pad(a)}-${pad(b)}`:''; // must be MM/DD/YYYY
+    if(a<=12&&b<=12){
+      // Genuinely ambiguous (both readings are valid dates) — use the file-wide hint, inferred
+      // from any unambiguous date elsewhere in the same column, rather than guessing in isolation.
+      const[mo,d]=dayFirstHint?[b,a]:[a,b];
+      return validYMD(y,mo,d)?`${y}-${pad(mo)}-${pad(d)}`:'';
+    }
+    return'';
+  }
+  m=s.match(/^\d+(\.\d+)?$/);
+  if(m){
+    const serial=parseFloat(s);
+    if(serial>20000&&serial<80000){
+      const epoch=new Date(1899,11,30);
+      const d=new Date(epoch.getTime()+serial*86400000);
+      return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    }
+  }
+  const native=new Date(s);
+  if(!isNaN(native.getTime())&&native.getFullYear()>1900&&native.getFullYear()<2200){
+    return`${native.getFullYear()}-${pad(native.getMonth()+1)}-${pad(native.getDate())}`;
+  }
+  return'';
+}
 function parseCSVRow(row){
   const r=[];let cur='',inQ=false;
   for(let i=0;i<row.length;i++){const c=row[i];if(c==='"'){if(inQ&&row[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}else if(c===','&&!inQ){r.push(cur);cur='';}else cur+=c;}
   r.push(cur);return r;
 }
+// ── MINIMAL XLSX READER (zero external dependencies) ─────────────────────────
+// .xlsx files are ZIP archives containing XML. We only need: the central directory (to find
+// where each file's compressed data lives), DEFLATE decompression (via the browser's native
+// DecompressionStream — no library needed), and a small XML cell-value extractor. This avoids
+// pulling in a third-party library from a CDN, which has proven unreliable in this app before.
+
+async function inflateRaw(bytes){
+  const ds=new DecompressionStream('deflate-raw');
+  const stream=new Blob([bytes]).stream().pipeThrough(ds);
+  const buf=await new Response(stream).arrayBuffer();
+  return new Uint8Array(buf);
+}
+
+// Parses the ZIP "End of Central Directory" + Central Directory records to get a name→bytes map
+// for every entry in the archive, decompressing each (xlsx entries are always either stored
+// uncompressed (method 0) or DEFLATE (method 8) — both are handled).
+async function unzip(arrayBuffer){
+  const data=new Uint8Array(arrayBuffer);
+  const dv=new DataView(arrayBuffer);
+  // Find End Of Central Directory record (signature 0x06054b50), scanning from the end since
+  // there can be a comment field of unknown length after it.
+  let eocdOffset=-1;
+  for(let i=data.length-22;i>=0&&i>data.length-22-65557;i--){
+    if(dv.getUint32(i,true)===0x06054b50){eocdOffset=i;break;}
+  }
+  if(eocdOffset<0)throw new Error('Not a valid ZIP/XLSX file (no End Of Central Directory found)');
+  const cdEntries=dv.getUint16(eocdOffset+10,true);
+  const cdOffset=dv.getUint32(eocdOffset+16,true);
+  const files={};
+  let p=cdOffset;
+  for(let i=0;i<cdEntries;i++){
+    if(dv.getUint32(p,true)!==0x02014b50)break; // central directory file header signature
+    const method=dv.getUint16(p+10,true);
+    const compSize=dv.getUint32(p+20,true);
+    const uncompSize=dv.getUint32(p+24,true);
+    const nameLen=dv.getUint16(p+28,true);
+    const extraLen=dv.getUint16(p+30,true);
+    const commentLen=dv.getUint16(p+32,true);
+    const localHeaderOffset=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(data.subarray(p+46,p+46+nameLen));
+    // Read the local file header at localHeaderOffset to find where the actual compressed data
+    // starts (it has its own variable-length name+extra fields we must skip past).
+    const lfNameLen=dv.getUint16(localHeaderOffset+26,true);
+    const lfExtraLen=dv.getUint16(localHeaderOffset+28,true);
+    const dataStart=localHeaderOffset+30+lfNameLen+lfExtraLen;
+    const compData=data.subarray(dataStart,dataStart+compSize);
+    files[name]={method,compData,uncompSize};
+    p+=46+nameLen+extraLen+commentLen;
+  }
+  const out={};
+  for(const name in files){
+    const f=files[name];
+    if(f.method===0){out[name]=f.compData;} // stored, no compression
+    else if(f.method===8){out[name]=await inflateRaw(f.compData);} // DEFLATE
+    // other methods (rare in xlsx) are simply skipped — not needed for spreadsheet data
+  }
+  return out;
+}
+
+function xmlUnescape(s){
+  return s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+}
+
+// Extracts the plain-text content of every <t>...</t> tag inside a <si> (shared string item),
+// concatenating multiple <r><t> runs (used when a cell has mixed formatting) into one string.
+function parseSharedStrings(xml){
+  if(!xml)return[];
+  const items=[];
+  const siRegex=/<si[^>]*>([\s\S]*?)<\/si>/g;
+  let m;
+  while((m=siRegex.exec(xml))){
+    const inner=m[1];
+    const tRegex=/<t[^>]*>([\s\S]*?)<\/t>/g;
+    let tm,text='';
+    while((tm=tRegex.exec(inner)))text+=tm[1];
+    items.push(xmlUnescape(text));
+  }
+  return items;
+}
+
+// Parses the first worksheet's <sheetData> into a 2D array of string values, resolving shared
+// string references (t="s"), inline strings (t="inlineStr"), and leaving numbers/dates as their
+// raw numeric text (the existing parseFlexibleDate already knows how to interpret an Excel date
+// serial number, so we don't need to do any date-specific conversion at this layer).
+function parseSheetToRows(xml,sharedStrings){
+  const rows=[];
+  const rowRegex=/<row[^>]*r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g;
+  let rm;
+  while((rm=rowRegex.exec(xml))){
+    const rowXml=rm[2];
+    const cellRegex=/<c[^>]*r="([A-Z]+)(\d+)"[^>]*?(?:\st="([^"]*)")?[^>]*>([\s\S]*?)<\/c>|<c[^>]*r="([A-Z]+)(\d+)"[^>]*\/>/g;
+    const cells={};
+    let maxCol=0;
+    let cm;
+    while((cm=cellRegex.exec(rowXml))){
+      if(cm[5]!==undefined){continue;} // self-closing empty cell, nothing to extract
+      const colLetters=cm[1],type=cm[3]||'n',inner=cm[4];
+      let colNum=0;
+      for(let k=0;k<colLetters.length;k++)colNum=colNum*26+(colLetters.charCodeAt(k)-64);
+      colNum-=1; // zero-indexed
+      maxCol=Math.max(maxCol,colNum);
+      let value='';
+      if(type==='s'){
+        const vMatch=inner.match(/<v>([\s\S]*?)<\/v>/);
+        if(vMatch)value=sharedStrings[parseInt(vMatch[1],10)]||'';
+      }else if(type==='inlineStr'){
+        const tMatch=inner.match(/<t[^>]*>([\s\S]*?)<\/t>/);
+        if(tMatch)value=xmlUnescape(tMatch[1]);
+      }else if(type==='b'){
+        const vMatch=inner.match(/<v>([\s\S]*?)<\/v>/);
+        value=vMatch&&vMatch[1]==='1'?'TRUE':'FALSE';
+      }else if(type==='str'){
+        const vMatch=inner.match(/<v>([\s\S]*?)<\/v>/);
+        if(vMatch)value=xmlUnescape(vMatch[1]);
+      }else{ // 'n' (number, incl. raw date serials) or unspecified
+        const vMatch=inner.match(/<v>([\s\S]*?)<\/v>/);
+        if(vMatch)value=vMatch[1];
+      }
+      cells[colNum]=value;
+    }
+    const row=[];
+    for(let c=0;c<=maxCol;c++)row.push(cells[c]!==undefined?cells[c]:'');
+    rows.push(row);
+  }
+  return rows;
+}
+
+// Top-level entry point: given a File object for an .xlsx, returns the same row[][] shape that
+// parseCSVFile() produces for a CSV, so the rest of importCSV's logic can be reused untouched.
+async function parseXlsxFile(file){
+  const buf=await file.arrayBuffer();
+  const entries=await unzip(buf);
+  const decoder=new TextDecoder('utf-8');
+  const sharedStringsXml=entries['xl/sharedStrings.xml']?decoder.decode(entries['xl/sharedStrings.xml']):'';
+  const sharedStrings=parseSharedStrings(sharedStringsXml);
+  // Find the first worksheet — workbook.xml.rels maps sheet rIds to file paths, but in the vast
+  // majority of exported templates there's exactly one sheet, so we just take the first
+  // xl/worksheets/sheetN.xml we find, preferring sheet1.xml if present.
+  const sheetNames=Object.keys(entries).filter(n=>/^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort();
+  if(!sheetNames.length)throw new Error('No worksheet found in this Excel file.');
+  const sheetName=sheetNames.includes('xl/worksheets/sheet1.xml')?'xl/worksheets/sheet1.xml':sheetNames[0];
+  const sheetXml=decoder.decode(entries[sheetName]);
+  return parseSheetToRows(sheetXml,sharedStrings);
+}
+
+
 function importCSV(input){
   const file=input.files[0];if(!file)return;
+  const isXlsx=/\.xlsx$/i.test(file.name);
+  if(isXlsx){
+    // Genuine Excel binary workbook — unzip + parse XML directly (see parseXlsxFile above),
+    // then feed the resulting rows into the exact same field-resolution logic used for CSV,
+    // so date parsing, act auto-creation, and status handling all behave identically either way.
+    parseXlsxFile(file).then(rows=>{
+      processImportedRows(rows,input);
+    }).catch(err=>{
+      console.error('XLSX parse error:',err);
+      alert('Could not read this Excel file. If it was saved in an unusual format, try "Save As" → CSV in Excel and upload that instead.\n\n('+err.message+')');
+      input.value='';
+    });
+    return;
+  }
   const reader=new FileReader();
   reader.onload=e=>{
     const text=e.target.result.replace(/^\uFEFF/,'');
-    const lines=text.split('\n').filter(l=>l.trim());
-    if(lines.length<2){alert('No data rows found in the file.');input.value='';return;}
-    const rawHdrs=parseCSVRow(lines[0]);
+    const delimiter=detectDelimiter(text);
+    const rows=parseCSVFile(text,delimiter);
+    processImportedRows(rows,input);
+  };
+  reader.readAsText(file,'UTF-8');
+}
+// Shared by both the CSV and XLSX import paths once each has produced a plain rows[][] array —
+// this is everything that used to be the back half of importCSV, unchanged in behavior.
+function processImportedRows(rows,input){
+    if(rows.length<2){alert('No data rows found in the file.');input.value='';return;}
+    const rawHdrs=rows[0];
     const fkeys=rawHdrs.map(h=>{
       const f=FIELDS.find(x=>x.l.toLowerCase()===h.trim().toLowerCase()||x.k.toLowerCase()===h.trim().toLowerCase());
       return f?f.k:null;
@@ -1153,11 +1402,28 @@ function importCSV(input){
     const TPAID_OPTS=['no','partial','yes'];
     const VISA_OPTS=['Physical','E-Visa','On Arrival'];
     const VISA_STATUS_OPTS=['Obtained','Pending'];
+    const DATE_FIELDS=new Set(['arrival','departure','event_start','event_end']);
+    // Scan every slash/dash-separated date in the WHOLE file once, looking for any unambiguous
+    // evidence of DD/MM/YYYY (a first number >12, which can only be a day) vs MM/DD/YYYY (a second
+    // number >12). Spreadsheets are virtually always internally consistent in their date format,
+    // so this lets a single unambiguous date elsewhere in the file correctly resolve every other
+    // ambiguous date (like 02/05) in the same import, instead of guessing each cell in isolation.
+    let dayFirstVotes=0,monthFirstVotes=0;
+    const dateColIdxs=fkeys.map((k,j)=>DATE_FIELDS.has(k)?j:-1).filter(j=>j>=0);
+    for(let i=1;i<rows.length;i++){
+      dateColIdxs.forEach(j=>{
+        const v=(rows[i][j]||'').trim();
+        const m=v.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+        if(m){const a=+m[1],b=+m[2];if(a>12&&b<=12)dayFirstVotes++;else if(b>12&&a<=12)monthFirstVotes++;}
+      });
+    }
+    const dayFirstHint=dayFirstVotes>monthFirstVotes;
     const correctionNotes=[]; // collects a human-readable log of every auto-correction made
+    const newActsCreated=[]; // act names created fresh during this import, so we only create each once
     const newD=[];let conflict=false;
-    for(let i=1;i<lines.length;i++){
-      if(!lines[i].trim())continue;
-      const vals=parseCSVRow(lines[i]);
+    for(let i=1;i<rows.length;i++){
+      const vals=rows[i];
+      if(!vals||vals.every(v=>!v||!v.trim()))continue;
       const obj={id:uid(),status:'planned',persons:2,priority:3,event_cost:0,t_paid:'no'};
       const rowLabel=()=>obj.city||`row ${i}`;
       fkeys.forEach((k,j)=>{
@@ -1168,8 +1434,22 @@ function importCSV(input){
           if(exactM){obj.act=exactM.id;}
           else{
             const fuzzyName=fuzzyMatch(v,cActs().map(a=>a.name));
-            if(fuzzyName){const m=cActs().find(a=>a.name===fuzzyName);obj.act=m.id;correctionNotes.push(`"${v}" → Act "${fuzzyName}" (${rowLabel()})`);}
-            else obj.act=cActs()[0]?.id;
+            if(fuzzyName){
+              const m=cActs().find(a=>a.name===fuzzyName);obj.act=m.id;
+              correctionNotes.push(`"${v}" → Act "${fuzzyName}" (${rowLabel()})`);
+            }else{
+              // No existing act matches even loosely — the file is naming a new act that doesn't
+              // exist in this tour yet. Create it (once per unique name per import) instead of
+              // silently dumping the destination into whichever act happens to be first.
+              let newAct=newActsCreated.find(a=>a.name.toLowerCase()===v.toLowerCase());
+              if(!newAct){
+                const palette=['#C9A84C','#C84B6B','#4BC896','#8B4BC8','#4B8BC8','#C8734B','#C8C84B','#5BD8C8'];
+                newAct={id:uid(),name:v,subtitle:'',color:palette[newActsCreated.length%palette.length]};
+                cActs().push(newAct);newActsCreated.push(newAct);
+                correctionNotes.push(`Created new Act "${v}" (not found in this tour)`);
+              }
+              obj.act=newAct.id;
+            }
           }
         }
         else if(k==='country'){
@@ -1183,9 +1463,15 @@ function importCSV(input){
           }
         }
         else if(k==='status'){
-          const resolved=fuzzyMatch(v,STATUS_OPTS)||'planned';
-          obj.status=resolved;
-          if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Status "${resolved}" (${rowLabel()})`);
+          // Status must be respected exactly as given whenever it's a recognizable value — only
+          // fall back to fuzzy-matching for genuine typos, and only default to "planned" when the
+          // cell is empty or completely unrecognizable, never overwrite a valid explicit value.
+          const exact=STATUS_OPTS.find(s=>s===v.toLowerCase());
+          const resolved=exact||fuzzyMatch(v,STATUS_OPTS);
+          if(resolved){
+            obj.status=resolved;
+            if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Status "${resolved}" (${rowLabel()})`);
+          } // if nothing resolves, leave obj.status at its 'planned' default rather than guessing
         }
         else if(k==='mot'){
           if(v){
@@ -1209,6 +1495,18 @@ function importCSV(input){
           obj.visa_status=resolved;
           if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Visa Status "${resolved}" (${rowLabel()})`);
         }
+        else if(DATE_FIELDS.has(k)){
+          // Accepts ISO (YYYY-MM-DD), slash/dash MM/DD/YYYY or DD/MM/YYYY (auto-disambiguated),
+          // 2-digit years, Excel serial date numbers, and text dates like "Jan 22, 2027" — so the
+          // file's regional date format never breaks the import.
+          const parsed=parseFlexibleDate(v,dayFirstHint);
+          if(parsed){
+            obj[k]=parsed;
+            if(parsed!==v)correctionNotes.push(`"${v}" → ${FIELDS.find(f=>f.k===k)?.l.split(' (')[0]} "${parsed}" (${rowLabel()})`);
+          }else{
+            correctionNotes.push(`⚠ Could not parse date "${v}" for ${FIELDS.find(f=>f.k===k)?.l.split(' (')[0]} (${rowLabel()}) — left blank`);
+          }
+        }
         else if(k==='todo')obj[k]=v.replace(/\|/g,'\n');
         else if(k==='visa_required'||k==='vaccines_required')obj[k]=/^(yes|y|true|1)$/i.test(v);
         else if(FIELDS.find(f=>f.k===k)?.t==='number')obj[k]=parseFloat(v)||0;
@@ -1226,13 +1524,15 @@ function importCSV(input){
       if(correctionNotes.length){
         const shown=correctionNotes.slice(0,8).join('\n');
         const more=correctionNotes.length>8?`\n…and ${correctionNotes.length-8} more`:'';
-        msg+=`\n\nAuto-corrected ${correctionNotes.length} likely typo(s):\n${shown}${more}`;
+        msg+=`\n\nNotes (${correctionNotes.length}):\n${shown}${more}`;
       }
       alert(msg);
+    }else if(newActsCreated.length){
+      // user cancelled the import after a conflict warning — remove any acts we speculatively
+      // created so we don't leave orphaned empty acts behind from an import that didn't happen
+      cur().acts=cActs().filter(a=>!newActsCreated.some(na=>na.id===a.id));
     }
     input.value='';
-  };
-  reader.readAsText(file,'UTF-8');
 }
 
 // ── SVG GLOBE (zero external dependencies, pure math) ─────────────────────────
