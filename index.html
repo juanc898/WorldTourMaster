@@ -1026,7 +1026,7 @@ function renderProfile(){
 
 // ── FIELD DEFINITIONS (import/export sync) ───────────────────────────────────
 const FIELDS=[
-  {k:'act',l:'Act Name',t:'text'},{k:'country',l:'Country',t:'text'},{k:'city',l:'City/Region',t:'text'},
+  {k:'act',l:'Act Name',t:'text'},{k:'act_desc',l:'Act Description',t:'text'},{k:'country',l:'Country',t:'text'},{k:'city',l:'City/Region',t:'text'},
   {k:'status',l:'Status (planned/confirmed/wishlist/completed/cancelled)',t:'text'},
   {k:'priority',l:'Priority (1-5)',t:'number'},{k:'arrival',l:'Arrival Date (YYYY-MM-DD)',t:'date'},
   {k:'departure',l:'Departure Date (YYYY-MM-DD)',t:'date'},{k:'event',l:'Event Name',t:'text'},
@@ -1106,7 +1106,7 @@ function viewDest(id){if(tab==='map'&&typeof teardownGlobe==='function')teardown
 function exportTemplate(){
   const header=FIELDS.map(f=>f.l);
   const example=FIELDS.map(f=>{
-    if(f.k==='act')return'The Prelude';if(f.k==='country')return'Spain';
+    if(f.k==='act')return'The Prelude';if(f.k==='act_desc')return'Excess, art, freedom, hedonism, aesthetic';if(f.k==='country')return'Spain';
     if(f.k==='city')return'Barcelona';
     if(f.k==='status')return'planned';if(f.k==='priority')return'3';
     if(f.k==='arrival')return'2027-08-01';if(f.k==='departure')return'2027-08-05';
@@ -1121,6 +1121,7 @@ function exportCSV(){
   const header=FIELDS.map(f=>f.l);
   const rows=sDests().map(d=>FIELDS.map(f=>{
     if(f.k==='act')return aM(d.act)?.name||'';
+    if(f.k==='act_desc')return aM(d.act)?.subtitle||'';
     if(f.k==='todo')return(d.todo||'').replace(/\n/g,'|');
     if(f.k==='visa_required'||f.k==='vaccines_required')return d[f.k]?'yes':'no';
     return d[f.k]!=null?String(d[f.k]):'';
@@ -1625,6 +1626,9 @@ function processImportedRows(rows,input){
             obj.act=newAct.id;
           }
         }
+        else if(k==='act_desc'){
+          obj._actDesc=v; // held temporarily; applied to the resolved act after this row's act is determined (see below) — not a destination property itself
+        }
         else if(k==='country'){
           const resolved=resolveCountryName(v);
           if(resolved){
@@ -1685,6 +1689,15 @@ function processImportedRows(rows,input){
         else if(FIELDS.find(f=>f.k===k)?.t==='number')obj[k]=parseFloat(v)||0;
         else obj[k]=v;
       });
+      if(obj._actDesc!=null&&obj.act){
+        // Only overwrite the act's subtitle if a non-blank description was actually given on
+        // this row — many rows for the same act will have this column blank (it only needs to
+        // be filled in once per act), and a blank shouldn't erase a description set by an
+        // earlier row or by editing the act directly in the app.
+        const act=cActs().find(a=>a.id===obj.act);
+        if(act&&obj._actDesc.trim())act.subtitle=obj._actDesc.trim();
+      }
+      delete obj._actDesc;
       if(!obj.city)continue;
       if(!obj.flag&&obj.country)obj.flag=flagForCountryName(obj.country)||'📍';
       if(obj.arrival&&obj.departure){const ex=cDests().find(d=>d.city?.toLowerCase()===obj.city?.toLowerCase()&&d.arrival===obj.arrival);if(ex)conflict=true;}
