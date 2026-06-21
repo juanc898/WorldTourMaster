@@ -1340,6 +1340,7 @@ function renderRoute(){
       <label class="fbtn" style="cursor:pointer" title="Import from Excel or CSV"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importCSV(this)"/></label>
       <button class="fbtn" onclick="exportCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
       <button class="fbtn" onclick="toggleRouteEditMode()" title="Quickly edit dates and nights for every destination in one grid"><i class="ti ti-calendar-time"></i> Edit Route</button>
+      <button class="add-btn" onclick="confirmRecalculateDates()" title="Close any gaps or overlaps between destinations, in chronological order, after editing dates or nights"><i class="ti ti-refresh"></i> Recalculate Dates</button>
       <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:11px">Remove All</button>
       <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${filt.length}/${sorted.length}</span>
     </div>
@@ -1374,7 +1375,7 @@ function renderRouteEdit(){
       <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${sorted.length} destinations · sorted by current arrival date</span>
     </div>
     <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin:-.5rem 0 .75rem;line-height:1.5">
-      <i class="ti ti-info-circle"></i> Edit any date or night count directly in the grid below. Nothing downstream shifts automatically — once you're done editing, click <strong>Recalculate Dates</strong> to push the change through every destination that comes after it, keeping each one's own night count but moving its arrival to follow on from the one before it.
+      <i class="ti ti-info-circle"></i> Edit any date or night count directly in the grid below. Nothing shifts automatically — once you're done (here or in the regular destination form), click <strong>Recalculate Dates</strong> (also available from the main Route view) to close any gaps or overlaps, keeping each destination's own night count but lining everything up back-to-back in chronological order.
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
       <table class="rtbl" id="routeEditTbl">
@@ -1420,7 +1421,7 @@ function updateRouteField(id,field,value){
   }
 }
 function confirmRecalculateDates(){
-  if(confirm('Recalculate dates for every upcoming destination?\n\nThis will shift the arrival/departure dates of every destination that comes after each one you\'ve edited, keeping each destination\'s own night count but lining them up back-to-back in order.\n\nThis cannot be undone automatically — are you sure?')){
+  if(confirm('Recalculate dates to remove gaps and overlaps?\n\nThis looks at every destination in chronological order (by arrival date) and, wherever one\'s departure doesn\'t line up with the next one\'s arrival, shifts the next one to close that gap or overlap — keeping each destination\'s own night count, but moving everything after it to follow on with no gaps.\n\nWorks across any edits you\'ve made, whether through this grid or the regular destination form.\n\nThis cannot be undone automatically — are you sure?')){
     recalculateDates();
   }
 }
