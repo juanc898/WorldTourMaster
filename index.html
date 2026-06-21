@@ -577,7 +577,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     <div class="f3"><div class="fg"><label class="flbl">Cost/Night</label><div class="fc" id="f_cpn">—</div></div><div class="fg"><label class="flbl">Cost/Night/Person</label><div class="fc" id="f_cpnpp">—</div></div><div class="fg"><label class="flbl">Balance Owed</label><div class="fc" id="f_owed">—</div></div></div>
   </div></div>
   <div class="msect"><div class="msttl">Transportation</div><div class="mflds">
-    <div class="f2"><div class="fg"><label class="flbl">Mode</label><select class="fi" id="f_mot"><option value="">— None —</option><option value="Flight">✈ Flight</option><option value="Train">🚆 Train</option><option value="Ferry">⛴ Ferry</option><option value="Car Rental">🚗 Car Rental</option><option value="Bus">🚌 Bus</option><option value="Private Transfer">🚐 Transfer</option><option value="Cruise">🛳 Cruise</option></select></div><div class="fg"><label class="flbl">Company</label><input class="fi" id="f_t_company" type="text" placeholder="e.g. Lufthansa, Eurail, Hertz"/></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Mode</label><select class="fi" id="f_mot"><option value="">— None —</option><option value="Flight">✈ Flight</option><option value="Train">🚆 Train</option><option value="Ferry">⛴ Ferry</option><option value="Car Rental">🚗 Car Rental</option><option value="Motorbike">🏍 Motorbike</option><option value="Bus">🚌 Bus</option><option value="Private Transfer">🚐 Transfer</option><option value="Cruise">🛳 Cruise</option></select></div><div class="fg"><label class="flbl">Company</label><input class="fi" id="f_t_company" type="text" placeholder="e.g. Lufthansa, Eurail, Hertz"/></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Flight/Train #</label><input class="fi" id="f_t_num" type="text" placeholder="e.g. FR3921"/></div><div class="fg"><label class="flbl">Booking #</label><input class="fi" id="f_t_ref" type="text" placeholder="Confirmation #"/></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Connection Info</label><input class="fi" id="f_t_connection" type="text" placeholder="e.g. Stop in ZRH 2h30m"/></div><div class="fg"></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Dep. Airport/Station</label><input class="fi" id="f_t_dep_port" type="text" placeholder="e.g. ORD"/></div><div class="fg"><label class="flbl">Arr. Airport/Port</label><input class="fi" id="f_t_arr_port" type="text" placeholder="e.g. VCE"/></div></div>
@@ -1572,7 +1572,7 @@ function processImportedRows(rows,input){
       return f?f.k:null;
     });
     const STATUS_OPTS=['planned','confirmed','wishlist','completed','cancelled'];
-    const MOT_OPTS=['Flight','Train','Ferry','Car Rental','Bus','Private Transfer','Cruise'];
+    const MOT_OPTS=['Flight','Train','Ferry','Car Rental','Motorbike','Bus','Private Transfer','Cruise'];
     const TPAID_OPTS=['no','partial','yes'];
     const VISA_OPTS=['Physical','E-Visa','On Arrival'];
     const VISA_STATUS_OPTS=['Obtained','Pending'];
@@ -2659,7 +2659,7 @@ function calcTotSpent(){
 }
 function renderBudget(){
   const bud=cur().budget;
-  const order=(cur().budgetOrder||bud.map(c=>c.id));
+  const order=(cur().budgetOrder&&cur().budgetOrder.length?cur().budgetOrder:bud.map(c=>c.id));
   const ordCats=order.map(id=>bud.find(c=>c.id===id)).filter(Boolean);
   const totBudget=bud.reduce((s,c)=>s+c.budget,0);
   const totSpent=calcTotSpent();
@@ -2741,7 +2741,7 @@ function bdDO(e,id){e.preventDefault();document.querySelectorAll('.bcat').forEac
 function bdDrop(e,tid){
   e.preventDefault();document.querySelectorAll('.bcat').forEach(el=>el.classList.remove('drag-over'));
   if(!bdDragSrc||bdDragSrc===tid)return;
-  let order=cur().budgetOrder||cur().budget.map(c=>c.id);
+  let order=(cur().budgetOrder&&cur().budgetOrder.length)?cur().budgetOrder:cur().budget.map(c=>c.id);
   const si=order.indexOf(bdDragSrc),ti=order.indexOf(tid);
   if(si<0||ti<0)return;
   order.splice(si,1);order.splice(ti,0,bdDragSrc);
@@ -2835,6 +2835,9 @@ function renderBucket(){
         <div class="fmenu" id="bcmenu">${catMenuItems}</div>
       </div>
       <button class="abtn" onclick="openBktCatModal()" style="font-size:10px;padding:4px 9px"><i class="ti ti-plus"></i> New category</button>
+      <button class="fbtn" onclick="exportBktTemplate()" title="Download Excel template"><i class="ti ti-file-spreadsheet"></i> Template</button>
+      <label class="fbtn" style="cursor:pointer" title="Import from Excel or CSV"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importBktCSV(this)"/></label>
+      <button class="fbtn" onclick="exportBktCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
       <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${bkt.length}/${allBkt.length} shown</span>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
@@ -2882,10 +2885,55 @@ function renderVisas(){
   const vaccineDests=dests.filter(d=>d.vaccines_required);
   const obtainedCount=visaDests.filter(d=>d.visa_status==='Obtained').length;
 
+  // Country-level grouping: a country needs a visa if ANY of its destinations does, and counts
+  // as "Obtained" if ANY destination in that country has the visa Obtained — since a visa is
+  // typically valid for the whole country (or even region), not per-city, getting it once
+  // should be reflected at the country level rather than asking the user to mark every city.
+  function groupByCountry(list){
+    const map=new Map();
+    list.forEach(d=>{
+      if(!map.has(d.country))map.set(d.country,{country:d.country,flag:d.flag,dests:[]});
+      map.get(d.country).dests.push(d);
+    });
+    return[...map.values()];
+  }
+  const visaCountries=groupByCountry(visaDests).map(c=>({...c,obtained:c.dests.some(d=>d.visa_status==='Obtained')}));
+  const vaccineCountries=groupByCountry(vaccineDests);
+  const visaCountriesObtained=visaCountries.filter(c=>c.obtained).length;
+
   const natOptions='<option value="">— Select your passport/nationality —</option>'+
     COUNTRIES.map(([code,name])=>`<option value="${code}"${userNationality===code?' selected':''}>${esc(name)}</option>`).join('');
   const natEntry=COUNTRIES.find(c=>c[0]===userNationality);
   const natFlag=natEntry?codeToFlag(natEntry[0]):'';
+
+  const visaCountryRows=visaCountries.map(c=>{
+    const acts=[...new Set(c.dests.map(d=>aM(d.act).name))];
+    const cityList=c.dests.map(d=>d.city).join(', ');
+    const types=[...new Set(c.dests.map(d=>d.visa_type||'Physical'))];
+    return`<div class="ev-item" onclick="openDestModal('${c.dests[0].id}')">
+      <span style="font-size:22px;flex-shrink:0">${c.flag||'📍'}</span>
+      <div style="flex:1;min-width:0">
+        <div class="ev-name">${esc(c.country)}</div>
+        <div class="ev-loc">${esc(cityList)}</div>
+        <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(types.join(', '))} visa · ${c.dests.length} destination${c.dests.length===1?'':'s'}</div>
+      </div>
+      <span class="sbadge ${c.obtained?'sb-confirmed':'sb-planned'}" style="flex-shrink:0">${c.obtained?'✓ Obtained':'⏳ Pending'}</span>
+    </div>`;
+  }).join('');
+
+  const vaccineCountryRows=vaccineCountries.map(c=>{
+    const cityList=c.dests.map(d=>d.city).join(', ');
+    const details=[...new Set(c.dests.map(d=>d.vaccines_detail).filter(Boolean))];
+    return`<div class="ev-item" onclick="openDestModal('${c.dests[0].id}')">
+      <span style="font-size:22px;flex-shrink:0">${c.flag||'📍'}</span>
+      <div style="flex:1;min-width:0">
+        <div class="ev-name">${esc(c.country)}</div>
+        <div class="ev-loc">${esc(cityList)}</div>
+        ${details.length?`<div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(details.join('; '))}</div>`:''}
+      </div>
+      <span class="sbadge sb-wishlist" style="flex-shrink:0">⚕ Required</span>
+    </div>`;
+  }).join('');
 
   const visaRows=visaDests.map(d=>{
     const am=aM(d.act);
@@ -2935,21 +2983,29 @@ function renderVisas(){
     </div>
 
     <div class="sgrid">
-      <div class="scard"><div class="sval">${visaDests.length}</div><div class="slbl">Visas Needed</div></div>
-      <div class="scard"><div class="sval" style="color:var(--green)">${obtainedCount}</div><div class="slbl">Obtained</div></div>
-      <div class="scard"><div class="sval" style="color:#D4A84C">${visaDests.length-obtainedCount}</div><div class="slbl">Pending</div></div>
-      <div class="scard"><div class="sval">${vaccineDests.length}</div><div class="slbl">Vaccines/Paperwork</div></div>
+      <div class="scard"><div class="sval">${visaCountries.length}</div><div class="slbl">Countries Needing Visa</div></div>
+      <div class="scard"><div class="sval" style="color:var(--green)">${visaCountriesObtained}</div><div class="slbl">Obtained</div></div>
+      <div class="scard"><div class="sval" style="color:#D4A84C">${visaCountries.length-visaCountriesObtained}</div><div class="slbl">Pending</div></div>
+      <div class="scard"><div class="sval">${vaccineCountries.length}</div><div class="slbl">Countries Needing Vaccines</div></div>
     </div>
 
-    <div class="sec-ttl">Destinations Requiring a Visa</div>
+    <div class="sec-ttl">Countries Requiring a Visa</div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:.5rem">
-      ${visaRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations currently flagged as needing a visa. Mark "Visa required" in the Add/Edit Destination form to have them appear here.</div>'}
+      ${visaCountryRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No countries currently flagged as needing a visa. Mark "Visa required" in the Add/Edit Destination form to have them appear here.</div>'}
     </div>
     <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin-bottom:1.25rem;line-height:1.5">
-      <i class="ti ti-info-circle"></i> This list reflects what you've marked per-destination in the form — it is not a live lookup of current visa rules for your selected passport. Visa requirements and maximum stay durations change over time and vary by passport; always verify directly with the destination country's official immigration authority or embassy before you travel.
+      <i class="ti ti-info-circle"></i> This list reflects what you've marked per-destination in the form, grouped by country — it is not a live lookup of current visa rules for your selected passport. A country shows "Obtained" once any one of its destinations is marked Obtained. Visa requirements and maximum stay durations change over time and vary by passport; always verify directly with the destination country's official immigration authority or embassy before you travel.
     </div>
 
-    <div class="sec-ttl">Vaccines &amp; Other Required Paperwork</div>
+    <div class="sec-ttl">Countries Requiring Vaccines / Paperwork</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1.5rem">
+      ${vaccineCountryRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No countries currently flagged as needing vaccines or extra paperwork.</div>'}
+    </div>
+
+    <div class="sec-ttl">Destination-Level Breakdown <span style="font-size:8px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(same info, one row per stop)</span></div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:.5rem">
+      ${visaRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations currently flagged as needing a visa.</div>'}
+    </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1.5rem">
       ${vaccineRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations currently flagged as needing vaccines or extra paperwork.</div>'}
     </div>
@@ -3002,6 +3058,131 @@ function saveBktItem(){
   closeBktModal();renderContent();
 }
 function removeBktItem(id){if(!confirm('Remove this experience?'))return;cur().bucket=cur().bucket.filter(b=>b.id!==id);renderContent();}
+
+// ── BUCKET LIST EXCEL TEMPLATE / IMPORT / EXPORT ───────────────────────────────
+// Independent of the Add/Edit Experience form — this is its own small field schema, not tied
+// to FIELDS (which is destination-specific). Reuses the same xlsx reader/writer and fuzzy-typo
+// matching already built for the Route section's Template/Import/Export.
+const BKT_FIELDS=[
+  {k:'text',l:'Experience',t:'text'},
+  {k:'country',l:'Country',t:'text'},
+  {k:'act',l:'Act Name',t:'text'},
+  {k:'category',l:'Category',t:'text'},
+  {k:'status',l:'Status (achieved/pending)',t:'text'},
+  {k:'rating',l:'Rating (1-5)',t:'number'},
+];
+function exportBktTemplate(){
+  const header=BKT_FIELDS.map(f=>f.l);
+  const example=['Watch sunrise over Venice in Carnival costume','Italy','The Prelude','Culture & Festivals','pending','5'];
+  buildXlsxFromRows([header,example],'Bucket List').then(blob=>downloadBlob(blob,'bucket_list_template.xlsx'));
+}
+function exportBktCSV(){
+  const header=BKT_FIELDS.map(f=>f.l);
+  const rows=cur().bucket.map(b=>BKT_FIELDS.map(f=>{
+    if(f.k==='act')return aM(b.act)?.name||'';
+    if(f.k==='category')return bktCatM(b.category)?.name||'';
+    if(f.k==='status')return b.done?'achieved':'pending';
+    if(f.k==='rating')return b.rating!=null?String(b.rating):'';
+    return b[f.k]!=null?String(b[f.k]):'';
+  }));
+  buildXlsxFromRows([header,...rows],'Bucket List').then(blob=>downloadBlob(blob,'bucket_list_export.xlsx'));
+}
+function importBktCSV(input){
+  const file=input.files[0];if(!file)return;
+  const isXlsx=/\.xlsx$/i.test(file.name);
+  if(isXlsx){
+    parseXlsxFile(file).then(rows=>processImportedBktRows(rows,input)).catch(err=>{
+      alert('Could not read this Excel file. If it was saved in an unusual format, try "Save As" → CSV in Excel and upload that instead.\n\n('+err.message+')');
+      input.value='';
+    });
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result.replace(/^\uFEFF/,'');
+    const delimiter=detectDelimiter(text);
+    const rows=parseCSVFile(text,delimiter);
+    processImportedBktRows(rows,input);
+  };
+  reader.readAsText(file,'UTF-8');
+}
+function processImportedBktRows(rows,input){
+  if(rows.length<2){alert('No data rows found in the file.');input.value='';return;}
+  const rawHdrs=rows[0];
+  const fkeys=rawHdrs.map(h=>{
+    const f=BKT_FIELDS.find(x=>x.l.toLowerCase()===h.trim().toLowerCase()||x.k.toLowerCase()===h.trim().toLowerCase());
+    return f?f.k:null;
+  });
+  const STATUS_OPTS=['achieved','pending'];
+  const correctionNotes=[];
+  const newActsCreated=[];
+  const newCatsCreated=[];
+  const newItems=[];
+  const bkt=cur().bucket;
+  for(let i=1;i<rows.length;i++){
+    const vals=rows[i];
+    if(!vals||!vals.some(v=>v&&String(v).trim()))continue;
+    const obj={id:uid(),done:false,rating:0,category:'',act:'',country:''};
+    const rowLabel=()=>obj.text?obj.text.slice(0,30):`row ${i}`;
+    fkeys.forEach((k,j)=>{
+      if(!k||vals[j]===undefined)return;
+      const v=String(vals[j]).trim();if(!v)return;
+      if(k==='act'){
+        // Same principle as the Route import: act names are arbitrary user-defined labels, not
+        // a fixed vocabulary, so we only ever exact-match or create new — never fuzzy-guess
+        // between two genuinely different act names.
+        const exactM=cActs().find(a=>a.name.toLowerCase()===v.toLowerCase());
+        if(exactM){obj.act=exactM.id;}
+        else{
+          let newAct=newActsCreated.find(a=>a.name.toLowerCase()===v.toLowerCase());
+          if(!newAct){
+            const palette=['#C9A84C','#C84B6B','#4BC896','#8B4BC8','#4B8BC8','#C8734B','#C8C84B','#5BD8C8'];
+            newAct={id:uid(),name:v,subtitle:'',color:palette[newActsCreated.length%palette.length]};
+            cActs().push(newAct);newActsCreated.push(newAct);
+            correctionNotes.push(`Created new Act "${v}" (not found in this tour)`);
+          }
+          obj.act=newAct.id;
+        }
+      }else if(k==='category'){
+        // Same as Act: category names are also user-defined, so exact-match or create new.
+        const exactM=cBktCats().find(c=>c.name.toLowerCase()===v.toLowerCase());
+        if(exactM){obj.category=exactM.id;}
+        else{
+          let newCat=newCatsCreated.find(c=>c.name.toLowerCase()===v.toLowerCase());
+          if(!newCat){
+            const palette=['#8B4BC8','#C84B6B','#C9A84C','#4BC896','#C8734B','#D8527A','#4B8BC8','#5BD8C8'];
+            newCat={id:uid(),name:v,color:palette[newCatsCreated.length%palette.length]};
+            cBktCats().push(newCat);newCatsCreated.push(newCat);
+            correctionNotes.push(`Created new Category "${v}" (not found in this tour)`);
+          }
+          obj.category=newCat.id;
+        }
+      }else if(k==='status'){
+        const resolved=fuzzyMatch(v,STATUS_OPTS)||'pending';
+        obj.done=resolved==='achieved';
+        if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Status "${resolved}" (${rowLabel()})`);
+      }else if(k==='rating'){
+        obj.rating=Math.max(0,Math.min(5,parseInt(v)||0));
+      }else{
+        obj[k]=v;
+      }
+    });
+    if(!obj.text)continue;
+    obj.order=bkt.length+newItems.length;
+    newItems.push(obj);
+  }
+  if(!newItems.length){alert('No valid experience rows found — make sure the "Experience" column is filled in.');input.value='';return;}
+  bkt.push(...newItems);
+  renderContent();
+  let msg=`✓ Imported ${newItems.length} bucket list experience${newItems.length===1?'':'s'}.`;
+  if(correctionNotes.length){
+    const shown=correctionNotes.slice(0,8).join('\n');
+    const more=correctionNotes.length>8?`\n…and ${correctionNotes.length-8} more`:'';
+    msg+=`\n\nNotes (${correctionNotes.length}):\n${shown}${more}`;
+  }
+  alert(msg);
+  input.value='';
+}
 
 // Bucket categories CRUD
 function openBktCatModal(editId){
@@ -3187,7 +3368,24 @@ function createTour(){
   const name=prompt('Tour name:','New World Tour');if(!name)return;
   const desc=prompt('Tour description (optional):','')||'';
   const id=uid();
-  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:[],bucket:[],budget:[{id:uid(),name:'Accommodation',budget:0,color:'#C9A84C',expenses:[],linked:'hotels'},{id:uid(),name:'Flights',budget:0,color:'#4B8BC8',expenses:[],linked:'transport'},{id:uid(),name:'Visas & Docs',budget:0,color:'#C8C84B',expenses:[],linked:'visas'}],budgetOrder:[]};
+  const defaultBudget=[
+    {id:uid(),name:'Accommodation',budget:0,color:'#C9A84C',expenses:[],linked:'hotels'},
+    {id:uid(),name:'Flights & Transport',budget:0,color:'#4B8BC8',expenses:[],linked:'transport'},
+    {id:uid(),name:'Food & Drink',budget:0,color:'#4BC896',expenses:[]},
+    {id:uid(),name:'Events & Tickets',budget:0,color:'#C84B6B',expenses:[],linked:'events'},
+    {id:uid(),name:'Entertainment',budget:0,color:'#C8734B',expenses:[]},
+    {id:uid(),name:'Visas & Docs',budget:0,color:'#C8C84B',expenses:[],linked:'visas'},
+    {id:uid(),name:'Insurance',budget:0,color:'#6B8080',expenses:[]},
+  ];
+  const defaultBktCats=[
+    {id:uid(),name:'Spiritual & Sacred',color:'#8B4BC8'},
+    {id:uid(),name:'Adrenaline & Adventure',color:'#C84B6B'},
+    {id:uid(),name:'Culture & Festivals',color:'#C9A84C'},
+    {id:uid(),name:'Nature & Wildlife',color:'#4BC896'},
+    {id:uid(),name:'Food & Indulgence',color:'#C8734B'},
+    {id:uid(),name:'Hedonism & Sex',color:'#D8527A'},
+  ];
+  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,bucket:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
   S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
