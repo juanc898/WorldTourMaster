@@ -1391,11 +1391,11 @@ function renderRouteEdit(){
     return`<tr data-id="${r.id}">
       <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:10px">${i+1}</td>
       <td style="padding:.4rem .6rem"><span style="font-size:14px;margin-right:4px">${d.flag||'📍'}</span><span style="font-size:12px;color:var(--t1)">${esc(d.city)}</span><div style="font-size:9px;color:${am.color}">${esc(am.name)}</div></td>
-      <td><input class="fi" type="date" value="${r.arrival||''}" oninput="updateRouteField('${r.id}','arrival',this.value)" style="font-size:11px;padding:.3rem .4rem"/></td>
+      <td><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:11px;padding:.3rem .4rem"/></td>
       <td style="color:var(--t3);font-family:var(--font-ui);font-size:10px;text-align:center" id="rwd_a_${r.id}">${wS(r.arrival)}</td>
-      <td><input class="fi" type="date" value="${r.departure||''}" oninput="updateRouteField('${r.id}','departure',this.value)" style="font-size:11px;padding:.3rem .4rem"/></td>
+      <td><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:11px;padding:.3rem .4rem"/></td>
       <td style="color:var(--t3);font-family:var(--font-ui);font-size:10px;text-align:center" id="rwd_d_${r.id}">${wS(r.departure)}</td>
-      <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" oninput="updateRouteField('${r.id}','nights',this.value)" style="font-size:11px;padding:.3rem .4rem;width:64px"/></td>
+      <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:11px;padding:.3rem .4rem;width:64px"/></td>
     </tr>`;
   }).join('');
   return`<div class="panel">
