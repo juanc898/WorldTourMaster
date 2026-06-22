@@ -710,7 +710,15 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     </div>
   </div></div>
   <div class="msect"><div class="msttl">Event / Festival / Experience</div><div class="mflds">
-    <div class="f2"><div class="fg"><label class="flbl">Event Name</label><input class="fi" id="f_event" type="text" placeholder="e.g. Running of the Bulls"/></div><div class="fg"><label class="flbl">Event Type</label><input class="fi" id="f_event_type" type="text" placeholder="e.g. Cultural / Music / Sport"/></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Event Name</label><input class="fi" id="f_event" type="text" placeholder="e.g. Running of the Bulls"/></div><div class="fg">
+      <label class="flbl">Event Category</label>
+      <select class="fi" id="f_event_type" onchange="onEventCatSelectChange(this)"></select>
+      <div id="newEventCatRow" style="display:none;margin-top:.4rem;gap:.4rem;align-items:center">
+        <input class="fi" id="f_new_event_cat" type="text" placeholder="New category name" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addInlineEventCat();}"/>
+        <input class="fi" id="f_new_event_cat_color" type="color" value="#C9A84C" style="width:42px;height:38px;padding:3px;flex:0 0 42px"/>
+        <button class="abtn" onclick="addInlineEventCat()" style="white-space:nowrap;flex-shrink:0"><i class="ti ti-check"></i> Add</button>
+      </div>
+    </div></div>
     <div class="f2"><div class="fg"><label class="flbl">Event Start Date</label><input class="fi" id="f_event_start" type="date"/></div><div class="fg"><label class="flbl">Event End Date <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_event_end" type="date"/></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Event Cost ($)</label><input class="fi" id="f_event_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"><label class="flbl">Persons Sharing</label><input class="fi" id="f_event_persons" type="number" min="1" value="2"/></div></div>
   </div></div>
@@ -782,6 +790,15 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <div class="fg"><label class="flbl">Color</label><input class="fi" id="bktcat_color" type="color" value="#C9A84C" style="height:42px;padding:4px"/></div>
 </div>
 <div class="mfoot"><button class="btng" onclick="closeBktCatModal()">Cancel</button><button class="btnp" onclick="saveBktCat()">Save</button></div>
+</div></div>
+<!-- EVENT CATEGORY MODAL -->
+<div class="mo" id="eventCatModal" style="display:none" onclick="if(event.target===this)closeEventCatModal()">
+<div class="modal" style="max-width:380px"><div class="mhdr"><div class="mttl" id="eventCatModalTitle">Add Category</div><button class="mx" onclick="closeEventCatModal()">&#x2715;</button></div>
+<div class="mbody">
+  <div class="fg"><label class="flbl">Category Name</label><input class="fi" id="eventcat_name" type="text" placeholder="e.g. Party / Cultural / Sport"/></div>
+  <div class="fg"><label class="flbl">Color</label><input class="fi" id="eventcat_color" type="color" value="#C9A84C" style="height:42px;padding:4px"/></div>
+</div>
+<div class="mfoot"><button class="btng" onclick="closeEventCatModal()">Cancel</button><button class="btnp" onclick="saveEventCat()">Save</button></div>
 </div></div>
 <!-- TOUR MANAGE MODAL -->
 <div class="mo" id="tourModal" style="display:none" onclick="if(event.target===this)closeTourModal()">
@@ -1100,6 +1117,13 @@ let S={
         {id:'bc_hedon',name:'Hedonism & Sex',color:'#D8527A'},
         {id:'bc_extreme',name:'Edge of the World',color:'#5BD8C8'},
       ],
+      eventCategories:[
+        {id:'ec_party',name:'Party',color:'#D8527A'},
+        {id:'ec_cultural',name:'Cultural',color:'#C9A84C'},
+        {id:'ec_luxury',name:'Luxury',color:'#8B4BC8'},
+        {id:'ec_nature',name:'Nature',color:'#4BC896'},
+        {id:'ec_spiritual',name:'Spiritual',color:'#4B8BC8'},
+      ],
       bucket:[
         {id:'b1',text:'Watch the sun set over the Côte d\'Azur from a rooftop in St Tropez',country:'France',act:'a1',category:'bc_hedon',done:false,rating:4,order:0},
         {id:'b2',text:'Get hopelessly lost in the medieval lanes of Rocamadour',country:'France',act:'a1',category:'bc_culture',done:false,rating:4,order:1},
@@ -1189,8 +1213,10 @@ const cur=()=>S.tours[S.cur];
 const cActs=()=>cur().acts;
 const cDests=()=>cur().destinations;
 const cBktCats=()=>cur().bktCategories||(cur().bktCategories=[]);
+const cEventCats=()=>cur().eventCategories||(cur().eventCategories=[]);
 const aM=id=>cActs().find(a=>a.id===id)||cActs()[0]||{name:'?',color:'#888',subtitle:''};
 const bktCatM=id=>cBktCats().find(c=>c.id===id)||{name:'Uncategorized',color:'#888'};
+const eventCatByName=name=>cEventCats().find(c=>c.name.toLowerCase()===String(name||'').toLowerCase());
 const dBy=id=>cDests().find(d=>d.id===id);
 const sDests=()=>[...cDests()].sort((a,b)=>{
   if(a.arrival&&b.arrival)return a.arrival.localeCompare(b.arrival);
@@ -1204,7 +1230,7 @@ let routeEditMode=false; // toggles the Route section between the normal table a
 let routeDraft=null; // working copy of {id,arrival,departure} while inside Edit Route — null means "not editing", live data is untouched until Save Changes
 let routeAutoCalc=localStorage.getItem('ae_route_autocalc')!=='off'; // defaults to on
 let routeSearch=''; // free-text search across the Route table — filters on top of the status checkboxes
-let editDestId=null,editActId=null,editBktId=null,editBudCatId=null,editTourId=null,editBktCatId=null;
+let editDestId=null,editActId=null,editBktId=null,editBudCatId=null,editTourId=null,editBktCatId=null,editEventCatId=null;
 let aiMsgs=[],selBudCat=null,ctxEvId=null;
 let bdDragSrc=null,bktDragSrc=null;
 
@@ -2496,6 +2522,43 @@ function populateCountryDropdown(selectedCountryName){
     }
   }
 }
+// Populates the Event Category dropdown from the Events section's managed category list, always
+// appending a "+ New Category" option at the bottom. If the destination being edited has an
+// event_type that isn't (or no longer is) a real category — e.g. older/imported data — it's
+// added as a one-off option too, the same way populateCountryDropdown() handles a stray country.
+function populateEventCatDropdown(selectedTypeName){
+  const sel=document.getElementById('f_event_type');
+  if(!sel)return;
+  const cats=cEventCats();
+  sel.innerHTML='<option value="">— None —</option>'+cats.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('')+'<option value="__new__">+ New Category…</option>';
+  document.getElementById('newEventCatRow').style.display='none';
+  if(selectedTypeName){
+    const match=cats.find(c=>c.name===selectedTypeName);
+    if(match)sel.value=selectedTypeName;
+    else{
+      const opt=document.createElement('option');
+      opt.value=selectedTypeName;opt.textContent=selectedTypeName;
+      sel.insertBefore(opt,sel.lastElementChild);
+      sel.value=selectedTypeName;
+    }
+  }else sel.value='';
+}
+function onEventCatSelectChange(sel){
+  const row=document.getElementById('newEventCatRow');
+  if(sel.value==='__new__'){
+    row.style.display='flex';
+    document.getElementById('f_new_event_cat').value='';
+    document.getElementById('f_new_event_cat').focus();
+  }else row.style.display='none';
+}
+function addInlineEventCat(){
+  const nm=document.getElementById('f_new_event_cat').value.trim();
+  const col=document.getElementById('f_new_event_cat_color').value;
+  if(!nm){alert('Please enter a category name.');return;}
+  let cat=cEventCats().find(c=>c.name.toLowerCase()===nm.toLowerCase());
+  if(!cat){cat={id:uid(),name:nm,color:col};cEventCats().push(cat);}
+  populateEventCatDropdown(cat.name);
+}
 function toggleVisaFields(){
   const checked=document.getElementById('f_visa_required')?.checked;
   const box=document.getElementById('visaExtraFields');
@@ -3209,8 +3272,11 @@ function toggleStoryMode(){
 
 // ── EVENTS ────────────────────────────────────────────────────────────────────
 let evTypeFilter=null; // null = all types, or a specific event_type string
+let eventCatMgmtMode=false; // toggles Events between the main list and the "Manage Categories" sub-section
+function toggleEventCatMgmtMode(){eventCatMgmtMode=!eventCatMgmtMode;renderContent();}
 
 function renderEvents(){
+  if(eventCatMgmtMode)return renderEventCatMgmt();
   const allEvDests=sDests().filter(d=>d.event).sort((a,b)=>(a.arrival||'').localeCompare(b.arrival||''));
   const types=[...new Set(allEvDests.map(d=>d.event_type).filter(Boolean))].sort();
   const evDests=evTypeFilter?allEvDests.filter(d=>d.event_type===evTypeFilter):allEvDests;
@@ -3242,9 +3308,30 @@ function renderEvents(){
         <button class="fbtn" onclick="toggleEvTypeMenu()"><i class="ti ti-filter"></i> ${esc(typeFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="evTypeMenu">${typeMenuItems}</div>
       </div>
+      <button class="fbtn" onclick="toggleEventCatMgmtMode()" title="Create, rename, or remove Event categories"><i class="ti ti-tag"></i> Manage Categories</button>
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No events match the current filter.</div>'}</div>
     <div style="margin-top:.5rem;font-family:var(--font-ui);font-size:11px;color:var(--t3)">Click any event to edit or get AI insights</div>
+  </div>`;
+}
+// "Manage Categories" sub-section for Events — same pattern as Edit Route under Route and
+// Manage Categories under Bucket List. These categories populate the Event Category dropdown
+// in the Add/Edit Destination form.
+function renderEventCatMgmt(){
+  const cats=cEventCats();
+  const catMgmtRows=cats.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:.5rem .6rem;border-bottom:1px solid rgba(128,128,128,.1)">
+    <div style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+    <span style="flex:1;font-size:13px;color:var(--t2);font-family:var(--font-ui)">${esc(c.name)}</span>
+    <button class="abtn" onclick="openEventCatModal('${c.id}')" style="font-size:11px;padding:2px 6px"><i class="ti ti-edit"></i></button>
+    <button class="abtn del" onclick="removeEventCat('${c.id}')" style="font-size:11px;padding:2px 6px"><i class="ti ti-trash"></i></button>
+  </div>`).join('');
+  return`<div class="panel">
+    <div class="frow">
+      <button class="fbtn" onclick="toggleEventCatMgmtMode()"><i class="ti ti-arrow-left"></i> Back to Events</button>
+      <button class="add-btn" onclick="openEventCatModal()"><i class="ti ti-plus"></i> New Category</button>
+    </div>
+    <div class="sec-ttl">Manage Categories</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catMgmtRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No categories yet — add one, then pick it from the Event Category dropdown when adding a destination.</div>'}</div>
   </div>`;
 }
 function toggleEvTypeMenu(){document.getElementById('evTypeMenu')?.classList.toggle('open');}
@@ -3470,8 +3557,11 @@ function saveBudgetCat(){
 
 // ── BUCKET LIST (with categories + achieved/pending filter) ──────────────────
 let bktCatFilter=null; // null = all categories, or specific category id
+let bktCatMgmtMode=false; // toggles Bucket List between the main list and the "Manage Categories" sub-section
+function toggleBktCatMgmtMode(){bktCatMgmtMode=!bktCatMgmtMode;renderContent();}
 
 function renderBucket(){
+  if(bktCatMgmtMode)return renderBktCatMgmt();
   const allBkt=[...cur().bucket].sort((a,b)=>(a.order||0)-(b.order||0));
   const done=allBkt.filter(b=>b.done).length;
   // apply status filter
@@ -3512,13 +3602,6 @@ function renderBucket(){
     </div>`;
   }).join('');
 
-  const catMgmtRows=cats.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:.35rem .5rem;border-bottom:1px solid rgba(128,128,128,.1)">
-    <div style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
-    <span style="flex:1;font-size:12px;color:var(--t2);font-family:var(--font-ui)">${esc(c.name)}</span>
-    <button class="abtn" onclick="openBktCatModal('${c.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button>
-    <button class="abtn del" onclick="removeBktCat('${c.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button>
-  </div>`).join('');
-
   return`<div class="panel">
     <div class="sgrid" style="margin-bottom:1rem">
       <div class="scard"><div class="sval">${done}</div><div class="slbl">Achieved</div></div>
@@ -3534,7 +3617,7 @@ function renderBucket(){
         <button class="fbtn" onclick="toggleBCMenu()"><i class="ti ti-tag"></i> ${esc(catFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="bcmenu">${catMenuItems}</div>
       </div>
-      <button class="abtn" onclick="openBktCatModal()" style="font-size:11px;padding:4px 9px"><i class="ti ti-plus"></i> New category</button>
+      <button class="fbtn" onclick="toggleBktCatMgmtMode()" title="Create, rename, or remove Bucket List categories"><i class="ti ti-tag"></i> Manage Categories</button>
       <button class="fbtn" onclick="exportBktTemplate()" title="Download Excel template"><i class="ti ti-file-spreadsheet"></i> Template</button>
       <label class="fbtn" style="cursor:pointer" title="Import from Excel or CSV"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importBktCSV(this)"/></label>
       <button class="fbtn" onclick="exportBktCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
@@ -3544,10 +3627,28 @@ function renderBucket(){
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Life Experiences</div>
       <button class="abtn" onclick="openBktModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
     </div>
-    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1rem">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No experiences match the current filters.</div>'}</div>
-    <div class="sec-ttl">Manage Categories</div>
-    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catMgmtRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No categories yet.</div>'}</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No experiences match the current filters.</div>'}</div>
     <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:11px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate</div>
+  </div>`;
+}
+// "Manage Categories" sub-section for the Bucket List — same pattern as Edit Route under Route:
+// a Back button returns to the main list, nothing here touches the live items except via the
+// explicit Add/Edit/Remove actions.
+function renderBktCatMgmt(){
+  const cats=cBktCats();
+  const catMgmtRows=cats.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:.5rem .6rem;border-bottom:1px solid rgba(128,128,128,.1)">
+    <div style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+    <span style="flex:1;font-size:13px;color:var(--t2);font-family:var(--font-ui)">${esc(c.name)}</span>
+    <button class="abtn" onclick="openBktCatModal('${c.id}')" style="font-size:11px;padding:2px 6px"><i class="ti ti-edit"></i></button>
+    <button class="abtn del" onclick="removeBktCat('${c.id}')" style="font-size:11px;padding:2px 6px"><i class="ti ti-trash"></i></button>
+  </div>`).join('');
+  return`<div class="panel">
+    <div class="frow">
+      <button class="fbtn" onclick="toggleBktCatMgmtMode()"><i class="ti ti-arrow-left"></i> Back to Bucket List</button>
+      <button class="add-btn" onclick="openBktCatModal()"><i class="ti ti-plus"></i> New Category</button>
+    </div>
+    <div class="sec-ttl">Manage Categories</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catMgmtRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No categories yet — add one to start organizing your Bucket List.</div>'}</div>
   </div>`;
 }
 
@@ -3909,6 +4010,40 @@ function removeBktCat(id){
   renderContent();
 }
 
+// Event categories CRUD
+function openEventCatModal(editId){
+  editEventCatId=editId||null;
+  document.getElementById('eventCatModalTitle').textContent=editId?'Edit Category':'Add Category';
+  if(editId){const c=cEventCats().find(x=>x.id===editId);if(c){document.getElementById('eventcat_name').value=c.name;document.getElementById('eventcat_color').value=c.color;}}
+  else{document.getElementById('eventcat_name').value='';document.getElementById('eventcat_color').value='#C9A84C';}
+  document.getElementById('eventCatModal').style.display='flex';
+}
+function closeEventCatModal(){document.getElementById('eventCatModal').style.display='none';}
+function saveEventCat(){
+  const nm=document.getElementById('eventcat_name').value.trim();
+  const col=document.getElementById('eventcat_color').value;
+  if(!nm){alert('Please enter a category name.');return;}
+  if(editEventCatId){
+    const c=cEventCats().find(x=>x.id===editEventCatId);
+    if(c){
+      // event_type is stored on destinations as the category's plain name (not its id), so
+      // renaming a category needs to relabel every destination currently using the old name.
+      const oldName=c.name;
+      cDests().forEach(d=>{if(d.event_type===oldName)d.event_type=nm;});
+      c.name=nm;c.color=col;
+    }
+  }else cEventCats().push({id:uid(),name:nm,color:col});
+  closeEventCatModal();renderContent();
+}
+function removeEventCat(id){
+  if(!confirm('Remove this category? Events using it will become uncategorized.'))return;
+  const c=cEventCats().find(x=>x.id===id);
+  if(c)cDests().forEach(d=>{if(d.event_type===c.name)d.event_type='';});
+  cur().eventCategories=cEventCats().filter(x=>x.id!==id);
+  if(evTypeFilter&&c&&evTypeFilter===c.name)evTypeFilter=null;
+  renderContent();
+}
+
 // ── AI ────────────────────────────────────────────────────────────────────────
 const AI={
   "Can I stay 10 more days in Spain?":"Based on your Schengen entry Jan 22, 2027, your Spanish itinerary already uses ~63 zone-days. Adding 10 risks the 90/180-day rule. Bridge with Morocco between Barcelona legs — your Cap d'Agde stretch already helps stretch your Schengen window.",
@@ -3976,7 +4111,7 @@ function openDestModal(editId){
       const sv=(fid,val)=>{const el=document.getElementById('f_'+fid);if(el&&val!=null)el.value=val;};
       as.value=d.act;sv('status',d.status);populateCountryDropdown(d.country);sv('city',d.city);sv('flag',d.flag);
       sv('priority',d.priority||3);sv('arrival',d.arrival);sv('departure',d.departure);
-      sv('event',d.event);sv('event_start',d.event_start||'');sv('event_end',d.event_end||'');sv('event_type',d.event_type);sv('event_cost',d.event_cost||'');sv('event_persons',d.event_persons||2);
+      sv('event',d.event);sv('event_start',d.event_start||'');sv('event_end',d.event_end||'');populateEventCatDropdown(d.event_type);sv('event_cost',d.event_cost||'');sv('event_persons',d.event_persons||2);
       sv('hotel',d.hotel);sv('hotel_ref',d.hotel_ref);sv('cost',d.cost||'');sv('persons',d.persons||2);sv('paid_hotel',d.paid||'');
       sv('mot',d.mot);sv('t_company',d.t_company);sv('t_ref',d.t_ref);sv('t_dep_port',d.t_dep_port);sv('t_arr_port',d.t_arr_port);
       sv('t_dep_dt',d.t_dep_dt);sv('t_arr_dt',d.t_arr_dt);sv('t_connection',d.t_connection);
@@ -3992,6 +4127,7 @@ function openDestModal(editId){
     }
   }else{
     populateCountryDropdown();
+    populateEventCatDropdown();
     if(curActId)as.value=curActId;
   }
   document.getElementById('destModal').style.display='flex';
@@ -4004,11 +4140,24 @@ function saveDest(){
   const countryName=countrySel.selectedOptions[0]?.textContent?.trim()||countrySel.selectedOptions[0]?.getAttribute('data-name')||'';
   const visaRequired=document.getElementById('f_visa_required').checked;
   const vaccinesRequired=document.getElementById('f_vaccines_required').checked;
+  // If the person picked "+ New Category" but never clicked the inline Add button, resolve it
+  // here instead of saving the literal "__new__" placeholder — same create-on-the-fly behavior,
+  // just triggered by Save rather than the Add button.
+  let eventType=gv('event_type');
+  if(eventType==='__new__'){
+    const nm=document.getElementById('f_new_event_cat')?.value?.trim()||'';
+    if(nm){
+      const col=document.getElementById('f_new_event_cat_color')?.value||'#C9A84C';
+      let cat=cEventCats().find(c=>c.name.toLowerCase()===nm.toLowerCase());
+      if(!cat){cat={id:uid(),name:nm,color:col};cEventCats().push(cat);}
+      eventType=cat.name;
+    }else eventType='';
+  }
   const d={
     id:editDestId||uid(),act:document.getElementById('f_act').value||cActs()[0]?.id,
     status:gv('status')||'planned',country:countryName,city:gv('city'),flag:gv('flag')||'📍',
     priority:parseInt(gv('priority'))||3,arrival:gv('arrival'),departure:gv('departure'),
-    event:gv('event'),event_start:gv('event_start'),event_end:gv('event_end'),event_type:gv('event_type'),event_cost:gn('event_cost'),event_persons:parseInt(gv('event_persons'))||2,
+    event:gv('event'),event_start:gv('event_start'),event_end:gv('event_end'),event_type:eventType,event_cost:gn('event_cost'),event_persons:parseInt(gv('event_persons'))||2,
     hotel:gv('hotel'),hotel_ref:gv('hotel_ref'),cost:gn('cost'),persons:parseInt(gv('persons'))||2,paid:gn('paid_hotel'),
     mot:gv('mot'),t_company:gv('t_company'),t_ref:gv('t_ref'),t_dep_port:gv('t_dep_port'),t_arr_port:gv('t_arr_port'),
     t_dep_dt:gv('t_dep_dt'),t_arr_dt:gv('t_arr_dt'),t_connection:gv('t_connection'),
@@ -4086,7 +4235,13 @@ function createTour(){
     {id:uid(),name:'Food & Indulgence',color:'#C8734B'},
     {id:uid(),name:'Hedonism & Sex',color:'#D8527A'},
   ];
-  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,bucket:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
+  const defaultEventCats=[
+    {id:uid(),name:'Party',color:'#D8527A'},
+    {id:uid(),name:'Cultural',color:'#C9A84C'},
+    {id:uid(),name:'Luxury',color:'#8B4BC8'},
+    {id:uid(),name:'Nature',color:'#4BC896'},
+  ];
+  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
   S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
