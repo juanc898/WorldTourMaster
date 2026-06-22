@@ -497,6 +497,10 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
      pushed the Nights box out of line with the date boxes above it. Aligning everything to the
      top keeps every input box starting at the same height regardless of how many lines sit below it. */
   #routeEditTbl td{vertical-align:top}
+  /* Headers were overflowing into each other at these column widths — letting them wrap onto a
+     second line (instead of forcing one line that spills sideways) keeps "Destination" and
+     "Arrival" each inside their own column. */
+  #routeEditTbl th{white-space:normal;line-height:1.15;padding:.4rem .3rem;font-size:9px!important}
   #routeEditTbl td:nth-child(2) span:first-child{font-size:13px}
   #routeEditTbl td:nth-child(2) span:nth-child(2){font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #routeEditTbl td:nth-child(2) div{font-size:10px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -510,20 +514,99 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   #routeEditTbl input[type="number"]{width:100%!important;padding:.3rem .2rem!important;font-size:12px!important}
   #routeEditTbl td span[id^="rwd_"]{width:100%!important;text-align:center;font-size:9px!important;flex-shrink:0}
 
-  /* Destination column — Route grid + Edit Route grid, phone only, per appearance */
-  [data-theme="mythic"] .rt-dest-name{font-size:14px}
-  [data-theme="mythic"] .re-dest-name{font-size:13px}
-  [data-theme="executive"] .rt-dest-name{font-size:13px}
-  [data-theme="executive"] .re-dest-name{font-size:12px}
-  [data-theme="modern"] .rt-dest-name{font-size:13px}
-  [data-theme="modern"] .re-dest-name{font-size:12px}
-  [data-theme="surreal"] .rt-dest-name{font-size:14px}
-  [data-theme="surreal"] .re-dest-name{font-size:13px}
-  [data-theme="luxury"] .rt-dest-name{font-size:14px}
-  [data-theme="luxury"] .re-dest-name{font-size:13px}
+  /* ── Item 1: sidebar Acts — city name + date, -2pt for every appearance except Neo Futurist ── */
+  .dest-city{font-size:12px}
+  .dest-meta{font-size:11px}
+  [data-theme="futurist"] .dest-city{font-size:14px}
+  [data-theme="futurist"] .dest-meta{font-size:13px}
+
+  /* ── Item 4: ROUTE grid — city / country / dates, -1pt for every appearance except Neo Futurist ──
+     (builds on the per-theme sizing already set for the 5 appearances below) */
+  .rt-dest-name{font-size:14px}
+  .rt-dest-country{font-size:11px}
+  .rt-mobile-dates{font-size:11px}
+  [data-theme="mythic"] .rt-dest-name{font-size:13px}
+  [data-theme="executive"] .rt-dest-name{font-size:12px}
+  [data-theme="modern"] .rt-dest-name{font-size:12px}
+  [data-theme="surreal"] .rt-dest-name{font-size:13px}
+  [data-theme="luxury"] .rt-dest-name{font-size:13px}
+  [data-theme="futurist"] .rt-dest-name{font-size:15px}
+  [data-theme="futurist"] .rt-dest-country{font-size:12px}
+  [data-theme="futurist"] .rt-mobile-dates{font-size:12px}
+
+  /* ── Item 5: EDIT ROUTE grid — city name + act name, -1pt for every appearance (no exceptions) ── */
+  .re-dest-name{font-size:13px}
+  .re-act-name{font-size:10px}
+  [data-theme="mythic"] .re-dest-name{font-size:12px}
+  [data-theme="executive"] .re-dest-name{font-size:11px}
+  [data-theme="modern"] .re-dest-name{font-size:11px}
+  [data-theme="surreal"] .re-dest-name{font-size:12px}
+  [data-theme="luxury"] .re-dest-name{font-size:12px}
+
+  /* ── Item 2: Dark Executive — every remaining font, -1pt ──
+     (Items 1/4/5 above already cover the sidebar Acts list and both Route grids for this
+     theme, so those aren't touched again here to avoid stacking two reductions on the same text.) */
+  [data-theme="executive"] .logo-txt{font-size:13px}
+  [data-theme="executive"] .logo-sub{font-size:10px}
+  [data-theme="executive"] .hstat-v{font-size:14px}
+  [data-theme="executive"] .hstat-l{font-size:10px}
+  [data-theme="executive"] .add-btn{font-size:11px}
+  [data-theme="executive"] .icon-btn{font-size:16px}
+  [data-theme="executive"] .theme-opt-name{font-size:11px}
+  [data-theme="executive"] .theme-opt-mood{font-size:10px}
+  [data-theme="executive"] .nav-tab{font-size:12px}
+  [data-theme="executive"] .nav-tab i{font-size:15px}
+  [data-theme="executive"] .tour-sel{font-size:11px}
+  [data-theme="executive"] .act-nm{font-size:11px}
+  [data-theme="executive"] .act-sub{font-size:10px}
+  [data-theme="executive"] .act-badge{font-size:9px}
+  [data-theme="executive"] .sec-ttl{font-size:11px}
+  [data-theme="executive"] .sval{font-size:21px}
+  [data-theme="executive"] .slbl{font-size:10px}
+  [data-theme="executive"] .ssub{font-size:10px}
+  [data-theme="executive"] .prof-city{font-size:20px}
+  [data-theme="executive"] .prof-cntry{font-size:10px}
+  [data-theme="executive"] .tag{font-size:10px}
+  [data-theme="executive"] .bttl{font-size:11px}
+  [data-theme="executive"] .dlbl{font-size:13px}
+  [data-theme="executive"] .dval{font-size:13px}
+  [data-theme="executive"] .pyes{font-size:10px}
+  [data-theme="executive"] .pno{font-size:10px}
+  [data-theme="executive"] .notes-box{font-size:12px}
+  [data-theme="executive"] .todo-item{font-size:11px}
+  [data-theme="executive"] .abtn{font-size:10px}
+  [data-theme="executive"] .sbadge{font-size:10px}
+  [data-theme="executive"] .rtbl{font-size:13px}
+  [data-theme="executive"] .rtbl th{font-size:10px}
+  [data-theme="executive"] .wd{font-size:10px}
+  [data-theme="executive"] .fbtn{font-size:11px}
+  [data-theme="executive"] .fmi{font-size:11px}
+  [data-theme="executive"] .ev-name{font-size:15px}
+  [data-theme="executive"] .ev-loc{font-size:13px}
+  [data-theme="executive"] .ev-date{font-size:11px}
+  [data-theme="executive"] .ev-cost-lbl{font-size:13px}
+  [data-theme="executive"] .ev-type{font-size:10px}
+  [data-theme="executive"] .bexp{font-size:11px}
+  [data-theme="executive"] .star{font-size:12px}
+  [data-theme="executive"] .bkt-cat-hdr{font-size:10px}
+  [data-theme="executive"] .ai-msg{font-size:11px}
+  [data-theme="executive"] .ai-msg-l{font-size:10px}
+  [data-theme="executive"] .ai-sug{font-size:11px}
+  [data-theme="executive"] .ai-inp{font-size:11px}
+  [data-theme="executive"] .ai-send{font-size:11px}
+  [data-theme="executive"] .mttl{font-size:14px}
+  [data-theme="executive"] .mx{font-size:18px}
+  [data-theme="executive"] .msttl{font-size:10px}
+  [data-theme="executive"] .flbl{font-size:11px}
+  [data-theme="executive"] .fi{font-size:13px}
+  [data-theme="executive"] .fc{font-size:11px}
+  [data-theme="executive"] .btnp{font-size:12px}
+  [data-theme="executive"] .btng{font-size:12px}
+  [data-theme="executive"] .menu-btn{font-size:21px}
+  [data-theme="executive"] .ctx-item{font-size:12px}
 
   /* Bucket list description — phone-only size tweaks */
-  [data-theme="executive"] .btxt{font-size:13px}
+  [data-theme="executive"] .btxt{font-size:12px}
   [data-theme="surreal"] .btxt{font-size:13px}
   [data-theme="luxury"] .btxt{font-size:13px}
 }
@@ -1362,7 +1445,7 @@ function renderRoute(){
     const n=dBtw(d.arrival,d.departure);
     return`<tr class="${d.status==='cancelled'?'cancelled':''}" onclick="viewDest('${d.id}')">
       <td style="padding:.4rem .4rem .4rem .6rem"><span style="font-size:16px">${d.flag||'📍'}</span></td>
-      <td><div class="rt-dest-name" style="font-size:15px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">${esc(d.city)}</div><div style="font-size:12px;color:var(--t3)">${esc(d.country)}</div>
+      <td><div class="rt-dest-name" style="font-size:15px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">${esc(d.city)}</div><div class="rt-dest-country" style="font-size:12px;color:var(--t3)">${esc(d.country)}</div>
         <div class="rt-mobile-dates">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'—'} <i class="ti ti-arrow-right" style="font-size:11px;vertical-align:middle"></i> ${d.departure?fD(d.departure)+' '+wS(d.departure):'—'}${n>0?' · '+n+'n':''}</div>
       </td>
       <td class="hm"><div style="font-size:14px">${d.arrival?fD(d.arrival):'—'} <span class="wd">${wS(d.arrival)}</span></div></td>
@@ -1437,7 +1520,7 @@ function renderRouteEdit(){
     const am=aM(d.act);
     return`<tr data-id="${r.id}">
       <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:11px">${i+1}</td>
-      <td style="padding:.4rem .6rem"><span style="font-size:15px;margin-right:4px">${d.flag||'📍'}</span><span class="re-dest-name" style="font-size:14px;color:var(--t1)">${esc(d.city)}</span><div style="font-size:11px;color:${am.color}">${esc(am.name)}</div></td>
+      <td style="padding:.4rem .6rem"><span style="font-size:15px;margin-right:4px">${d.flag||'📍'}</span><span class="re-dest-name" style="font-size:14px;color:var(--t1)">${esc(d.city)}</span><div class="re-act-name" style="font-size:11px;color:${am.color}">${esc(am.name)}</div></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_a_${r.id}">${wS(r.arrival)}</span></div></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_d_${r.id}">${wS(r.departure)}</span></div></td>
       <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:12px;padding:.3rem .4rem;width:56px"/></td>
