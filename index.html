@@ -10,7 +10,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{font-size:14px;transition:background .3s,color .3s}
+body{font-size:15px;transition:background .3s,color .3s}
 
 /* ══════════════════════════════════════════════════════
    THEME SYSTEM — 7 distinct themes via [data-theme]
@@ -62,7 +62,7 @@ body{font-size:14px;transition:background .3s,color .3s}
 [data-theme="futurist"] .dval,[data-theme="futurist"] .dlbl,[data-theme="futurist"] .fi,[data-theme="futurist"] .btxt,[data-theme="futurist"] .gstat-l,[data-theme="futurist"] .slbl,[data-theme="futurist"] .flbl{font-weight:700}
 [data-theme="futurist"] .prof-city,[data-theme="futurist"] .mttl,[data-theme="futurist"] .sval,[data-theme="futurist"] .logo-txt{font-weight:700}
 [data-theme="futurist"] body{background-image:linear-gradient(180deg,rgba(0,229,255,.06),transparent 30%),radial-gradient(ellipse at 15% 15%,rgba(0,212,255,.10),transparent 50%),radial-gradient(ellipse at 85% 100%,rgba(179,85,255,.10),transparent 55%);background-attachment:fixed}
-[data-theme="futurist"] .nav-tab{font-size:13px;font-weight:800;letter-spacing:.1em}
+[data-theme="futurist"] .nav-tab{font-size:14px;font-weight:800;letter-spacing:.1em}
 [data-theme="futurist"] .nav-tab.active{text-shadow:0 0 10px rgba(0,212,255,.6)}
 [data-theme="futurist"] .scard,[data-theme="futurist"] .pblk,[data-theme="futurist"] .pblk-f{border-color:var(--bd2)}
 [data-theme="futurist"] .sval,[data-theme="futurist"] .gstat-v{text-shadow:0 0 12px currentColor}
@@ -177,7 +177,7 @@ body{font-size:14px;transition:background .3s,color .3s}
 [data-theme="punk"] .logo-txt{font-family:var(--font-display);color:var(--t1);background:#fff;padding:1px 8px;display:inline-block;transform:rotate(-2deg);letter-spacing:.04em;text-shadow:none}
 [data-theme="punk"] .logo-sub{color:#fff;opacity:.7}
 [data-theme="punk"] .nav{background:var(--ink);border-bottom:4px solid var(--bd2)}
-[data-theme="punk"] .nav-tab{color:#bbb;font-weight:700;font-size:13px;letter-spacing:.04em}
+[data-theme="punk"] .nav-tab{color:#bbb;font-weight:700;font-size:14px;letter-spacing:.04em}
 [data-theme="punk"] .nav-tab:hover{color:#fff}
 [data-theme="punk"] .nav-tab.active{color:#fff;border-bottom-color:var(--gold);background:rgba(224,16,43,.18)}
 [data-theme="punk"] .sidebar{background:var(--ink);border-right:4px solid var(--bd2)}
@@ -189,7 +189,7 @@ body{font-size:14px;transition:background .3s,color .3s}
 }
 [data-theme="punk"] .scard:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(0,0,0,.9)}
 [data-theme="punk"] .sval,[data-theme="punk"] .prof-city,[data-theme="punk"] .mttl{font-family:var(--font-display);letter-spacing:.02em;text-transform:uppercase}
-[data-theme="punk"] .sec-ttl{font-family:var(--font-display);font-size:13px;color:var(--gold);letter-spacing:.05em}
+[data-theme="punk"] .sec-ttl{font-family:var(--font-display);font-size:14px;color:var(--gold);letter-spacing:.05em}
 [data-theme="punk"] .sec-ttl::after{height:3px;background:repeating-linear-gradient(90deg,var(--bd2) 0 6px,transparent 6px 10px)}
 [data-theme="punk"] .add-btn,[data-theme="punk"] .btnp{background:var(--gold);color:#fff;font-family:var(--font-ui);font-weight:700;border-radius:1px;box-shadow:3px 3px 0 rgba(0,0,0,.9);transform:rotate(-1deg)}
 [data-theme="punk"] .add-btn:hover,[data-theme="punk"] .btnp:hover{background:#0A0A0A;filter:none}
@@ -215,16 +215,16 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .hdr{background:var(--ink);border-bottom:1px solid var(--bd);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;gap:.5rem;box-shadow:var(--glow)}
 .logo-eye{width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center;filter:var(--glow,none)}
 .logo-eye svg{width:100%;height:100%;display:block}
-.logo-txt{font-size:13px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;white-space:nowrap;font-family:var(--font-display);font-weight:600}
-.logo-sub{font-size:9px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);white-space:nowrap}
+.logo-txt{font-size:14px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;white-space:nowrap;font-family:var(--font-display);font-weight:600}
+.logo-sub{font-size:11px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);white-space:nowrap}
 .hdr-r{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
 .hstat{text-align:center;cursor:pointer;padding:4px 6px;border-radius:var(--radius);display:none}
 .hstat:hover{background:rgba(255,255,255,.06)}
-.hstat-v{font-size:14px;color:var(--gold);line-height:1;font-family:var(--font-display);font-weight:600}
-.hstat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-ui)}
-.add-btn{display:flex;align-items:center;gap:4px;padding:6px 11px;background:var(--accent-grad);border:none;border-radius:var(--radius);color:#0A0A0F;font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:.06em;cursor:pointer;text-transform:uppercase;white-space:nowrap;box-shadow:var(--glow)}
+.hstat-v{font-size:15px;color:var(--gold);line-height:1;font-family:var(--font-display);font-weight:600}
+.hstat-l{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-ui)}
+.add-btn{display:flex;align-items:center;gap:4px;padding:6px 11px;background:var(--accent-grad);border:none;border-radius:var(--radius);color:#0A0A0F;font-family:var(--font-ui);font-size:12px;font-weight:700;letter-spacing:.06em;cursor:pointer;text-transform:uppercase;white-space:nowrap;box-shadow:var(--glow)}
 .add-btn:hover{filter:brightness(1.1)}
-.icon-btn{background:none;border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-size:16px;cursor:pointer;padding:4px 7px;display:flex;align-items:center}
+.icon-btn{background:none;border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-size:17px;cursor:pointer;padding:4px 7px;display:flex;align-items:center}
 .icon-btn:hover{color:var(--t1);border-color:var(--bd)}
 .theme-pop{position:absolute;top:calc(100% + 6px);right:0;background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);min-width:230px;z-index:200;display:none;padding:.4rem;box-shadow:0 8px 30px rgba(0,0,0,.5);max-height:70vh;overflow-y:auto}
 .theme-pop.open{display:block}
@@ -233,13 +233,13 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .theme-opt.active{background:rgba(201,168,76,.12)}
 .theme-swatch{width:24px;height:24px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.15)}
 .theme-opt-txt{flex:1;min-width:0}
-.theme-opt-name{font-size:11px;color:#F2F0EC;font-weight:600}
-.theme-opt-mood{font-size:9px;color:#9B98A0}
+.theme-opt-name{font-size:12px;color:var(--t1);font-weight:600}
+.theme-opt-mood{font-size:11px;color:var(--t3)}
 /* NAV */
 .nav{background:var(--ink);border-bottom:1px solid var(--bd);display:flex;overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch}
 .nav::-webkit-scrollbar{height:2px}
-.nav-tab{padding:0 .85rem;height:44px;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--font-ui);flex-shrink:0;transition:color .15s}
-.nav-tab i{font-size:15px}
+.nav-tab{padding:0 .85rem;height:44px;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--font-ui);flex-shrink:0;transition:color .15s}
+.nav-tab i{font-size:16px}
 .nav-tab:hover{color:var(--t2)}
 .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 /* LAYOUT */
@@ -253,95 +253,95 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .content::-webkit-scrollbar-track{background:var(--ink)}
 /* SIDEBAR */
 .tour-bar{padding:.4rem .625rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:4px}
-.tour-sel{flex:1;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--radius);padding:.3rem .5rem;color:var(--gold);font-family:var(--font-ui);font-size:11px;outline:none;cursor:pointer}
+.tour-sel{flex:1;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--radius);padding:.3rem .5rem;color:var(--gold);font-family:var(--font-ui);font-size:12px;outline:none;cursor:pointer}
 .act-row{padding:.4rem .625rem .4rem .875rem;cursor:pointer;border-left:2px solid transparent;display:flex;align-items:center;gap:4px}
 .act-row:hover{background:rgba(255,255,255,.025)}
 .act-row.active{background:rgba(201,168,76,.05)}
-.act-nm{font-size:13px;font-weight:700;color:var(--t1);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.act-sub{font-size:12px;color:var(--t3);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.act-badge{font-size:8px;background:var(--bd);color:var(--t3);padding:1px 5px;border-radius:8px;font-family:var(--font-ui);flex-shrink:0}
+.act-nm{font-size:14px;font-weight:700;color:var(--t1);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.act-sub{font-size:13px;color:var(--t3);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act-badge{font-size:10px;background:var(--bd);color:var(--t3);padding:1px 5px;border-radius:8px;font-family:var(--font-ui);flex-shrink:0}
 .dest-row{padding:.28rem .625rem .28rem 1.5rem;cursor:pointer;display:flex;align-items:center;gap:5px}
 .dest-row:hover{background:rgba(255,255,255,.018)}
 .dest-row.active{background:rgba(201,168,76,.04)}
-.dest-city{font-size:13px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-ui);flex:1}
+.dest-city{font-size:14px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-ui);flex:1}
 .dest-row.active .dest-city{color:var(--t1)}
-.dest-meta{font-size:12px;color:var(--t3);font-family:var(--font-ui)}
+.dest-meta{font-size:13px;color:var(--t3);font-family:var(--font-ui)}
 .dot5{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 /* PANEL */
 .panel{padding:1rem}
-.sec-ttl{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);margin-bottom:.625rem;display:flex;align-items:center;gap:6px}
+.sec-ttl{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);margin-bottom:.625rem;display:flex;align-items:center;gap:6px}
 .sec-ttl::after{content:'';flex:1;height:1px;background:var(--bd)}
 /* STAT CARDS */
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1rem}
 .scard{background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:.75rem;cursor:pointer;transition:transform .15s,background .15s;box-shadow:var(--shadow)}
 .scard:hover{background:var(--sf2);transform:translateY(-1px)}
 .sval{font-size:22px;color:var(--gold);line-height:1;font-family:var(--font-display);font-weight:600}
-.slbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-top:3px;font-family:var(--font-ui)}
-.ssub{font-size:10px;color:var(--t2);margin-top:2px;font-family:var(--font-ui)}
+.slbl{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-top:3px;font-family:var(--font-ui)}
+.ssub{font-size:11px;color:var(--t2);margin-top:2px;font-family:var(--font-ui)}
 /* PROFILE */
 .prof-wrap{padding:1rem}
 .prof-top{display:flex;gap:.875rem;margin-bottom:1rem;align-items:flex-start;flex-wrap:wrap}
 .prof-flag{font-size:44px;line-height:1;flex-shrink:0}
 .prof-meta{flex:1;min-width:180px}
 .prof-city{font-size:21px;color:var(--t1);letter-spacing:.02em;font-family:var(--font-display);font-weight:600}
-.prof-cntry{font-size:10px;color:var(--t3);font-family:var(--font-ui);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+.prof-cntry{font-size:11px;color:var(--t3);font-family:var(--font-ui);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
 .ptags{display:flex;flex-wrap:wrap;gap:4px}
-.tag{padding:2px 8px;border:1px solid var(--bd2);border-radius:var(--radius);font-size:9px;color:var(--t2);font-family:var(--font-ui);text-transform:uppercase}
+.tag{padding:2px 8px;border:1px solid var(--bd2);border-radius:var(--radius);font-size:11px;color:var(--t2);font-family:var(--font-ui);text-transform:uppercase}
 .tag.gld{border-color:var(--gold-dim);color:var(--gold)}
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
 .pblk{background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:.75rem;box-shadow:var(--shadow)}
 .pblk-f{background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:.75rem;margin-bottom:.75rem;box-shadow:var(--shadow)}
-.bttl{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);margin-bottom:.5rem}
+.bttl{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);margin-bottom:.5rem}
 .drow{display:flex;justify-content:space-between;align-items:flex-start;padding:.25rem 0;border-bottom:1px solid rgba(128,128,128,.13);font-family:var(--font-ui);gap:.5rem}
 .drow:last-child{border-bottom:none}
-.dlbl{font-size:13px;color:var(--t3);flex-shrink:0}
-.dval{font-size:13px;color:var(--t2);text-align:right}
+.dlbl{font-size:14px;color:var(--t3);flex-shrink:0}
+.dval{font-size:14px;color:var(--t2);text-align:right}
 .dval.gld{color:var(--gold)}
 .dval.grn{color:var(--green)}
 .dval.red{color:var(--red)}
-.pyes{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px;border-radius:var(--radius);background:rgba(75,200,150,.15);color:var(--green);font-family:var(--font-ui)}
-.pno{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px;border-radius:var(--radius);background:rgba(200,75,75,.12);color:var(--red);font-family:var(--font-ui)}
-.notes-box{font-size:12px;color:var(--t2);font-family:var(--font-ui);line-height:1.6;white-space:pre-wrap}
+.pyes{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:1px 6px;border-radius:var(--radius);background:rgba(75,200,150,.15);color:var(--green);font-family:var(--font-ui)}
+.pno{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:1px 6px;border-radius:var(--radius);background:rgba(200,75,75,.12);color:var(--red);font-family:var(--font-ui)}
+.notes-box{font-size:13px;color:var(--t2);font-family:var(--font-ui);line-height:1.6;white-space:pre-wrap}
 .todo-list{list-style:none;display:flex;flex-direction:column;gap:3px}
-.todo-item{display:flex;align-items:flex-start;gap:5px;font-size:11px;color:var(--t2);font-family:var(--font-ui);line-height:1.4}
-.todo-item::before{content:'◇';color:var(--gold-dim);font-size:9px;margin-top:2px;flex-shrink:0}
+.todo-item{display:flex;align-items:flex-start;gap:5px;font-size:12px;color:var(--t2);font-family:var(--font-ui);line-height:1.4}
+.todo-item::before{content:'◇';color:var(--gold-dim);font-size:11px;margin-top:2px;flex-shrink:0}
 .ev-pill{display:inline-flex;align-items:center;gap:6px;padding:.35rem .75rem;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:var(--radius);margin-bottom:.75rem}
 /* BUTTONS */
-.abtn{padding:2px 7px;border:1px solid var(--bd2);border-radius:var(--radius);background:transparent;color:var(--t2);font-family:var(--font-ui);font-size:9px;cursor:pointer;transition:all .15s}
+.abtn{padding:2px 7px;border:1px solid var(--bd2);border-radius:var(--radius);background:transparent;color:var(--t2);font-family:var(--font-ui);font-size:11px;cursor:pointer;transition:all .15s}
 .abtn:hover{color:var(--t1);border-color:var(--bd)}
 .abtn.del:hover{border-color:var(--red);color:var(--red)}
 /* STATUS BADGES */
-.sbadge{font-size:9px;padding:2px 7px;border-radius:var(--radius);font-family:var(--font-ui);white-space:nowrap;text-transform:capitalize}
+.sbadge{font-size:11px;padding:2px 7px;border-radius:var(--radius);font-family:var(--font-ui);white-space:nowrap;text-transform:capitalize}
 .sb-planned{background:rgba(139,105,20,.25);color:#D4A84C}
 .sb-confirmed{background:rgba(75,200,150,.18);color:#4BC896}
 .sb-cancelled{background:rgba(200,75,75,.15);color:#C84B4B}
 .sb-wishlist{background:rgba(139,75,200,.18);color:#9B5BD8}
 .sb-completed{background:rgba(75,139,200,.18);color:#5B9BD8}
 /* ROUTE TABLE */
-.rtbl{width:100%;border-collapse:collapse;font-family:var(--font-ui);font-size:13px}
-.rtbl th{padding:.4rem .6rem;text-align:left;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--bd);font-weight:400;background:var(--sf)}
+.rtbl{width:100%;border-collapse:collapse;font-family:var(--font-ui);font-size:14px}
+.rtbl th{padding:.4rem .6rem;text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--bd);font-weight:400;background:var(--sf)}
 .rtbl td{padding:.45rem .6rem;border-bottom:1px solid rgba(128,128,128,.1);color:var(--t2);vertical-align:middle}
 .rtbl tr:hover td{background:rgba(201,168,76,.04);cursor:pointer}
 .rtbl tr.cancelled td{opacity:.45}
-.rt-mobile-dates{display:none;font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px;white-space:nowrap}
-.wd{font-size:10px;color:var(--t3);margin-left:2px}
+.rt-mobile-dates{display:none;font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px;white-space:nowrap}
+.wd{font-size:11px;color:var(--t3);margin-left:2px}
 /* FILTER ROW */
 .frow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}
-.fbtn{padding:5px 9px;background:var(--sf);border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-family:var(--font-ui);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.fbtn{padding:5px 9px;background:var(--sf);border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-family:var(--font-ui);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px}
 .fbtn:hover{border-color:var(--bd);color:var(--t1)}
 .fmenu{position:absolute;top:calc(100% + 4px);left:0;background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);min-width:150px;z-index:50;display:none;padding:.25rem 0;box-shadow:0 4px 16px rgba(0,0,0,.4)}
 .fmenu.open{display:block}
-.fmi{display:flex;align-items:center;gap:6px;padding:.35rem .625rem;cursor:pointer;font-family:var(--font-ui);font-size:11px;color:var(--t2)}
+.fmi{display:flex;align-items:center;gap:6px;padding:.35rem .625rem;cursor:pointer;font-family:var(--font-ui);font-size:12px;color:var(--t2)}
 .fmi:hover{background:rgba(255,255,255,.03)}
 .fmi input[type=checkbox]{accent-color:var(--gold);cursor:pointer}
 /* EVENTS */
 .ev-item{display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .15s}
 .ev-item:hover{background:var(--sf2)}
-.ev-name{font-size:15px;color:var(--t1);font-family:var(--font-ui);line-height:1.3}
-.ev-loc{font-size:13px;color:var(--t3);font-family:var(--font-ui);margin-top:2px}
-.ev-date{font-size:11px;color:var(--gold);font-family:var(--font-ui);margin-top:2px}
-.ev-cost-lbl{font-size:13px;color:var(--green);font-family:var(--font-ui);margin-top:2px}
-.ev-type{font-size:10px;padding:2px 7px;border-radius:var(--radius);font-family:var(--font-ui);white-space:nowrap;flex-shrink:0}
+.ev-name{font-size:16px;color:var(--t1);font-family:var(--font-ui);line-height:1.3}
+.ev-loc{font-size:14px;color:var(--t3);font-family:var(--font-ui);margin-top:2px}
+.ev-date{font-size:12px;color:var(--gold);font-family:var(--font-ui);margin-top:2px}
+.ev-cost-lbl{font-size:14px;color:var(--green);font-family:var(--font-ui);margin-top:2px}
+.ev-type{font-size:11px;padding:2px 7px;border-radius:var(--radius);font-family:var(--font-ui);white-space:nowrap;flex-shrink:0}
 .pdots{display:flex;gap:3px;margin-top:4px}
 .pdot{width:5px;height:5px;border-radius:50%}
 /* BUDGET */
@@ -349,33 +349,33 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .bcat:hover{background:rgba(255,255,255,.02)}
 .bcat.active{background:rgba(201,168,76,.05)}
 .bcat.drag-over{border-top:2px solid var(--gold)}
-.bexp{display:flex;justify-content:space-between;align-items:center;padding:.4rem .75rem;border-bottom:1px solid rgba(128,128,128,.08);font-family:var(--font-ui);font-size:11px}
+.bexp{display:flex;justify-content:space-between;align-items:center;padding:.4rem .75rem;border-bottom:1px solid rgba(128,128,128,.08);font-family:var(--font-ui);font-size:12px}
 /* BUCKET */
 .bkt{display:flex;align-items:center;gap:.4rem;padding:.5rem .75rem;border-bottom:1px solid var(--bd);font-family:var(--font-ui);cursor:default;user-select:none}
 .bkt.drag-over{border-top:2px solid var(--gold)}
 .bchk{width:16px;height:16px;border:1px solid var(--bd2);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s}
 .bchk.done{background:var(--gold-dim);border-color:var(--gold)}
-.bchk.done::after{content:'✓';font-size:10px;color:var(--gold)}
-.btxt{font-size:13px;color:var(--t2);flex:1;line-height:1.4}
+.bchk.done::after{content:'✓';font-size:11px;color:var(--gold)}
+.btxt{font-size:14px;color:var(--t2);flex:1;line-height:1.4}
 .btxt.done{text-decoration:line-through;color:var(--t3)}
 .stars{display:flex;gap:2px;cursor:pointer}
-.star{font-size:12px;line-height:1;transition:color .1s;user-select:none}
+.star{font-size:13px;line-height:1;transition:color .1s;user-select:none}
 .star.on{color:var(--gold)}
 .star.off{color:var(--bd2)}
-.bkt-cat-hdr{padding:.5rem .75rem;background:var(--sf2);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-family:var(--font-ui);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.bkt-cat-hdr{padding:.5rem .75rem;background:var(--sf2);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-family:var(--font-ui);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
 /* AI */
 .ai-wrap{padding:1rem;display:flex;flex-direction:column;gap:.75rem}
 .ai-msgs{display:flex;flex-direction:column;gap:.5rem;min-height:150px;max-height:300px;overflow-y:auto;background:var(--sf);border:1px solid var(--bd);border-radius:var(--radius);padding:.75rem}
-.ai-msg{font-size:11px;line-height:1.6;font-family:var(--font-ui)}
+.ai-msg{font-size:12px;line-height:1.6;font-family:var(--font-ui)}
 .ai-msg.user{color:var(--gold);text-align:right}
 .ai-msg.ai{color:var(--t2)}
-.ai-msg-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
-.ai-sug{padding:.4rem .6rem;background:var(--sf);border:1px solid var(--bd);border-radius:var(--radius);font-size:11px;color:var(--t2);cursor:pointer;font-family:var(--font-ui);text-align:left;width:100%}
+.ai-msg-l{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
+.ai-sug{padding:.4rem .6rem;background:var(--sf);border:1px solid var(--bd);border-radius:var(--radius);font-size:12px;color:var(--t2);cursor:pointer;font-family:var(--font-ui);text-align:left;width:100%}
 .ai-sug:hover{background:var(--sf2);color:var(--t1)}
 .ai-row{display:flex;gap:6px}
-.ai-inp{flex:1;background:var(--sf);border:1px solid var(--bd2);border-radius:var(--radius);padding:.4rem .625rem;color:var(--t1);font-family:var(--font-ui);font-size:11px;outline:none}
+.ai-inp{flex:1;background:var(--sf);border:1px solid var(--bd2);border-radius:var(--radius);padding:.4rem .625rem;color:var(--t1);font-family:var(--font-ui);font-size:12px;outline:none}
 .ai-inp:focus{border-color:var(--gold-dim)}
-.ai-send{padding:.4rem .875rem;background:var(--accent-grad);border:none;border-radius:var(--radius);color:#0A0A0F;font-family:var(--font-ui);font-size:11px;font-weight:700;cursor:pointer}
+.ai-send{padding:.4rem .875rem;background:var(--accent-grad);border:none;border-radius:var(--radius);color:#0A0A0F;font-family:var(--font-ui);font-size:12px;font-weight:700;cursor:pointer}
 .ai-send:hover{filter:brightness(1.1)}
 /* MAP */
 .map-wrap{width:100%;overflow:hidden;background:#0C1016;position:relative}
@@ -384,36 +384,36 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .modal{background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);width:100%;max-width:580px;margin:auto;box-shadow:var(--shadow)}
 .mhdr{padding:.875rem 1rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--ink);z-index:1}
-.mttl{font-size:14px;color:var(--gold);letter-spacing:.04em;font-family:var(--font-display);font-weight:600}
-.mx{background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1}
+.mttl{font-size:15px;color:var(--gold);letter-spacing:.04em;font-family:var(--font-display);font-weight:600}
+.mx{background:none;border:none;color:var(--t3);font-size:19px;cursor:pointer;padding:2px 6px;line-height:1}
 .mx:hover{color:var(--t1)}
 .mbody{padding:1rem;display:flex;flex-direction:column;gap:.875rem;max-height:calc(100vh - 130px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .mbody::-webkit-scrollbar{width:4px}
 .mbody::-webkit-scrollbar-thumb{background:var(--bd2)}
 .msect{border:1px solid var(--bd);border-radius:var(--radius);overflow:visible;flex-shrink:0}
-.msttl{padding:.4rem .75rem;background:var(--sf);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);border-bottom:1px solid var(--bd);border-radius:calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0}
+.msttl{padding:.4rem .75rem;background:var(--sf);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);border-bottom:1px solid var(--bd);border-radius:calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0}
 .mflds{padding:.75rem;display:flex;flex-direction:column;gap:.625rem}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:.625rem}
 .f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.625rem}
 .fg{display:flex;flex-direction:column;gap:4px}
-.flbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui)}
-.fi{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--radius);padding:.5rem .75rem;color:var(--t1);font-family:var(--font-ui);font-size:13px;outline:none;width:100%;-webkit-appearance:none}
+.flbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui)}
+.fi{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--radius);padding:.5rem .75rem;color:var(--t1);font-family:var(--font-ui);font-size:14px;outline:none;width:100%;-webkit-appearance:none}
 .fi:focus{border-color:var(--gold-dim)}
 .fi::placeholder{color:var(--t3)}
 select.fi option{background:var(--sf2)}
 textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
-.fc{font-size:11px;color:var(--gold);font-family:var(--font-ui);margin-top:2px;min-height:16px}
+.fc{font-size:12px;color:var(--gold);font-family:var(--font-ui);margin-top:2px;min-height:16px}
 .mfoot{padding:.75rem 1rem;border-top:1px solid var(--bd);display:flex;gap:.5rem;justify-content:flex-end;background:var(--ink)}
-.btnp{padding:8px 18px;background:var(--accent-grad);border:none;border-radius:var(--radius);color:#0A0A0F;font-family:var(--font-ui);font-size:12px;font-weight:700;letter-spacing:.06em;cursor:pointer;text-transform:uppercase}
+.btnp{padding:8px 18px;background:var(--accent-grad);border:none;border-radius:var(--radius);color:#0A0A0F;font-family:var(--font-ui);font-size:13px;font-weight:700;letter-spacing:.06em;cursor:pointer;text-transform:uppercase}
 .btnp:hover{filter:brightness(1.1)}
-.btng{padding:8px 14px;background:transparent;border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-family:var(--font-ui);font-size:12px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
+.btng{padding:8px 14px;background:transparent;border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-family:var(--font-ui);font-size:13px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
 .btng:hover{color:var(--t1);border-color:var(--bd)}
 /* MOBILE */
 .menu-btn{display:none;background:none;border:none;color:var(--t2);font-size:22px;cursor:pointer;padding:4px}
 .sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90}
 /* CTX MENU */
 .ctx{position:fixed;background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);z-index:500;min-width:160px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
-.ctx-item{padding:.5rem .875rem;font-family:var(--font-ui);font-size:12px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:6px}
+.ctx-item{padding:.5rem .875rem;font-family:var(--font-ui);font-size:13px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:6px}
 .ctx-item:hover{background:rgba(201,168,76,.08);color:var(--gold)}
 /* GLOBE */
 .globe-wrap{position:relative;width:100%;height:calc(100vh - 96px);height:calc(100dvh - 96px);overflow:hidden;background:#000005;touch-action:none}
@@ -423,32 +423,32 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .globe-hud-row{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
 .globe-stats-bar{display:flex;gap:1rem;flex-wrap:wrap;font-family:var(--font-ui)}
 .gstat{text-align:center}
-.gstat-v{font-size:15px;color:#5CE8FF;font-weight:700;line-height:1;text-shadow:0 0 10px rgba(92,232,255,.5)}
-.gstat-l{font-size:9px;color:#8FA8C0;text-transform:uppercase;letter-spacing:.1em}
+.gstat-v{font-size:16px;color:#5CE8FF;font-weight:700;line-height:1;text-shadow:0 0 10px rgba(92,232,255,.5)}
+.gstat-l{font-size:11px;color:#8FA8C0;text-transform:uppercase;letter-spacing:.1em}
 .globe-ctrls{z-index:10;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
-.gbtn{background:rgba(15,20,35,.85);border:1px solid rgba(92,232,255,.25);border-radius:6px;color:#BFE8FF;font-size:14px;padding:6px 10px;cursor:pointer;font-family:var(--font-ui);display:flex;align-items:center;gap:4px;backdrop-filter:blur(6px)}
+.gbtn{background:rgba(15,20,35,.85);border:1px solid rgba(92,232,255,.25);border-radius:6px;color:#BFE8FF;font-size:15px;padding:6px 10px;cursor:pointer;font-family:var(--font-ui);display:flex;align-items:center;gap:4px;backdrop-filter:blur(6px)}
 .gbtn:hover{background:rgba(92,232,255,.15);border-color:rgba(92,232,255,.5)}
 .gbtn.active{background:rgba(92,232,255,.25);border-color:#5CE8FF;color:#fff}
 .globe-timeline{position:absolute;bottom:0;left:0;right:0;padding:.6rem 1rem calc(.75rem + env(safe-area-inset-bottom,0px));z-index:10;background:linear-gradient(0deg,rgba(0,0,5,.8) 30%,transparent)}
 .globe-scroll-handle{position:absolute;bottom:74px;left:50%;transform:translateX(-50%);z-index:11;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;touch-action:auto;padding:8px 14px;min-height:32px}
 .scroll-handle-bar{width:40px;height:5px;border-radius:3px;background:rgba(92,232,255,.55)}
-.scroll-handle-label{font-size:9px;color:#8FA8C0;font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:2px}
+.scroll-handle-label{font-size:11px;color:#8FA8C0;font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:2px}
 .timeline-track{position:relative;height:28px;display:flex;align-items:center}
 .timeline-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:rgba(92,232,255,.2);border-radius:2px;outline:none;cursor:pointer;touch-action:none}
 .timeline-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#5CE8FF;box-shadow:0 0 10px rgba(92,232,255,.8);cursor:pointer}
 .timeline-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#5CE8FF;box-shadow:0 0 10px rgba(92,232,255,.8);cursor:pointer;border:none}
-.timeline-label{font-size:10px;color:#8FA8C0;font-family:var(--font-ui);text-align:center;margin-top:2px}
+.timeline-label{font-size:11px;color:#8FA8C0;font-family:var(--font-ui);text-align:center;margin-top:2px}
 .globe-info-panel{position:absolute;top:0;right:0;bottom:0;width:300px;max-width:85vw;background:rgba(10,13,22,.92);backdrop-filter:blur(10px);border-left:1px solid rgba(92,232,255,.2);z-index:20;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateX(100%);transition:transform .3s ease;padding:1rem}
 .globe-info-panel.open{transform:translateX(0)}
-.gip-close{position:absolute;top:.6rem;right:.6rem;background:none;border:none;color:#8FA8C0;font-size:18px;cursor:pointer}
+.gip-close{position:absolute;top:.6rem;right:.6rem;background:none;border:none;color:#8FA8C0;font-size:19px;cursor:pointer}
 .gip-flag{font-size:38px;line-height:1}
-.gip-city{font-size:18px;color:#fff;font-family:var(--font-display);font-weight:600;margin-top:4px}
-.gip-country{font-size:10px;color:#8FA8C0;letter-spacing:.1em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem}
-.gip-row{display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.06);font-family:var(--font-ui);font-size:11px}
+.gip-city{font-size:19px;color:#fff;font-family:var(--font-display);font-weight:600;margin-top:4px}
+.gip-country{font-size:11px;color:#8FA8C0;letter-spacing:.1em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem}
+.gip-row{display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.06);font-family:var(--font-ui);font-size:12px}
 .gip-row span:first-child{color:#8FA8C0}
 .gip-row span:last-child{color:#D8EEFF}
-.gip-section{margin-top:.75rem;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#5CE8FF;font-family:var(--font-ui)}
-.globe-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#5CE8FF;font-family:var(--font-ui);font-size:12px;letter-spacing:.1em;text-transform:uppercase;z-index:5}
+.gip-section{margin-top:.75rem;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#5CE8FF;font-family:var(--font-ui)}
+.globe-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#5CE8FF;font-family:var(--font-ui);font-size:13px;letter-spacing:.1em;text-transform:uppercase;z-index:5}
 .globe-node-current{animation:globePulse 1.8s ease-in-out infinite}
 @keyframes globePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
 .globe-legend{position:absolute;bottom:5.6rem;left:1rem;z-index:10;display:flex;flex-direction:column;gap:4px;background:rgba(10,13,22,.6);backdrop-filter:blur(6px);border-radius:6px;padding:.5rem .7rem;max-width:200px}
@@ -480,15 +480,22 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   .rt-mobile-dates{display:block}
   .theme-pop{right:-40px;max-width:90vw}
   #routeEditTbl{table-layout:fixed;width:100%}
-  #routeEditTbl input[type="date"]{font-size:10px;padding:.25rem .15rem;width:64px!important;min-width:64px}
-  #routeEditTbl input[type="number"]{width:38px!important;padding:.25rem .2rem}
-  #routeEditTbl td{padding-left:.2rem;padding-right:.2rem}
-  #routeEditTbl td:first-child{width:18px;padding-left:.3rem!important}
-  #routeEditTbl td:nth-child(2){width:auto;max-width:72px}
-  #routeEditTbl td:nth-child(2) span:first-child{font-size:12px}
-  #routeEditTbl td:nth-child(2) span:nth-child(2){font-size:10px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #routeEditTbl td:nth-child(2) div{font-size:8px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #routeEditTbl td span[id^="rwd_"]{width:20px!important;font-size:8px!important}
+  /* Row-number column dropped on phone — it wasn't worth the width it cost. */
+  #routeEditTbl th:first-child,#routeEditTbl td:first-child{width:0;padding:0!important;border:none;overflow:hidden}
+  #routeEditTbl th:nth-child(2),#routeEditTbl td:nth-child(2){width:24%}
+  #routeEditTbl th:nth-child(3),#routeEditTbl td:nth-child(3),
+  #routeEditTbl th:nth-child(4),#routeEditTbl td:nth-child(4){width:30%}
+  #routeEditTbl th:nth-child(5),#routeEditTbl td:nth-child(5){width:16%}
+  #routeEditTbl td{padding-left:.25rem!important;padding-right:.25rem!important}
+  #routeEditTbl td:nth-child(2) span:first-child{font-size:13px}
+  #routeEditTbl td:nth-child(2) span:nth-child(2){font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #routeEditTbl td:nth-child(2) div{font-size:10px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Weekday label moves underneath the date instead of squeezing in beside it, freeing
+     that horizontal space for the date itself so it's never clipped. */
+  #routeEditTbl td:nth-child(3)>div,#routeEditTbl td:nth-child(4)>div{flex-direction:column;align-items:stretch;gap:1px}
+  #routeEditTbl input[type="date"]{font-size:12px!important;padding:.3rem .25rem!important;width:100%!important;min-width:0!important}
+  #routeEditTbl input[type="number"]{width:100%!important;padding:.3rem .2rem!important;font-size:12px!important}
+  #routeEditTbl td span[id^="rwd_"]{width:100%!important;text-align:center;font-size:9px!important;flex-shrink:0}
 }
 @media(max-width:380px){.sgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -549,11 +556,11 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <aside class="sidebar" id="sidebar">
     <div class="tour-bar">
       <select class="tour-sel" id="tourSel" onchange="switchTour(this.value)"></select>
-      <button class="abtn" onclick="openTourModal()" style="padding:3px 6px;font-size:10px" title="Manage Tours"><i class="ti ti-settings"></i></button>
+      <button class="abtn" onclick="openTourModal()" style="padding:3px 6px;font-size:11px" title="Manage Tours"><i class="ti ti-settings"></i></button>
     </div>
-    <div style="padding:.5rem .75rem .3rem;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);display:flex;align-items:center;justify-content:space-between;padding-right:.5rem">
+    <div style="padding:.5rem .75rem .3rem;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);display:flex;align-items:center;justify-content:space-between;padding-right:.5rem">
       <span>Journey Acts</span>
-      <button class="abtn" onclick="openActModal()" style="padding:1px 6px;font-size:10px"><i class="ti ti-plus"></i></button>
+      <button class="abtn" onclick="openActModal()" style="padding:1px 6px;font-size:11px"><i class="ti ti-plus"></i></button>
     </div>
     <div id="actsList" style="flex:1;overflow-y:auto"></div>
   </aside>
@@ -711,7 +718,7 @@ function renderThemePop(){
     <div class="theme-opt${t.id===theme?' active':''}" onclick="setVisualTheme('${t.id}')">
       <div class="theme-swatch" style="background:${t.swatch}"></div>
       <div class="theme-opt-txt"><div class="theme-opt-name">${esc(t.name)}</div><div class="theme-opt-mood">${esc(t.mood)}</div></div>
-      ${t.id===theme?'<i class="ti ti-check" style="color:var(--gold);font-size:14px"></i>':''}
+      ${t.id===theme?'<i class="ti ti-check" style="color:var(--gold);font-size:15px"></i>':''}
     </div>`).join('');
 }
 document.addEventListener('click',e=>{const pop=document.getElementById('themePop');if(pop&&!pop.contains(e.target)&&e.target.id!=='stylesBtn'&&!document.getElementById('stylesBtn').contains(e.target))pop.classList.remove('open');});
@@ -1092,14 +1099,14 @@ function renderSB(){
     const td=dd.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
     h+=`<div class="act-row${isA?' active':''}" onclick="selAct('${act.id}')" style="border-left-color:${isA?act.color:'transparent'}">
       <div style="flex:1;min-width:0"><div class="act-nm" style="${isA?'color:'+act.color:''}">${esc(act.name)}</div><div class="act-sub">${esc(act.subtitle)}</div></div>
-      <button class="abtn" onclick="event.stopPropagation();openActModal('${act.id}')" style="font-size:9px;padding:1px 4px"><i class="ti ti-edit"></i></button>
-      <button class="abtn del" onclick="event.stopPropagation();removeAct('${act.id}')" style="font-size:9px;padding:1px 4px"><i class="ti ti-trash"></i></button>
+      <button class="abtn" onclick="event.stopPropagation();openActModal('${act.id}')" style="font-size:11px;padding:1px 4px"><i class="ti ti-edit"></i></button>
+      <button class="abtn del" onclick="event.stopPropagation();removeAct('${act.id}')" style="font-size:11px;padding:1px 4px"><i class="ti ti-trash"></i></button>
       <span class="act-badge">${td}d</span>
     </div>`;
     if(isA)dd.forEach(d=>{
       const isD=curDestId===d.id;
       h+=`<div class="dest-row${isD?' active':''}" onclick="viewDestSB('${d.id}')">
-        <span style="font-size:13px;flex-shrink:0">${d.flag||'📍'}</span>
+        <span style="font-size:14px;flex-shrink:0">${d.flag||'📍'}</span>
         <div style="flex:1;min-width:0"><div class="dest-city">${esc(d.city)}</div><div class="dest-meta">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'TBD'}</div></div>
         <div class="dot5" style="background:${sco(d.status)}"></div>
       </div>`;
@@ -1173,23 +1180,23 @@ function renderDash(){
   const visitedCountries=[...new Set(cDests().map(d=>d.country))].sort();
   const countryFlagChips=visitedCountries.map(c=>{
     const flag=cDests().find(d=>d.country===c)?.flag||'🌍';
-    return`<div style="display:flex;align-items:center;gap:6px;padding:.3rem .6rem;background:var(--sf2);border:1px solid var(--bd);border-radius:20px"><span style="font-size:16px">${flag}</span><span style="font-size:11px;color:var(--t2);font-family:var(--font-ui)">${esc(c)}</span></div>`;
+    return`<div style="display:flex;align-items:center;gap:6px;padding:.3rem .6rem;background:var(--sf2);border:1px solid var(--bd);border-radius:20px"><span style="font-size:17px">${flag}</span><span style="font-size:12px;color:var(--t2);font-family:var(--font-ui)">${esc(c)}</span></div>`;
   }).join('');
   const actCards=cActs().map(act=>{
     const dd=sDests().filter(d=>d.act===act.id);
     const d=dd.reduce((s,x)=>s+dBtw(x.arrival,x.departure),0);
     return`<div class="scard" onclick="selActFromCommand('${act.id}')" title="Open in sidebar" style="border-top:2px solid ${act.color}">
-      <div style="font-size:10px;color:${act.color};font-family:var(--font-ui);margin-bottom:3px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(act.name)}</div>
-      <div class="sval" style="font-size:18px">${d}<span style="font-size:10px;color:var(--t3)">d</span></div>
+      <div style="font-size:11px;color:${act.color};font-family:var(--font-ui);margin-bottom:3px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(act.name)}</div>
+      <div class="sval" style="font-size:19px">${d}<span style="font-size:11px;color:var(--t3)">d</span></div>
       <div class="slbl">${dd.length} stops</div>
     </div>`;
   }).join('');
   const nextRows=sDests().filter(d=>d.arrival&&d.status!=='cancelled').slice(0,6).map(d=>`
     <div style="display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;border-bottom:1px solid rgba(128,128,128,.1);cursor:pointer;font-family:var(--font-ui);transition:background .15s" onclick="selDest('${d.id}')" onmouseover="this.style.background='rgba(201,168,76,.03)'" onmouseout="this.style.background=''">
-      <span style="font-size:18px;flex-shrink:0">${d.flag||'📍'}</span>
+      <span style="font-size:19px;flex-shrink:0">${d.flag||'📍'}</span>
       <div style="flex:1;min-width:0">
-        <div style="font-size:12px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.city)}, ${esc(d.country)}</div>
-        <div style="font-size:10px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'TBD'}${d.event?' · '+esc(d.event):''}</div>
+        <div style="font-size:13px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.city)}, ${esc(d.country)}</div>
+        <div style="font-size:11px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'TBD'}${d.event?' · '+esc(d.event):''}</div>
       </div>
       <span class="${scls(d.status)}">${d.status}</span>
     </div>`).join('');
@@ -1197,27 +1204,27 @@ function renderDash(){
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;position:relative;overflow:hidden;box-shadow:var(--shadow)">
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(201,168,76,.05) 0%,transparent 60%);pointer-events:none"></div>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;margin-bottom:3px">
-        <div style="font-size:18px;color:var(--t1);letter-spacing:.03em;font-family:var(--font-display);font-weight:600">${esc(cur().name)}</div>
-        <button class="abtn" onclick="openTourEditModal()" style="flex-shrink:0;font-size:10px;margin-top:2px"><i class="ti ti-edit"></i> Edit</button>
+        <div style="font-size:19px;color:var(--t1);letter-spacing:.03em;font-family:var(--font-display);font-weight:600">${esc(cur().name)}</div>
+        <button class="abtn" onclick="openTourEditModal()" style="flex-shrink:0;font-size:11px;margin-top:2px"><i class="ti ti-edit"></i> Edit</button>
       </div>
-      <div style="font-size:8px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem">World Tour Planner</div>
-      <div style="font-size:12px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;max-width:580px;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
+      <div style="font-size:10px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem">World Tour Planner</div>
+      <div style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;max-width:580px;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
     </div>
     <div class="sgrid">
       <div class="scard" onclick="goToCountryList()"><div class="sval">${countries}</div><div class="slbl">Countries</div></div>
       <div class="scard" onclick="goTab('route')"><div class="sval">${cDests().length}</div><div class="slbl">Destinations</div><div class="ssub">${confirmed} confirmed</div></div>
       <div class="scard" onclick="goTab('events')"><div class="sval">${evCnt}</div><div class="slbl">Events</div></div>
       <div class="scard" onclick="goTab('bucket')"><div class="sval">${bktDone}/${bktTot}</div><div class="slbl">Bucket List</div><div class="ssub">${Math.round(bktDone/(bktTot||1)*100)}% done</div></div>
-      <div class="scard" onclick="goTab('budget')"><div class="sval" style="font-size:16px">$${Math.round(totSpent/1000*10)/10}k</div><div class="slbl">Spent</div><div class="ssub">of $${Math.round(totBudget/1000)}k budget</div></div>
+      <div class="scard" onclick="goTab('budget')"><div class="sval" style="font-size:17px">$${Math.round(totSpent/1000*10)/10}k</div><div class="slbl">Spent</div><div class="ssub">of $${Math.round(totBudget/1000)}k budget</div></div>
       <div class="scard"><div class="sval">${days}</div><div class="slbl">Days Planned</div></div>
     </div>
-    <div class="sec-ttl">Journey Acts <span style="font-size:8px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(click to open in sidebar)</span></div>
+    <div class="sec-ttl">Journey Acts <span style="font-size:10px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(click to open in sidebar)</span></div>
     <div class="sgrid" style="margin-bottom:1rem">${actCards}</div>
     <div class="sec-ttl">Upcoming Destinations</div>
-    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1rem">${nextRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations added yet</div>'}</div>
-    <div class="sec-ttl">Countries <span style="font-size:8px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(click to view on map)</span></div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1rem">${nextRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No destinations added yet</div>'}</div>
+    <div class="sec-ttl">Countries <span style="font-size:10px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(click to view on map)</span></div>
     <div class="scard" onclick="goToCountryList()" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;cursor:pointer">
-      ${countryFlagChips||'<div style="color:var(--t3);font-family:var(--font-ui);font-size:12px">No countries yet — add destinations to see them here.</div>'}
+      ${countryFlagChips||'<div style="color:var(--t3);font-family:var(--font-ui);font-size:13px">No countries yet — add destinations to see them here.</div>'}
     </div>
   </div>`;
 }
@@ -1233,7 +1240,7 @@ function renderProfile(){
   const owed=d.cost>0?(d.cost-(d.paid||0)).toFixed(2):'—';
   const hp=(d.paid||0)>=d.cost&&d.cost>0,pp=(d.paid||0)>0&&(d.paid||0)<d.cost;
   const hLbl=d.cost<=0?'—':hp?'<span class="pyes">✓ Fully Paid</span>':pp?`<span class="pno">⚡ $${parseFloat(d.paid).toFixed(0)} paid · $${owed} owed</span>`:'<span class="pno">✗ Not Paid</span>';
-  let tHTML='<div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);font-style:italic">No transportation added</div>';
+  let tHTML='<div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);font-style:italic">No transportation added</div>';
   if(d.mot){
     const tb=d.t_paid==='yes'?'<span class="pyes">✓ Paid</span>':d.t_paid==='partial'?'<span class="pno">⚡ Partial</span>':'<span class="pno">✗ Unpaid</span>';
     const dDT=d.t_dep_dt?new Date(d.t_dep_dt):null,aDT=d.t_arr_dt?new Date(d.t_arr_dt):null;
@@ -1259,11 +1266,11 @@ function renderProfile(){
   const todoItems=d.todo?d.todo.split('\n').filter(t=>t.trim()).map(t=>`<li class="todo-item">${esc(t)}</li>`).join(''):'';
   return`<div class="prof-wrap">
     <div class="prof-top">
-      <div style="text-align:center;flex-shrink:0"><div class="prof-flag">${d.flag||'📍'}</div><div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.country)}</div></div>
+      <div style="text-align:center;flex-shrink:0"><div class="prof-flag">${d.flag||'📍'}</div><div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.country)}</div></div>
       <div class="prof-meta"><div class="prof-city">${esc(d.city)}</div><div class="prof-cntry">${esc(d.country)}</div><div class="ptags"><span class="tag gld">${esc(am.name)}</span><span class="${scls(d.status)}">${d.status}</span>${d.priority?`<span class="tag">${'★'.repeat(parseInt(d.priority))}</span>`:''}</div></div>
       <div style="display:flex;gap:4px;flex-shrink:0"><button class="abtn" onclick="openDestModal('${d.id}')"><i class="ti ti-edit"></i></button><button class="abtn del" onclick="removeDest('${d.id}')"><i class="ti ti-trash"></i></button></div>
     </div>
-    ${d.event?`<div class="ev-pill"><i class="ti ti-confetti" style="color:${am.color};font-size:15px"></i><div><div style="font-size:12px;color:var(--t1);font-family:var(--font-ui)">${esc(d.event)}</div>${d.event_date?`<div style="font-size:10px;color:var(--gold);font-family:var(--font-ui)">${esc(d.event_date)}</div>`:''}</div></div>`:''}
+    ${d.event?`<div class="ev-pill"><i class="ti ti-confetti" style="color:${am.color};font-size:16px"></i><div><div style="font-size:13px;color:var(--t1);font-family:var(--font-ui)">${esc(d.event)}</div>${d.event_date?`<div style="font-size:11px;color:var(--gold);font-family:var(--font-ui)">${esc(d.event_date)}</div>`:''}</div></div>`:''}
     <div class="pgrid">
       <div class="pblk"><div class="bttl">Stay Details</div>
         <div class="drow"><span class="dlbl">Arrival</span><span class="dval gld">${d.arrival?fD(d.arrival):'TBD'} <span style="color:var(--t3)">${wS(d.arrival)}</span></span></div>
@@ -1285,7 +1292,7 @@ function renderProfile(){
     ${visaHealthHTML}
     ${d.notes?`<div class="pblk-f"><div class="bttl">Notes &amp; Memories</div><div class="notes-box">${esc(d.notes)}</div></div>`:''}
     ${todoItems?`<div class="pblk-f"><div class="bttl">Things To Do</div><ul class="todo-list">${todoItems}</ul></div>`:''}
-    <button onclick="openDestModal('${d.id}')" style="margin-top:.25rem;padding:6px 12px;background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);color:var(--gold);border-radius:var(--radius);font-family:var(--font-ui);font-size:10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em"><i class="ti ti-edit"></i> Edit Destination</button>
+    <button onclick="openDestModal('${d.id}')" style="margin-top:.25rem;padding:6px 12px;background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);color:var(--gold);border-radius:var(--radius);font-family:var(--font-ui);font-size:11px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em"><i class="ti ti-edit"></i> Edit Destination</button>
   </div>`;
 }
 
@@ -1324,15 +1331,15 @@ function renderRoute(){
     const am=aM(d.act);
     const n=dBtw(d.arrival,d.departure);
     return`<tr class="${d.status==='cancelled'?'cancelled':''}" onclick="viewDest('${d.id}')">
-      <td style="padding:.4rem .4rem .4rem .6rem"><span style="font-size:15px">${d.flag||'📍'}</span></td>
-      <td><div style="font-size:14px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">${esc(d.city)}</div><div style="font-size:11px;color:var(--t3)">${esc(d.country)}</div>
-        <div class="rt-mobile-dates">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'—'} <i class="ti ti-arrow-right" style="font-size:10px;vertical-align:middle"></i> ${d.departure?fD(d.departure)+' '+wS(d.departure):'—'}${n>0?' · '+n+'n':''}</div>
+      <td style="padding:.4rem .4rem .4rem .6rem"><span style="font-size:16px">${d.flag||'📍'}</span></td>
+      <td><div style="font-size:15px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">${esc(d.city)}</div><div style="font-size:12px;color:var(--t3)">${esc(d.country)}</div>
+        <div class="rt-mobile-dates">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'—'} <i class="ti ti-arrow-right" style="font-size:11px;vertical-align:middle"></i> ${d.departure?fD(d.departure)+' '+wS(d.departure):'—'}${n>0?' · '+n+'n':''}</div>
       </td>
-      <td class="hm"><div style="font-size:13px">${d.arrival?fD(d.arrival):'—'} <span class="wd">${wS(d.arrival)}</span></div></td>
-      <td class="hm"><div style="font-size:13px">${d.departure?fD(d.departure):'—'} <span class="wd">${wS(d.departure)}</span></div></td>
+      <td class="hm"><div style="font-size:14px">${d.arrival?fD(d.arrival):'—'} <span class="wd">${wS(d.arrival)}</span></div></td>
+      <td class="hm"><div style="font-size:14px">${d.departure?fD(d.departure):'—'} <span class="wd">${wS(d.departure)}</span></div></td>
       <td class="hm" style="color:var(--t3)">${n>0?n+'n':'—'}</td>
       <td><span class="${scls(d.status)}">${d.status}</span></td>
-      <td class="hm" style="color:${am.color};font-size:12px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(am.name)}</td>
+      <td class="hm" style="color:${am.color};font-size:13px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(am.name)}</td>
       <td style="padding:.4rem .4rem" onclick="event.stopPropagation()">
         <div style="display:flex;gap:3px">
           <button class="abtn" onclick="openDestModal('${d.id}')"><i class="ti ti-edit"></i></button>
@@ -1353,8 +1360,8 @@ function renderRoute(){
       <button class="fbtn" onclick="exportCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
       <button class="fbtn" onclick="toggleRouteEditMode()" title="Quickly edit dates and nights for every destination in one grid"><i class="ti ti-calendar-time"></i> Edit Route</button>
       <button class="fbtn" onclick="confirmRecalculateDates()" title="Close any gaps or overlaps between destinations, in chronological order, after editing dates or nights"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
-      <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:11px">Remove All</button>
-      <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${filt.length}/${sorted.length}</span>
+      <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:12px">Remove All</button>
+      <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${filt.length}/${sorted.length}</span>
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
       <table class="rtbl">
@@ -1399,18 +1406,18 @@ function renderRouteEdit(){
     const n=dBtw(r.arrival,r.departure);
     const am=aM(d.act);
     return`<tr data-id="${r.id}">
-      <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:10px">${i+1}</td>
-      <td style="padding:.4rem .6rem"><span style="font-size:14px;margin-right:4px">${d.flag||'📍'}</span><span style="font-size:13px;color:var(--t1)">${esc(d.city)}</span><div style="font-size:10px;color:${am.color}">${esc(am.name)}</div></td>
-      <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:11px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:9px;flex-shrink:0;width:26px" id="rwd_a_${r.id}">${wS(r.arrival)}</span></div></td>
-      <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:11px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:9px;flex-shrink:0;width:26px" id="rwd_d_${r.id}">${wS(r.departure)}</span></div></td>
-      <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:11px;padding:.3rem .4rem;width:56px"/></td>
+      <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:11px">${i+1}</td>
+      <td style="padding:.4rem .6rem"><span style="font-size:15px;margin-right:4px">${d.flag||'📍'}</span><span style="font-size:14px;color:var(--t1)">${esc(d.city)}</span><div style="font-size:11px;color:${am.color}">${esc(am.name)}</div></td>
+      <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_a_${r.id}">${wS(r.arrival)}</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_d_${r.id}">${wS(r.departure)}</span></div></td>
+      <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:12px;padding:.3rem .4rem;width:56px"/></td>
     </tr>`;
   }).join('');
   return`<div class="panel">
     <div class="frow">
       <button class="fbtn" onclick="toggleRouteEditMode()"><i class="ti ti-arrow-left"></i> Back to Route</button>
       <button class="fbtn" onclick="confirmFixDateGaps()" title="Close gaps/overlaps in the draft — keeps each destination's own night count, lines everything up in order"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
-      <button class="abtn del" onclick="confirmCancelRouteChanges()" style="padding:5px 10px;font-size:11px"><i class="ti ti-x"></i> Cancel Changes</button>
+      <button class="abtn del" onclick="confirmCancelRouteChanges()" style="padding:5px 10px;font-size:12px"><i class="ti ti-x"></i> Cancel Changes</button>
       <button class="add-btn" onclick="confirmSaveRouteChanges()"><i class="ti ti-check"></i> Save Changes</button>
       <div class="ato" style="display:inline-flex;align-items:center;gap:6px;background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:4px 10px 4px 4px">
         <button onclick="setRouteAutoCalc(!routeAutoCalc)" style="border:none;background:none;padding:0;cursor:pointer;display:flex;align-items:center" title="${routeAutoCalc?'Auto-calculate is ON: every edit instantly re-previews downstream dates':'Auto-calculate is OFF: edits stay manual until you click Fix Dates Gaps'}">
@@ -1418,11 +1425,11 @@ function renderRouteEdit(){
             <span style="width:13px;height:13px;border-radius:50%;background:#fff;position:absolute;top:2px;left:${routeAutoCalc?'15px':'2px'};transition:left .15s"></span>
           </span>
         </button>
-        <span style="font-family:var(--font-ui);font-size:10px;color:var(--t2);white-space:nowrap">Auto calculate dates: ${routeAutoCalc?'On':'Off'}</span>
+        <span style="font-family:var(--font-ui);font-size:11px;color:var(--t2);white-space:nowrap">Auto calculate dates: ${routeAutoCalc?'On':'Off'}</span>
       </div>
-      <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${routeDraft.length} destinations</span>
+      <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${routeDraft.length} destinations</span>
     </div>
-    <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin:-.5rem 0 .75rem;line-height:1.5">
+    <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin:-.5rem 0 .75rem;line-height:1.5">
       <i class="ti ti-info-circle"></i> ${routeAutoCalc
         ?'Auto-calculate is ON — every date or night change instantly previews how it shifts every destination after it. Nothing is saved yet.'
         :'Auto-calculate is OFF — edits stay exactly as typed. Click <strong>Fix Dates Gaps</strong> any time to close gaps/overlaps across what you\'ve changed so far.'}
@@ -2509,13 +2516,13 @@ function renderMap(){
   const totalDays=dests.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
   const continents=new Set();
   dests.forEach(d=>{const c=continentOf(d.country);if(c)continents.add(c);});
-  const legend=cActs().filter(a=>dests.some(d=>d.act===a.id)).map(a=>`<div style="display:flex;align-items:center;gap:5px;font-size:9px;color:${a.color};font-family:var(--font-ui)"><div style="width:7px;height:7px;border-radius:50%;background:${a.color};box-shadow:0 0 4px ${a.color}"></div>${esc(a.name)}</div>`).join('');
+  const legend=cActs().filter(a=>dests.some(d=>d.act===a.id)).map(a=>`<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:${a.color};font-family:var(--font-ui)"><div style="width:7px;height:7px;border-radius:50%;background:${a.color};box-shadow:0 0 4px ${a.color}"></div>${esc(a.name)}</div>`).join('');
   const countryCards=[...visited].sort().map(c=>{
     const flag=dests.find(d=>d.country===c)?.flag||'🌍';
     const citiesInC=dests.filter(d=>d.country===c).map(d=>d.city).join(', ');
     return`<div style="display:flex;align-items:center;gap:10px;padding:.7rem .9rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);box-shadow:var(--shadow)">
       <span style="font-size:26px;flex-shrink:0">${flag}</span>
-      <div style="min-width:0"><div style="font-size:13px;color:var(--t1);font-family:var(--font-ui);font-weight:600">${esc(c)}</div><div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(citiesInC)}</div></div>
+      <div style="min-width:0"><div style="font-size:14px;color:var(--t1);font-family:var(--font-ui);font-weight:600">${esc(c)}</div><div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(citiesInC)}</div></div>
     </div>`;
   }).join('');
   return`<div>
@@ -2554,7 +2561,7 @@ function renderMap(){
     </div>
     <div class="panel" id="mapCountryList">
       <div class="sec-ttl">Countries in this Tour · ${visited.size}</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem">${countryCards||'<div style="color:var(--t3);font-family:var(--font-ui);font-size:12px">No countries yet — add destinations to see them here.</div>'}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem">${countryCards||'<div style="color:var(--t3);font-family:var(--font-ui);font-size:13px">No countries yet — add destinations to see them here.</div>'}</div>
     </div>
   </div>`;
 }
@@ -3002,7 +3009,7 @@ function showGlobeInfo(d){
     +"<div class=\"gip-section\">Transport</div>"
     +"<div class=\"gip-row\"><span>Mode</span><span>"+(esc(d.mot)||'—')+"</span></div>"
     +"<div class=\"gip-row\"><span>Cost</span><span>"+(d.t_cost>0?'$'+d.t_cost.toFixed(2):'—')+"</span></div>"
-    +(d.notes?"<div class=\"gip-section\">Notes</div><div style=\"font-size:11px;color:#C8DCEC;font-family:var(--font-ui);line-height:1.5;margin-top:4px\">"+esc(d.notes)+"</div>":"")
+    +(d.notes?"<div class=\"gip-section\">Notes</div><div style=\"font-size:12px;color:#C8DCEC;font-family:var(--font-ui);line-height:1.5;margin-top:4px\">"+esc(d.notes)+"</div>":"")
     +"<button class=\"btnp\" style=\"width:100%;margin-top:1rem\" onclick=\"closeGlobeInfo();openDestModal('"+d.id+"')\">Edit Destination</button>"
     +"<button class=\"btng\" style=\"width:100%;margin-top:.5rem\" onclick=\"closeGlobeInfo();viewDest('"+d.id+"')\">View Full Profile</button>";
   const panel=document.getElementById('globeInfoPanel');if(panel)panel.classList.add('open');
@@ -3049,7 +3056,7 @@ function renderEvents(){
   const types=[...new Set(allEvDests.map(d=>d.event_type).filter(Boolean))].sort();
   const evDests=evTypeFilter?allEvDests.filter(d=>d.event_type===evTypeFilter):allEvDests;
   const typeFilterLabel=evTypeFilter||'All Types';
-  const typeMenuItems=`<div class="fmi" onclick="setEvTypeFilter(null)" style="${!evTypeFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!evTypeFilter?'-check-filled':''}" style="font-size:12px"></i> All Types</div>`+
+  const typeMenuItems=`<div class="fmi" onclick="setEvTypeFilter(null)" style="${!evTypeFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!evTypeFilter?'-check-filled':''}" style="font-size:13px"></i> All Types</div>`+
     types.map(t=>`<div class="fmi" onclick="setEvTypeFilter('${esc(t).replace(/'/g,"\\'")}')" style="${evTypeFilter===t?'color:var(--gold)':''}">${esc(t)}</div>`).join('');
   const items=evDests.map(d=>{
     const am=aM(d.act);
@@ -3058,14 +3065,14 @@ function renderEvents(){
       <div style="width:12px;height:12px;border-radius:50%;background:${am.color};flex-shrink:0;margin-top:2px"></div>
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(d.event)}</div>
-        <div class="ev-loc"><span style="font-size:13px">${d.flag||'📍'}</span> ${esc(d.city)}, ${esc(d.country)}</div>
+        <div class="ev-loc"><span style="font-size:14px">${d.flag||'📍'}</span> ${esc(d.city)}, ${esc(d.country)}</div>
         ${d.event_date?`<div class="ev-date">${esc(d.event_date)}</div>`:''}
         ${d.event_cost>0?`<div class="ev-cost-lbl">$${parseFloat(d.event_cost).toFixed(2)}</div>`:''}
         <div class="pdots">${dots}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
         ${d.event_type?`<span class="ev-type" style="background:${am.color}22;color:${am.color}">${esc(d.event_type)}</span>`:''}
-        <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin-top:4px">${esc(am.name)}</div>
+        <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:4px">${esc(am.name)}</div>
       </div>
     </div>`;
   }).join('');
@@ -3077,8 +3084,8 @@ function renderEvents(){
         <div class="fmenu" id="evTypeMenu">${typeMenuItems}</div>
       </div>
     </div>
-    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No events match the current filter.</div>'}</div>
-    <div style="margin-top:.5rem;font-family:var(--font-ui);font-size:10px;color:var(--t3)">Click any event to edit or get AI insights</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No events match the current filter.</div>'}</div>
+    <div style="margin-top:.5rem;font-family:var(--font-ui);font-size:11px;color:var(--t3)">Click any event to edit or get AI insights</div>
   </div>`;
 }
 function toggleEvTypeMenu(){document.getElementById('evTypeMenu')?.classList.toggle('open');}
@@ -3194,17 +3201,17 @@ function renderBudget(){
     return`<div class="bcat${isA?' active':''}" draggable="true" data-id="${c.id}"
       ondragstart="bdDS(event,'${c.id}')" ondragover="bdDO(event,'${c.id}')" ondrop="bdDrop(event,'${c.id}')" ondragleave="this.classList.remove('drag-over')"
       onclick="selBC('${c.id}')">
-      <i class="ti ti-grip-vertical" style="color:var(--t3);font-size:13px;cursor:grab;flex-shrink:0"></i>
+      <i class="ti ti-grip-vertical" style="color:var(--t3);font-size:14px;cursor:grab;flex-shrink:0"></i>
       <div style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
       <div style="flex:1;min-width:0">
-        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px">
           <span style="color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.name)}</span>
-          <span style="color:var(--t3);font-size:10px;flex-shrink:0;margin-left:4px">$${Math.round(totS).toLocaleString()} / $${Math.round(totB).toLocaleString()}</span>
+          <span style="color:var(--t3);font-size:11px;flex-shrink:0;margin-left:4px">$${Math.round(totS).toLocaleString()} / $${Math.round(totB).toLocaleString()}</span>
         </div>
         <div style="height:3px;background:var(--bd2);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct.toFixed(0)}%;background:${c.color};border-radius:2px;transition:width .4s"></div></div>
       </div>
-      <button class="abtn" onclick="event.stopPropagation();openBudgetModal('${c.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-edit"></i></button>
-      <button class="abtn del" onclick="event.stopPropagation();removeBudCat('${c.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-trash"></i></button>
+      <button class="abtn" onclick="event.stopPropagation();openBudgetModal('${c.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button>
+      <button class="abtn del" onclick="event.stopPropagation();removeBudCat('${c.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button>
     </div>`;
   }).join('');
   let detHTML='';
@@ -3216,31 +3223,31 @@ function renderBudget(){
       const hasLk=lk.budg.length>0;
       let rows='';
       if(hasLk){
-        rows+=`<div style="padding:.4rem .75rem;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui);background:rgba(255,255,255,.02)">Linked from destinations</div>`;
+        rows+=`<div style="padding:.4rem .75rem;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui);background:rgba(255,255,255,.02)">Linked from destinations</div>`;
         lk.budg.sort((a,b)=>b.amt-a.amt).forEach(e=>{
           const paidAmt=lk.spent.find(s=>s.id===e.id)?.amt||0;
-          const personsNote=e.persons>1?`<div style="font-size:9px;color:var(--t3);margin-top:1px">${perPerson?`Split ${e.persons} ways`:`${e.persons} people total`}</div>`:'';
+          const personsNote=e.persons>1?`<div style="font-size:11px;color:var(--t3);margin-top:1px">${perPerson?`Split ${e.persons} ways`:`${e.persons} people total`}</div>`:'';
           rows+=`<div class="bexp" style="opacity:.85">
-            <div style="flex:1;min-width:0"><div style="font-size:12px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.lbl)}</div><div style="font-size:9px;color:var(--t3)">From destination record</div>${personsNote}</div>
+            <div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.lbl)}</div><div style="font-size:11px;color:var(--t3)">From destination record</div>${personsNote}</div>
             <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-              <span style="font-size:11px;color:${paidAmt>=e.amt?'var(--green)':'var(--t3)'}">$${paidAmt.toFixed(0)} / $${e.amt.toFixed(0)}</span>
-              ${e.isPaid?'<span class="pyes" style="font-size:8px">✓ Paid</span>':'<span class="pno" style="font-size:8px">Unpaid</span>'}
+              <span style="font-size:12px;color:${paidAmt>=e.amt?'var(--green)':'var(--t3)'}">$${paidAmt.toFixed(0)} / $${e.amt.toFixed(0)}</span>
+              ${e.isPaid?'<span class="pyes" style="font-size:10px">✓ Paid</span>':'<span class="pno" style="font-size:10px">Unpaid</span>'}
             </div>
           </div>`;
         });
       }
-      rows+=`<div style="padding:.4rem .75rem;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);background:rgba(255,255,255,.02)">Manual expenses</div>`;
-      if(manExp.length===0)rows+=`<div style="padding:.75rem;color:var(--t3);font-family:var(--font-ui);font-size:11px">No manual expenses recorded</div>`;
+      rows+=`<div style="padding:.4rem .75rem;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);background:rgba(255,255,255,.02)">Manual expenses</div>`;
+      if(manExp.length===0)rows+=`<div style="padding:.75rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No manual expenses recorded</div>`;
       manExp.forEach(e=>{
         const persons=e.persons>0?e.persons:1;
         const shown=perPerson?e.amount/persons:e.amount;
-        const personsNote=persons>1?`<div style="font-size:9px;color:var(--t3)">${perPerson?`Split ${persons} ways`:`${persons} people`}</div>`:'';
-        rows+=`<div class="bexp"><div style="flex:1;min-width:0"><div style="font-size:12px;color:var(--t2)">${esc(e.label)}</div><div style="font-size:9px;color:var(--t3)">${esc(e.date||'')}</div>${personsNote}</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-size:12px;color:var(--gold)">$${shown.toFixed(2)}</span><button class="abtn del" onclick="removeBudExp('${cat.id}','${e.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-trash"></i></button></div></div>`;
+        const personsNote=persons>1?`<div style="font-size:11px;color:var(--t3)">${perPerson?`Split ${persons} ways`:`${persons} people`}</div>`:'';
+        rows+=`<div class="bexp"><div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--t2)">${esc(e.label)}</div><div style="font-size:11px;color:var(--t3)">${esc(e.date||'')}</div>${personsNote}</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-size:13px;color:var(--gold)">$${shown.toFixed(2)}</span><button class="abtn del" onclick="removeBudExp('${cat.id}','${e.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button></div></div>`;
       });
       detHTML=`<div style="margin-top:1rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
         <div style="padding:.5rem .75rem;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
-          <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui)">${esc(cat.name)} — Details</div>
-          <button class="abtn" onclick="addBudExp('${cat.id}')" style="font-size:9px"><i class="ti ti-plus"></i> Add expense</button>
+          <div style="font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui)">${esc(cat.name)} — Details</div>
+          <button class="abtn" onclick="addBudExp('${cat.id}')" style="font-size:11px"><i class="ti ti-plus"></i> Add expense</button>
         </div>
         ${rows}
       </div>`;
@@ -3249,8 +3256,8 @@ function renderBudget(){
   return`<div class="panel">
     <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:.75rem">
       <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:2px">
-        <button onclick="setBudgetViewMode('per')" style="border:none;background:${perPerson?'var(--gold)':'transparent'};color:${perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">Per Person</button>
-        <button onclick="setBudgetViewMode('all')" style="border:none;background:${!perPerson?'var(--gold)':'transparent'};color:${!perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">All Travelers</button>
+        <button onclick="setBudgetViewMode('per')" style="border:none;background:${perPerson?'var(--gold)':'transparent'};color:${perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">Per Person</button>
+        <button onclick="setBudgetViewMode('all')" style="border:none;background:${!perPerson?'var(--gold)':'transparent'};color:${!perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">All Travelers</button>
       </div>
     </div>
     <div class="sgrid">
@@ -3258,14 +3265,14 @@ function renderBudget(){
       <div class="scard"><div class="sval" style="color:var(--red)">$${Math.round(totSpent).toLocaleString()}</div><div class="slbl">Spent</div></div>
       <div class="scard"><div class="sval" style="color:var(--green)">$${Math.round(totBudget-totSpent).toLocaleString()}</div><div class="slbl">Remaining</div></div>
     </div>
-    <div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);margin:-.5rem 0 .75rem;line-height:1.5">
+    <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin:-.5rem 0 .75rem;line-height:1.5">
       <i class="ti ti-info-circle"></i> Showing destination-linked costs and manual expenses ${perPerson?'split per person sharing each cost':'as full totals for all travelers'}. Manually-set category budget ceilings are entered as flat amounts and are not affected by this toggle.
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Categories</div>
-      <button class="abtn" onclick="openBudgetModal()" style="font-size:10px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
+      <button class="abtn" onclick="openBudgetModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
     </div>
-    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No categories yet</div>'}</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No categories yet</div>'}</div>
     ${detHTML}
   </div>`;
 }
@@ -3319,7 +3326,7 @@ function renderBucket(){
 
   const cats=cBktCats();
   const catFilterLabel=bktCatFilter?bktCatM(bktCatFilter).name:'All Categories';
-  const catMenuItems=`<div class="fmi" onclick="setBktCatFilter(null)" style="${!bktCatFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!bktCatFilter?'-check-filled':''}" style="font-size:12px"></i> All Categories</div>`+
+  const catMenuItems=`<div class="fmi" onclick="setBktCatFilter(null)" style="${!bktCatFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!bktCatFilter?'-check-filled':''}" style="font-size:13px"></i> All Categories</div>`+
     cats.map(c=>`<div class="fmi" onclick="setBktCatFilter('${c.id}')" style="${bktCatFilter===c.id?'color:'+c.color:''}"><div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div> ${esc(c.name)}</div>`).join('');
 
   const statusItems=['pending','achieved'].map(s=>`<label class="fmi"><input type="checkbox" ${BF.includes(s)?'checked':''} onchange="toggleBF('${s}')"/> ${s==='achieved'?'Achieved':'Pending'}</label>`).join('');
@@ -3330,27 +3337,27 @@ function renderBucket(){
     const stars=Array.from({length:5},(_,i)=>`<span class="star ${i<(b.rating||0)?'on':'off'}" onclick="setBktR('${b.id}',${i+1})">${i<(b.rating||0)?'★':'☆'}</span>`).join('');
     return`<div class="bkt" draggable="true" data-id="${b.id}"
       ondragstart="bktDS(event,'${b.id}')" ondragover="bktDO(event,'${b.id}')" ondrop="bktDrop(event,'${b.id}')" ondragleave="this.classList.remove('drag-over')">
-      <i class="ti ti-grip-vertical" style="color:var(--t3);font-size:13px;cursor:grab;flex-shrink:0"></i>
+      <i class="ti ti-grip-vertical" style="color:var(--t3);font-size:14px;cursor:grab;flex-shrink:0"></i>
       <div class="bchk${b.done?' done':''}" onclick="toggleBkt('${b.id}')"></div>
       <div style="flex:1;min-width:0">
         <div class="btxt${b.done?' done':''}">${esc(b.text)}</div>
         <div style="display:flex;align-items:center;gap:.5rem;margin-top:3px;flex-wrap:wrap">
           <div class="stars">${stars}</div>
-          <span style="font-size:11px;color:var(--t3)">${esc(b.country)}</span>
-          <span style="font-size:11px;padding:0 5px;border-radius:8px;background:${bc.color}22;color:${bc.color};font-family:var(--font-ui)">${esc(bc.name)}</span>
+          <span style="font-size:12px;color:var(--t3)">${esc(b.country)}</span>
+          <span style="font-size:12px;padding:0 5px;border-radius:8px;background:${bc.color}22;color:${bc.color};font-family:var(--font-ui)">${esc(bc.name)}</span>
         </div>
       </div>
-      <span style="font-size:9px;padding:1px 6px;border-radius:var(--radius);background:${am.color}22;color:${am.color};font-family:var(--font-ui);flex-shrink:0;margin:0 3px" class="hm">${esc(am.name)}</span>
-      <button class="abtn" onclick="openBktModal('${b.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-edit"></i></button>
-      <button class="abtn del" onclick="removeBktItem('${b.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-trash"></i></button>
+      <span style="font-size:11px;padding:1px 6px;border-radius:var(--radius);background:${am.color}22;color:${am.color};font-family:var(--font-ui);flex-shrink:0;margin:0 3px" class="hm">${esc(am.name)}</span>
+      <button class="abtn" onclick="openBktModal('${b.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button>
+      <button class="abtn del" onclick="removeBktItem('${b.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button>
     </div>`;
   }).join('');
 
   const catMgmtRows=cats.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:.35rem .5rem;border-bottom:1px solid rgba(128,128,128,.1)">
     <div style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
-    <span style="flex:1;font-size:11px;color:var(--t2);font-family:var(--font-ui)">${esc(c.name)}</span>
-    <button class="abtn" onclick="openBktCatModal('${c.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-edit"></i></button>
-    <button class="abtn del" onclick="removeBktCat('${c.id}')" style="font-size:9px;padding:1px 5px"><i class="ti ti-trash"></i></button>
+    <span style="flex:1;font-size:12px;color:var(--t2);font-family:var(--font-ui)">${esc(c.name)}</span>
+    <button class="abtn" onclick="openBktCatModal('${c.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button>
+    <button class="abtn del" onclick="removeBktCat('${c.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button>
   </div>`).join('');
 
   return`<div class="panel">
@@ -3368,20 +3375,20 @@ function renderBucket(){
         <button class="fbtn" onclick="toggleBCMenu()"><i class="ti ti-tag"></i> ${esc(catFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="bcmenu">${catMenuItems}</div>
       </div>
-      <button class="abtn" onclick="openBktCatModal()" style="font-size:10px;padding:4px 9px"><i class="ti ti-plus"></i> New category</button>
+      <button class="abtn" onclick="openBktCatModal()" style="font-size:11px;padding:4px 9px"><i class="ti ti-plus"></i> New category</button>
       <button class="fbtn" onclick="exportBktTemplate()" title="Download Excel template"><i class="ti ti-file-spreadsheet"></i> Template</button>
       <label class="fbtn" style="cursor:pointer" title="Import from Excel or CSV"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importBktCSV(this)"/></label>
       <button class="fbtn" onclick="exportBktCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
-      <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${bkt.length}/${allBkt.length} shown</span>
+      <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${bkt.length}/${allBkt.length} shown</span>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Life Experiences</div>
-      <button class="abtn" onclick="openBktModal()" style="font-size:10px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
+      <button class="abtn" onclick="openBktModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
     </div>
-    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1rem">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No experiences match the current filters.</div>'}</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1rem">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No experiences match the current filters.</div>'}</div>
     <div class="sec-ttl">Manage Categories</div>
-    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catMgmtRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No categories yet.</div>'}</div>
-    <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:10px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catMgmtRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No categories yet.</div>'}</div>
+    <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:11px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate</div>
   </div>`;
 }
 
@@ -3449,7 +3456,7 @@ function renderVisas(){
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(c.country)}</div>
         <div class="ev-loc">${esc(cityList)}</div>
-        <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(types.join(', '))} visa · ${c.dests.length} destination${c.dests.length===1?'':'s'}</div>
+        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(types.join(', '))} visa · ${c.dests.length} destination${c.dests.length===1?'':'s'}</div>
       </div>
       <span class="sbadge ${c.obtained?'sb-confirmed':'sb-planned'}" style="flex-shrink:0">${c.obtained?'✓ Obtained':'⏳ Pending'}</span>
     </div>`;
@@ -3463,7 +3470,7 @@ function renderVisas(){
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(c.country)}</div>
         <div class="ev-loc">${esc(cityList)}</div>
-        ${details.length?`<div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(details.join('; '))}</div>`:''}
+        ${details.length?`<div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(details.join('; '))}</div>`:''}
       </div>
       <span class="sbadge sb-wishlist" style="flex-shrink:0">⚕ Required</span>
     </div>`;
@@ -3477,7 +3484,7 @@ function renderVisas(){
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(d.city)}, ${esc(d.country)}</div>
         <div class="ev-loc">${esc(am.name)} · ${d.arrival?fD(d.arrival):'TBD'}${d.departure?' – '+fD(d.departure):''}</div>
-        <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.visa_type||'Physical')} visa${d.visa_cost>0?' · $'+parseFloat(d.visa_cost).toFixed(2):''}</div>
+        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.visa_type||'Physical')} visa${d.visa_cost>0?' · $'+parseFloat(d.visa_cost).toFixed(2):''}</div>
       </div>
       <span class="sbadge ${statusObtained?'sb-confirmed':'sb-planned'}" style="flex-shrink:0">${statusObtained?'✓ Obtained':'⏳ Pending'}</span>
     </div>`;
@@ -3490,7 +3497,7 @@ function renderVisas(){
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(d.city)}, ${esc(d.country)}</div>
         <div class="ev-loc">${esc(am.name)} · ${d.arrival?fD(d.arrival):'TBD'}</div>
-        ${d.vaccines_detail?`<div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.vaccines_detail)}</div>`:''}
+        ${d.vaccines_detail?`<div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.vaccines_detail)}</div>`:''}
       </div>
       <span class="sbadge sb-wishlist" style="flex-shrink:0">⚕ Required</span>
     </div>`;
@@ -3510,8 +3517,8 @@ function renderVisas(){
       <div style="display:flex;align-items:center;gap:.75rem">
         <span style="font-size:32px">${natFlag||'🛂'}</span>
         <div style="flex:1">
-          <select class="fi" id="nationalitySelect" onchange="setNationality(this.value)" style="font-size:13px">${natOptions}</select>
-          <div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);margin-top:4px">Saved on this device — used to determine which destinations below need a visa</div>
+          <select class="fi" id="nationalitySelect" onchange="setNationality(this.value)" style="font-size:14px">${natOptions}</select>
+          <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:4px">Saved on this device — used to determine which destinations below need a visa</div>
         </div>
       </div>
     </div>
@@ -3525,43 +3532,43 @@ function renderVisas(){
 
     <div class="sec-ttl">Countries Requiring a Visa</div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:.5rem">
-      ${visaCountryRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No countries currently flagged as needing a visa. Mark "Visa required" in the Add/Edit Destination form to have them appear here.</div>'}
+      ${visaCountryRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No countries currently flagged as needing a visa. Mark "Visa required" in the Add/Edit Destination form to have them appear here.</div>'}
     </div>
-    <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin-bottom:1.25rem;line-height:1.5">
+    <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-bottom:1.25rem;line-height:1.5">
       <i class="ti ti-info-circle"></i> This list reflects what you've marked per-destination in the form, grouped by country — it is not a live lookup of current visa rules for your selected passport. A country shows "Obtained" once any one of its destinations is marked Obtained. Visa requirements and maximum stay durations change over time and vary by passport; always verify directly with the destination country's official immigration authority or embassy before you travel.
     </div>
 
     <div class="sec-ttl">Countries Requiring Vaccines / Paperwork</div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1.5rem">
-      ${vaccineCountryRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No countries currently flagged as needing vaccines or extra paperwork.</div>'}
+      ${vaccineCountryRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No countries currently flagged as needing vaccines or extra paperwork.</div>'}
     </div>
 
-    <div class="sec-ttl">Destination-Level Breakdown <span style="font-size:8px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(same info, one row per stop)</span></div>
+    <div class="sec-ttl">Destination-Level Breakdown <span style="font-size:10px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(same info, one row per stop)</span></div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:.5rem">
-      ${visaRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations currently flagged as needing a visa.</div>'}
+      ${visaRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No destinations currently flagged as needing a visa.</div>'}
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:1.5rem">
-      ${vaccineRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No destinations currently flagged as needing vaccines or extra paperwork.</div>'}
+      ${vaccineRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No destinations currently flagged as needing vaccines or extra paperwork.</div>'}
     </div>
 
-    <div class="sec-ttl">Schengen Calculator <span style="font-size:8px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(90 days in any rolling 180-day window)</span></div>
+    <div class="sec-ttl">Schengen Calculator <span style="font-size:10px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(90 days in any rolling 180-day window)</span></div>
     <div class="scard" style="cursor:default">
       ${schengenDests.length?`
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem">
-          <div><span class="sval" style="color:${barColor}">${schengenResult.maxUsed}</span><span style="font-size:11px;color:var(--t3);font-family:var(--font-ui)"> / 90 days used at peak</span></div>
+          <div><span class="sval" style="color:${barColor}">${schengenResult.maxUsed}</span><span style="font-size:12px;color:var(--t3);font-family:var(--font-ui)"> / 90 days used at peak</span></div>
           ${schengenResult.violation?'<span class="sbadge sb-cancelled">⚠ Limit Exceeded</span>':'<span class="sbadge sb-confirmed">✓ Within Limit</span>'}
         </div>
         <div style="height:8px;background:var(--bd2);border-radius:4px;overflow:hidden;margin-bottom:.75rem">
           <div style="height:100%;width:${pct.toFixed(0)}%;background:${barColor};border-radius:4px;transition:width .4s"></div>
         </div>
-        ${schengenResult.violation?`<div style="font-size:11px;color:var(--red);font-family:var(--font-ui);line-height:1.5;margin-bottom:.5rem"><i class="ti ti-alert-triangle"></i> Your planned Schengen stays exceed the 90/180-day limit — the limit is first crossed around <strong>${fD(schengenResult.violationDate)}</strong>. You may need to split your Schengen time, add longer gaps between visits, or apply for a long-stay/national visa for part of the trip.</div>`:`<div style="font-size:11px;color:var(--t2);font-family:var(--font-ui);line-height:1.5;margin-bottom:.5rem">Based on your current itinerary, your Schengen stays stay within the 90/180-day limit at every point in the trip.</div>`}
-        <div style="font-size:9px;color:var(--t3);font-family:var(--font-ui);margin-bottom:.6rem">Counting ${schengenDests.length} Schengen destination${schengenDests.length===1?'':'s'} across ${schengenResult.totalDays} total calendar day${schengenResult.totalDays===1?'':'s'} in the zone:</div>
+        ${schengenResult.violation?`<div style="font-size:12px;color:var(--red);font-family:var(--font-ui);line-height:1.5;margin-bottom:.5rem"><i class="ti ti-alert-triangle"></i> Your planned Schengen stays exceed the 90/180-day limit — the limit is first crossed around <strong>${fD(schengenResult.violationDate)}</strong>. You may need to split your Schengen time, add longer gaps between visits, or apply for a long-stay/national visa for part of the trip.</div>`:`<div style="font-size:12px;color:var(--t2);font-family:var(--font-ui);line-height:1.5;margin-bottom:.5rem">Based on your current itinerary, your Schengen stays stay within the 90/180-day limit at every point in the trip.</div>`}
+        <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-bottom:.6rem">Counting ${schengenDests.length} Schengen destination${schengenDests.length===1?'':'s'} across ${schengenResult.totalDays} total calendar day${schengenResult.totalDays===1?'':'s'} in the zone:</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${schengenDests.map(d=>`<div style="display:flex;align-items:center;gap:5px;padding:.25rem .55rem;background:var(--sf2);border:1px solid var(--bd);border-radius:14px;font-size:10px;color:var(--t2);font-family:var(--font-ui);cursor:pointer" onclick="openDestModal('${d.id}')"><span>${d.flag||'📍'}</span>${esc(d.city)} (${dBtw(d.arrival,d.departure)}n)</div>`).join('')}
+          ${schengenDests.map(d=>`<div style="display:flex;align-items:center;gap:5px;padding:.25rem .55rem;background:var(--sf2);border:1px solid var(--bd);border-radius:14px;font-size:11px;color:var(--t2);font-family:var(--font-ui);cursor:pointer" onclick="openDestModal('${d.id}')"><span>${d.flag||'📍'}</span>${esc(d.city)} (${dBtw(d.arrival,d.departure)}n)</div>`).join('')}
         </div>
-      `:`<div style="color:var(--t3);font-family:var(--font-ui);font-size:12px">No Schengen-area destinations with both arrival and departure dates set yet. Once you add destinations in Austria, France, Germany, Italy, Spain, or other Schengen countries, this calculator will check your planned stays against the 90/180-day rule automatically.</div>`}
+      `:`<div style="color:var(--t3);font-family:var(--font-ui);font-size:13px">No Schengen-area destinations with both arrival and departure dates set yet. Once you add destinations in Austria, France, Germany, Italy, Spain, or other Schengen countries, this calculator will check your planned stays against the 90/180-day rule automatically.</div>`}
     </div>
-    <div style="font-size:10px;color:var(--t3);font-family:var(--font-ui);margin-top:.5rem;line-height:1.5">
+    <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:.5rem;line-height:1.5">
       <i class="ti ti-info-circle"></i> The Schengen 90/180 rule applies to short-stay visits by most non-EU/EEA passport holders. Some nationalities (EU/EEA/Swiss citizens, holders of long-stay visas or residence permits) are exempt or follow different rules — this calculator assumes the standard short-stay limit applies to your trip.
     </div>
   </div>`;
@@ -3752,9 +3759,9 @@ const AI={
 };
 function renderAI(){
   const sugs=Object.keys(AI).map(s=>`<button class="ai-sug" onclick="doAI(${JSON.stringify(s)})">${s} ↗</button>`).join('');
-  const msgs=aiMsgs.length===0?`<div style="color:var(--t3);font-family:var(--font-ui);font-size:11px;font-style:italic;text-align:center;padding:1.5rem 0">Ask anything about your journey…</div>`:aiMsgs.map(m=>`<div class="ai-msg ${m.role}"><div class="ai-msg-l">${m.role==='user'?'You':'AI Advisor'}</div>${esc(m.content)}</div>`).join('');
+  const msgs=aiMsgs.length===0?`<div style="color:var(--t3);font-family:var(--font-ui);font-size:12px;font-style:italic;text-align:center;padding:1.5rem 0">Ask anything about your journey…</div>`:aiMsgs.map(m=>`<div class="ai-msg ${m.role}"><div class="ai-msg-l">${m.role==='user'?'You':'AI Advisor'}</div>${esc(m.content)}</div>`).join('');
   return`<div class="ai-wrap">
-    <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-family:var(--font-ui)">AI Travel Advisor — Route Intelligence</div>
+    <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-family:var(--font-ui)">AI Travel Advisor — Route Intelligence</div>
     <div style="display:flex;flex-direction:column;gap:4px">${sugs}</div>
     <div id="aiMsgs" class="ai-msgs">${msgs}</div>
     <div class="ai-row"><input class="ai-inp" id="aiInp" type="text" placeholder="Ask about visas, festivals, routes, budget…" onkeydown="if(event.key==='Enter')sendAI()"/><button class="ai-send" onclick="sendAI()">Ask</button></div>
@@ -3892,9 +3899,9 @@ function openTourModal(){
   const body=document.getElementById('tourModalBody');
   body.innerHTML=Object.entries(S.tours).map(([id,t])=>`
     <div style="display:flex;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--bd);font-family:var(--font-ui)">
-      <div style="flex:1;font-size:12px;color:var(--t1)">${esc(t.name)}</div>
-      <button class="abtn" onclick="openTourEditModal('${id}')" style="font-size:9px"><i class="ti ti-edit"></i></button>
-      <button class="abtn del" onclick="deleteTour('${id}')" style="font-size:9px"><i class="ti ti-trash"></i></button>
+      <div style="flex:1;font-size:13px;color:var(--t1)">${esc(t.name)}</div>
+      <button class="abtn" onclick="openTourEditModal('${id}')" style="font-size:11px"><i class="ti ti-edit"></i></button>
+      <button class="abtn del" onclick="deleteTour('${id}')" style="font-size:11px"><i class="ti ti-trash"></i></button>
     </div>`).join('');
   document.getElementById('tourModal').style.display='flex';
 }
