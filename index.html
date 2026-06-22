@@ -188,6 +188,11 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="punk"] .act-sub,[data-theme="punk"] .dest-meta,[data-theme="punk"] .dest-city{color:#9A9A9A}
 [data-theme="punk"] .theme-opt-name{color:#fff}
 [data-theme="punk"] .theme-opt-mood{color:#bbb}
+[data-theme="punk"] .rt-dest-name{font-size:16px!important}
+[data-theme="punk"] .re-dest-name{font-size:15px!important}
+[data-theme="punk"] .tourovr-act-name{font-size:13px!important}
+[data-theme="classic"] .tourovr-act-name{font-size:13px!important}
+[data-theme="futurist"] .tourovr-act-name{font-size:13px!important}
 [data-theme="punk"] .tour-sel{background:#1A1A1A;color:#fff;border-color:#333}
 [data-theme="punk"] .scard,[data-theme="punk"] .pblk,[data-theme="punk"] .pblk-f,[data-theme="punk"] .modal,[data-theme="punk"] .ev-item,[data-theme="punk"] .bkt,[data-theme="punk"] .bcat{
   border:3px solid var(--bd2)!important;border-radius:1px;
@@ -528,6 +533,8 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   .re-dest-name{font-size:11px!important}
   [data-theme="futurist"] .re-dest-name{font-size:13px!important}
   [data-theme="classic"] .re-dest-name{font-size:12px!important}
+  [data-theme="punk"] .rt-dest-name{font-size:13px!important}
+  [data-theme="punk"] .re-dest-name{font-size:12px!important}
   .rt-dest-country{font-size:11px}
   .rt-mobile-dates{font-size:11px}
   [data-theme="futurist"] .rt-dest-country{font-size:12px}
@@ -1196,6 +1203,7 @@ let tab='dashboard',curActId=null,curDestId=null;
 let routeEditMode=false; // toggles the Route section between the normal table and the inline-editable "Edit Route" grid
 let routeDraft=null; // working copy of {id,arrival,departure} while inside Edit Route — null means "not editing", live data is untouched until Save Changes
 let routeAutoCalc=localStorage.getItem('ae_route_autocalc')!=='off'; // defaults to on
+let routeSearch=''; // free-text search across the Route table — filters on top of the status checkboxes
 let editDestId=null,editActId=null,editBktId=null,editBudCatId=null,editTourId=null,editBktCatId=null;
 let aiMsgs=[],selBudCat=null,ctxEvId=null;
 let bdDragSrc=null,bktDragSrc=null;
@@ -1305,7 +1313,7 @@ function renderDash(){
     const dd=sDests().filter(d=>d.act===act.id);
     const d=dd.reduce((s,x)=>s+dBtw(x.arrival,x.departure),0);
     return`<div class="scard" onclick="selActFromCommand('${act.id}')" title="Open in sidebar" style="border-top:2px solid ${act.color}">
-      <div style="font-size:11px;color:${act.color};font-family:var(--font-ui);margin-bottom:3px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(act.name)}</div>
+      <div class="tourovr-act-name" style="font-size:11px;color:${act.color};font-family:var(--font-ui);margin-bottom:3px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(act.name)}</div>
       <div class="sval" style="font-size:19px">${d}<span style="font-size:11px;color:var(--t3)">d</span></div>
       <div class="slbl">${dd.length} stops</div>
     </div>`;
@@ -1445,8 +1453,40 @@ function renderRoute(){
   const sorted=sDests();
   const sts=['planned','confirmed','wishlist','completed','cancelled'];
   const fitems=sts.map(s=>`<label class="fmi"><input type="checkbox" ${AF.includes(s)?'checked':''} onchange="toggleF('${s}')"/> ${s.charAt(0).toUpperCase()+s.slice(1)}</label>`).join('');
-  const filt=sorted.filter(d=>AF.includes(d.status));
-  const rows=filt.map(d=>{
+  const filt=sorted.filter(d=>AF.includes(d.status)).filter(d=>routeMatchesSearch(d,routeSearch));
+  const rows=routeRowsHtml(filt);
+  return`<div class="panel">
+    <div class="frow">
+      <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>
+      <div style="position:relative;flex:1;min-width:160px;max-width:280px">
+        <i class="ti ti-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:13px;pointer-events:none"></i>
+        <input class="fi" id="routeSearchInp" type="text" placeholder="Search city, country, event…" value="${esc(routeSearch)}" oninput="onRouteSearch(this.value)" style="padding:.5rem .6rem .5rem 1.8rem;font-size:13px"/>
+      </div>
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleFMenu()"><i class="ti ti-filter"></i> Filter <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="fmenu">${fitems}</div>
+      </div>
+      <button class="fbtn" onclick="exportTemplate()" title="Download Excel template"><i class="ti ti-file-spreadsheet"></i> Template</button>
+      <label class="fbtn" style="cursor:pointer" title="Import from Excel or CSV"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importCSV(this)"/></label>
+      <button class="fbtn" onclick="exportCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
+      <button class="fbtn" onclick="toggleRouteEditMode()" title="Quickly edit dates and nights for every destination in one grid"><i class="ti ti-calendar-time"></i> Edit Route</button>
+      <button class="fbtn" onclick="confirmRecalculateDates()" title="Close any gaps or overlaps between destinations, in chronological order, after editing dates or nights"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
+      <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:12px">Remove All</button>
+      <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)" id="routeCount">${filt.length}/${sorted.length}</span>
+    </div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
+      <table class="rtbl">
+        <thead><tr><th></th><th>Destination</th><th class="hm">Arrival</th><th class="hm">Departure</th><th class="hm">Nights</th><th>Status</th><th class="hm">Act</th><th></th></tr></thead>
+        <tbody id="routeTblBody">${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+// Builds just the <tr> rows for the Route table — split out from renderRoute() so the live
+// search can replace only the tbody + count, leaving the search input itself untouched (and
+// therefore still focused) while the person types.
+function routeRowsHtml(filt){
+  return filt.map(d=>{
     const am=aM(d.act);
     const n=dBtw(d.arrival,d.departure);
     return`<tr class="${d.status==='cancelled'?'cancelled':''}" onclick="viewDest('${d.id}')">
@@ -1466,29 +1506,25 @@ function renderRoute(){
         </div>
       </td>
     </tr>`;
-  }).join('');
-  return`<div class="panel">
-    <div class="frow">
-      <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>
-      <div style="position:relative">
-        <button class="fbtn" onclick="toggleFMenu()"><i class="ti ti-filter"></i> Filter <i class="ti ti-chevron-down"></i></button>
-        <div class="fmenu" id="fmenu">${fitems}</div>
-      </div>
-      <button class="fbtn" onclick="exportTemplate()" title="Download Excel template"><i class="ti ti-file-spreadsheet"></i> Template</button>
-      <label class="fbtn" style="cursor:pointer" title="Import from Excel or CSV"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importCSV(this)"/></label>
-      <button class="fbtn" onclick="exportCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
-      <button class="fbtn" onclick="toggleRouteEditMode()" title="Quickly edit dates and nights for every destination in one grid"><i class="ti ti-calendar-time"></i> Edit Route</button>
-      <button class="fbtn" onclick="confirmRecalculateDates()" title="Close any gaps or overlaps between destinations, in chronological order, after editing dates or nights"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
-      <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:12px">Remove All</button>
-      <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${filt.length}/${sorted.length}</span>
-    </div>
-    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
-      <table class="rtbl">
-        <thead><tr><th></th><th>Destination</th><th class="hm">Arrival</th><th class="hm">Departure</th><th class="hm">Nights</th><th>Status</th><th class="hm">Act</th><th></th></tr></thead>
-        <tbody>${rows||'<tr><td colspan="8" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations match the selected filters</td></tr>'}</tbody>
-      </table>
-    </div>
-  </div>`;
+  }).join('')||'<tr><td colspan="8" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations match the selected filters</td></tr>';
+}
+// Free-text match across every field someone might plausibly search by — city, country, status,
+// the act it belongs to, any linked event, and notes. Case-insensitive substring match, same as
+// a quick Ctrl+F would behave, just scoped to the data instead of the rendered page.
+function routeMatchesSearch(d,q){
+  if(!q)return true;
+  const am=aM(d.act);
+  const hay=[d.city,d.country,d.status,am?.name,d.event,d.event_type,d.notes].filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(q.trim().toLowerCase());
+}
+function onRouteSearch(val){
+  routeSearch=val;
+  const sorted=sDests();
+  const filt=sorted.filter(d=>AF.includes(d.status)).filter(d=>routeMatchesSearch(d,routeSearch));
+  const body=document.getElementById('routeTblBody');
+  if(body)body.innerHTML=routeRowsHtml(filt);
+  const count=document.getElementById('routeCount');
+  if(count)count.textContent=`${filt.length}/${sorted.length}`;
 }
 function toggleRouteEditMode(){
   if(!routeEditMode){
