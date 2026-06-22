@@ -258,6 +258,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .sidebar::-webkit-scrollbar{width:8px}
 .sidebar::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px}
 .content{flex:1;overflow-y:auto;background:var(--bg);-webkit-overflow-scrolling:touch}
+.app-footer{flex-shrink:0;text-align:center;padding:.35rem 0;font-family:var(--font-ui);font-size:9px;letter-spacing:.04em;color:var(--t3);background:var(--ink);border-top:1px solid var(--bd);opacity:.7}
 .content::-webkit-scrollbar{width:7px}
 .content::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:5px}
 .content::-webkit-scrollbar-track{background:var(--ink)}
@@ -692,6 +693,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   </aside>
   <main class="content" id="mainContent"></main>
 </div>
+<footer class="app-footer">© 2026 NOMAD. All Rights Reserved.</footer>
 </div>
 <!-- DEST MODAL -->
 <div class="mo" id="destModal" style="display:none" onclick="if(event.target===this)closeDestModal()">
