@@ -524,19 +524,36 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
      destination names under Journey Acts in the left pane (.dest-city), appearance for appearance. ── */
   .rt-dest-name{font-size:12px!important}
   [data-theme="futurist"] .rt-dest-name{font-size:14px!important}
+  [data-theme="classic"] .rt-dest-name{font-size:13px!important}
   .re-dest-name{font-size:11px!important}
   [data-theme="futurist"] .re-dest-name{font-size:13px!important}
+  [data-theme="classic"] .re-dest-name{font-size:12px!important}
   .rt-dest-country{font-size:11px}
   .rt-mobile-dates{font-size:11px}
   [data-theme="futurist"] .rt-dest-country{font-size:12px}
   [data-theme="futurist"] .rt-mobile-dates{font-size:12px}
+  /* ROUTE grid secondary lines (country/dates), -1pt for these three appearances only */
+  [data-theme="executive"] .rt-dest-country{font-size:11px!important}
+  [data-theme="modern"] .rt-dest-country{font-size:11px!important}
+  [data-theme="luxury"] .rt-dest-country{font-size:11px!important}
+  [data-theme="executive"] .rt-mobile-dates{font-size:10px!important}
+  [data-theme="modern"] .rt-mobile-dates{font-size:10px!important}
+  [data-theme="luxury"] .rt-mobile-dates{font-size:10px!important}
   .re-act-name{font-size:10px!important}
+  /* EDIT ROUTE grid secondary line (act-name), -1pt for the same three appearances */
+  [data-theme="executive"] .re-act-name{font-size:9px!important}
+  [data-theme="modern"] .re-act-name{font-size:9px!important}
+  [data-theme="luxury"] .re-act-name{font-size:9px!important}
+
+  /* World Tour description quote — -1pt for Mythic Odyssey and Dark Executive */
+  [data-theme="mythic"] .tour-quote{font-size:12px!important}
+  [data-theme="executive"] .tour-quote{font-size:12px!important}
 
   /* ── Dark Executive — every remaining font, -1pt ──
      (The sidebar Acts list and both Route grids above are shared across all appearances now,
      so they aren't touched again here to avoid stacking a second reduction on the same text.) */
   [data-theme="executive"] .logo-txt{font-size:13px}
-  [data-theme="executive"] .logo-sub{font-size:10px}
+  [data-theme="executive"] .logo-sub{font-size:9px}
   [data-theme="executive"] .hstat-v{font-size:14px}
   [data-theme="executive"] .hstat-l{font-size:10px}
   [data-theme="executive"] .add-btn{font-size:11px}
@@ -1249,7 +1266,7 @@ function switchTab(t,el){if(tab==='map'&&t!=='map'&&typeof teardownGlobe==='func
 
 function updateHStats(){
   autoStatus();
-  document.getElementById('hCnt').textContent=new Set(cDests().map(d=>d.country)).size;
+  document.getElementById('hCnt').textContent=new Set(cDests().filter(d=>d.status!=='cancelled').map(d=>d.country)).size;
   document.getElementById('hDst').textContent=cDests().length;
   document.getElementById('hEvt').textContent=cDests().filter(d=>d.event).length;
 }
@@ -1271,7 +1288,7 @@ function renderContent(){
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
 function renderDash(){
   autoStatus();
-  const countries=new Set(cDests().map(d=>d.country)).size;
+  const countries=new Set(cDests().filter(d=>d.status!=='cancelled').map(d=>d.country)).size;
   const days=cDests().reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
   const evCnt=cDests().filter(d=>d.event).length;
   const bktDone=cur().bucket.filter(b=>b.done).length;
@@ -1279,7 +1296,7 @@ function renderDash(){
   const totBudget=calcTotBudget();
   const totSpent=calcTotSpent();
   const confirmed=cDests().filter(d=>d.status==='confirmed').length;
-  const visitedCountries=[...new Set(cDests().map(d=>d.country))].sort();
+  const visitedCountries=[...new Set(cDests().filter(d=>d.status!=='cancelled').map(d=>d.country))].sort();
   const countryFlagChips=visitedCountries.map(c=>{
     const flag=cDests().find(d=>d.country===c)?.flag||'🌍';
     return`<div style="display:flex;align-items:center;gap:6px;padding:.3rem .6rem;background:var(--sf2);border:1px solid var(--bd);border-radius:20px"><span style="font-size:17px">${flag}</span><span style="font-size:12px;color:var(--t2);font-family:var(--font-ui)">${esc(c)}</span></div>`;
@@ -1310,7 +1327,7 @@ function renderDash(){
         <button class="abtn" onclick="openTourEditModal()" style="flex-shrink:0;font-size:11px;margin-top:2px"><i class="ti ti-edit"></i> Edit</button>
       </div>
       <div style="font-size:10px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem">World Tour Planner</div>
-      <div style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;max-width:580px;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
+      <div class="tour-quote" style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;max-width:580px;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
     </div>
     <div class="sgrid">
       <div class="scard" onclick="goToCountryList()"><div class="sval">${countries}</div><div class="slbl">Countries</div></div>
@@ -2614,14 +2631,18 @@ function project(lat,lng){
 function renderMap(){
   setTimeout(()=>initSvgGlobe(),20);
   const dests=sDests().filter(d=>d.status!=='cancelled'&&destLatLng(d));
-  const visited=new Set(dests.map(d=>d.country));
+  // Countries shouldn't be undercounted just because a destination's coordinates aren't in our
+  // lookup table — that's only relevant for plotting a pin on the globe, not for whether the
+  // country itself counts. This mirrors the same (non-cancelled) definition used in Tour Overview.
+  const statsDests=sDests().filter(d=>d.status!=='cancelled');
+  const visited=new Set(statsDests.map(d=>d.country));
   const totalDays=dests.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
   const continents=new Set();
   dests.forEach(d=>{const c=continentOf(d.country);if(c)continents.add(c);});
   const legend=cActs().filter(a=>dests.some(d=>d.act===a.id)).map(a=>`<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:${a.color};font-family:var(--font-ui)"><div style="width:7px;height:7px;border-radius:50%;background:${a.color};box-shadow:0 0 4px ${a.color}"></div>${esc(a.name)}</div>`).join('');
   const countryCards=[...visited].sort().map(c=>{
-    const flag=dests.find(d=>d.country===c)?.flag||'🌍';
-    const citiesInC=dests.filter(d=>d.country===c).map(d=>d.city).join(', ');
+    const flag=statsDests.find(d=>d.country===c)?.flag||'🌍';
+    const citiesInC=statsDests.filter(d=>d.country===c).map(d=>d.city).join(', ');
     return`<div style="display:flex;align-items:center;gap:10px;padding:.7rem .9rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);box-shadow:var(--shadow)">
       <span style="font-size:26px;flex-shrink:0">${flag}</span>
       <div style="min-width:0"><div style="font-size:14px;color:var(--t1);font-family:var(--font-ui);font-weight:600">${esc(c)}</div><div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(citiesInC)}</div></div>
