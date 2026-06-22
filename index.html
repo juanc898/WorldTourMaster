@@ -28,6 +28,7 @@ body{font-size:15px;transition:background .3s,color .3s}
   --radius:3px;--shadow:none;--glow:none;
   --card-bg:var(--sf);--accent-grad:linear-gradient(135deg,var(--gold-dim),var(--gold));
 }
+[data-theme="mythic"] .btxt{font-weight:300}
 
 /* ---------- 2. DARK EXECUTIVE ---------- */
 [data-theme="executive"]{
@@ -59,7 +60,8 @@ body{font-size:15px;transition:background .3s,color .3s}
   --accent-grad:linear-gradient(90deg,#00E5FF,#7B5FFF,#FF2E92);
 }
 [data-theme="futurist"] body{font-weight:600}
-[data-theme="futurist"] .dval,[data-theme="futurist"] .dlbl,[data-theme="futurist"] .fi,[data-theme="futurist"] .btxt,[data-theme="futurist"] .gstat-l,[data-theme="futurist"] .slbl,[data-theme="futurist"] .flbl{font-weight:700}
+[data-theme="futurist"] .dval,[data-theme="futurist"] .dlbl,[data-theme="futurist"] .fi,[data-theme="futurist"] .gstat-l,[data-theme="futurist"] .slbl,[data-theme="futurist"] .flbl{font-weight:700}
+[data-theme="futurist"] .btxt{font-weight:400}
 [data-theme="futurist"] .prof-city,[data-theme="futurist"] .mttl,[data-theme="futurist"] .sval,[data-theme="futurist"] .logo-txt{font-weight:700}
 [data-theme="futurist"] body{background-image:linear-gradient(180deg,rgba(0,229,255,.06),transparent 30%),radial-gradient(ellipse at 15% 15%,rgba(0,212,255,.10),transparent 50%),radial-gradient(ellipse at 85% 100%,rgba(179,85,255,.10),transparent 55%);background-attachment:fixed}
 [data-theme="futurist"] .nav-tab{font-size:14px;font-weight:800;letter-spacing:.1em}
@@ -108,7 +110,8 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="modern"] .sidebar{border-right:1px solid var(--bd2)}
 [data-theme="modern"] .scard,[data-theme="modern"] .pblk,[data-theme="modern"] .pblk-f{border:1px solid var(--bd2)}
 [data-theme="modern"] .scard:hover{box-shadow:0 4px 14px rgba(16,24,40,.1);transform:translateY(-2px)}
-[data-theme="modern"] .dval,[data-theme="modern"] .dlbl,[data-theme="modern"] .fi,[data-theme="modern"] .btxt,[data-theme="modern"] .gstat-l,[data-theme="modern"] .slbl,[data-theme="modern"] .flbl{font-weight:600}
+[data-theme="modern"] .dval,[data-theme="modern"] .dlbl,[data-theme="modern"] .fi,[data-theme="modern"] .gstat-l,[data-theme="modern"] .slbl,[data-theme="modern"] .flbl{font-weight:600}
+[data-theme="modern"] .btxt{font-weight:500;font-size:13px}
 [data-theme="modern"] .prof-city,[data-theme="modern"] .mttl,[data-theme="modern"] .sval,[data-theme="modern"] .logo-txt{font-weight:700}
 [data-theme="modern"] .logo-eye{background:var(--accent-grad);border-radius:8px;padding:3px}
 
@@ -183,6 +186,8 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="punk"] .sidebar{background:var(--ink);border-right:4px solid var(--bd2)}
 [data-theme="punk"] .act-nm{color:#fff}
 [data-theme="punk"] .act-sub,[data-theme="punk"] .dest-meta,[data-theme="punk"] .dest-city{color:#9A9A9A}
+[data-theme="punk"] .theme-opt-name{color:#fff}
+[data-theme="punk"] .theme-opt-mood{color:#bbb}
 [data-theme="punk"] .tour-sel{background:#1A1A1A;color:#fff;border-color:#333}
 [data-theme="punk"] .scard,[data-theme="punk"] .pblk,[data-theme="punk"] .pblk-f,[data-theme="punk"] .modal,[data-theme="punk"] .ev-item,[data-theme="punk"] .bkt,[data-theme="punk"] .bcat{
   border:3px solid var(--bd2)!important;border-radius:1px;
@@ -257,8 +262,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .act-row{padding:.4rem .625rem .4rem .875rem;cursor:pointer;border-left:2px solid transparent;display:flex;align-items:center;gap:4px}
 .act-row:hover{background:rgba(255,255,255,.025)}
 .act-row.active{background:rgba(201,168,76,.05)}
-.act-nm{font-size:14px;font-weight:700;color:var(--t1);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.act-sub{font-size:13px;color:var(--t3);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act-nm{font-size:12px;font-weight:700;color:var(--t1);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.act-sub{font-size:11px;color:var(--t3);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .act-badge{font-size:10px;background:var(--bd);color:var(--t3);padding:1px 5px;border-radius:8px;font-family:var(--font-ui);flex-shrink:0}
 .dest-row{padding:.28rem .625rem .28rem 1.5rem;cursor:pointer;display:flex;align-items:center;gap:5px}
 .dest-row:hover{background:rgba(255,255,255,.018)}
@@ -482,20 +487,45 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   #routeEditTbl{table-layout:fixed;width:100%}
   /* Row-number column dropped on phone — it wasn't worth the width it cost. */
   #routeEditTbl th:first-child,#routeEditTbl td:first-child{width:0;padding:0!important;border:none;overflow:hidden}
-  #routeEditTbl th:nth-child(2),#routeEditTbl td:nth-child(2){width:24%}
+  #routeEditTbl th:nth-child(2),#routeEditTbl td:nth-child(2){width:22%}
   #routeEditTbl th:nth-child(3),#routeEditTbl td:nth-child(3),
-  #routeEditTbl th:nth-child(4),#routeEditTbl td:nth-child(4){width:30%}
-  #routeEditTbl th:nth-child(5),#routeEditTbl td:nth-child(5){width:16%}
+  #routeEditTbl th:nth-child(4),#routeEditTbl td:nth-child(4){width:32%}
+  #routeEditTbl th:nth-child(5),#routeEditTbl td:nth-child(5){width:14%}
   #routeEditTbl td{padding-left:.25rem!important;padding-right:.25rem!important}
+  /* Top-align every cell — with the weekday label now stacked under the date, the date/destination
+     cells are taller than the single-line Nights cell, so center-aligning (the table default)
+     pushed the Nights box out of line with the date boxes above it. Aligning everything to the
+     top keeps every input box starting at the same height regardless of how many lines sit below it. */
+  #routeEditTbl td{vertical-align:top}
   #routeEditTbl td:nth-child(2) span:first-child{font-size:13px}
   #routeEditTbl td:nth-child(2) span:nth-child(2){font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #routeEditTbl td:nth-child(2) div{font-size:10px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* Weekday label moves underneath the date instead of squeezing in beside it, freeing
      that horizontal space for the date itself so it's never clipped. */
   #routeEditTbl td:nth-child(3)>div,#routeEditTbl td:nth-child(4)>div{flex-direction:column;align-items:stretch;gap:1px}
-  #routeEditTbl input[type="date"]{font-size:12px!important;padding:.3rem .25rem!important;width:100%!important;min-width:0!important}
+  #routeEditTbl input[type="date"]{font-size:12px!important;padding:.3rem .15rem!important;width:100%!important;min-width:0!important}
+  /* The native calendar icon was eating into the same cramped width as the date text itself —
+     shrinking its own padding gives the date a few extra px so it's never chopped off. */
+  #routeEditTbl input[type="date"]::-webkit-calendar-picker-indicator{padding:0;margin-left:1px}
   #routeEditTbl input[type="number"]{width:100%!important;padding:.3rem .2rem!important;font-size:12px!important}
   #routeEditTbl td span[id^="rwd_"]{width:100%!important;text-align:center;font-size:9px!important;flex-shrink:0}
+
+  /* Destination column — Route grid + Edit Route grid, phone only, per appearance */
+  [data-theme="mythic"] .rt-dest-name{font-size:14px}
+  [data-theme="mythic"] .re-dest-name{font-size:13px}
+  [data-theme="executive"] .rt-dest-name{font-size:13px}
+  [data-theme="executive"] .re-dest-name{font-size:12px}
+  [data-theme="modern"] .rt-dest-name{font-size:13px}
+  [data-theme="modern"] .re-dest-name{font-size:12px}
+  [data-theme="surreal"] .rt-dest-name{font-size:14px}
+  [data-theme="surreal"] .re-dest-name{font-size:13px}
+  [data-theme="luxury"] .rt-dest-name{font-size:14px}
+  [data-theme="luxury"] .re-dest-name{font-size:13px}
+
+  /* Bucket list description — phone-only size tweaks */
+  [data-theme="executive"] .btxt{font-size:13px}
+  [data-theme="surreal"] .btxt{font-size:13px}
+  [data-theme="luxury"] .btxt{font-size:13px}
 }
 @media(max-width:380px){.sgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -1332,7 +1362,7 @@ function renderRoute(){
     const n=dBtw(d.arrival,d.departure);
     return`<tr class="${d.status==='cancelled'?'cancelled':''}" onclick="viewDest('${d.id}')">
       <td style="padding:.4rem .4rem .4rem .6rem"><span style="font-size:16px">${d.flag||'📍'}</span></td>
-      <td><div style="font-size:15px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">${esc(d.city)}</div><div style="font-size:12px;color:var(--t3)">${esc(d.country)}</div>
+      <td><div class="rt-dest-name" style="font-size:15px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">${esc(d.city)}</div><div style="font-size:12px;color:var(--t3)">${esc(d.country)}</div>
         <div class="rt-mobile-dates">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'—'} <i class="ti ti-arrow-right" style="font-size:11px;vertical-align:middle"></i> ${d.departure?fD(d.departure)+' '+wS(d.departure):'—'}${n>0?' · '+n+'n':''}</div>
       </td>
       <td class="hm"><div style="font-size:14px">${d.arrival?fD(d.arrival):'—'} <span class="wd">${wS(d.arrival)}</span></div></td>
@@ -1407,7 +1437,7 @@ function renderRouteEdit(){
     const am=aM(d.act);
     return`<tr data-id="${r.id}">
       <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:11px">${i+1}</td>
-      <td style="padding:.4rem .6rem"><span style="font-size:15px;margin-right:4px">${d.flag||'📍'}</span><span style="font-size:14px;color:var(--t1)">${esc(d.city)}</span><div style="font-size:11px;color:${am.color}">${esc(am.name)}</div></td>
+      <td style="padding:.4rem .6rem"><span style="font-size:15px;margin-right:4px">${d.flag||'📍'}</span><span class="re-dest-name" style="font-size:14px;color:var(--t1)">${esc(d.city)}</span><div style="font-size:11px;color:${am.color}">${esc(am.name)}</div></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_a_${r.id}">${wS(r.arrival)}</span></div></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_d_${r.id}">${wS(r.departure)}</span></div></td>
       <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:12px;padding:.3rem .4rem;width:56px"/></td>
