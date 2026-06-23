@@ -210,6 +210,7 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="punk"] .sb-cancelled{background:var(--red);color:#fff}
 [data-theme="punk"] .sb-completed{background:var(--blue);color:#fff}
 [data-theme="punk"] .sb-wishlist{background:#fff;color:#0A0A0B;border:2px solid #0A0A0A}
+[data-theme="punk"] .sb-partial{background:var(--gold);color:#0A0A0A}
 [data-theme="punk"] .fi{border:2px solid var(--bd2);border-radius:1px;font-weight:500}
 [data-theme="punk"] .fi:focus{border-color:var(--gold)}
 [data-theme="punk"] .mhdr{border-bottom:3px solid var(--bd2)}
@@ -276,6 +277,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .dest-row.active{background:rgba(201,168,76,.04)}
 .dest-city{font-size:14px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-ui);flex:1}
 .dest-row.active .dest-city{color:var(--t1)}
+.dest-row.past{opacity:.45}
+.dest-row.past.active{opacity:.7}
 .dest-meta{font-size:13px;color:var(--t3);font-family:var(--font-ui)}
 .dot5{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 /* PANEL */
@@ -328,12 +331,14 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .sb-cancelled{background:rgba(200,75,75,.15);color:#C84B4B}
 .sb-wishlist{background:rgba(139,75,200,.18);color:#9B5BD8}
 .sb-completed{background:rgba(75,139,200,.18);color:#5B9BD8}
+.sb-partial{background:rgba(216,140,75,.2);color:#D88C4B}
 /* ROUTE TABLE */
 .rtbl{width:100%;border-collapse:collapse;font-family:var(--font-ui);font-size:14px}
 .rtbl th{padding:.4rem .6rem;text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--bd);font-weight:400;background:var(--sf)}
 .rtbl td{padding:.45rem .6rem;border-bottom:1px solid rgba(128,128,128,.1);color:var(--t2);vertical-align:middle}
 .rtbl tr:hover td{background:rgba(201,168,76,.04);cursor:pointer}
 .rtbl tr.cancelled td{opacity:.45}
+.rtbl tr.past td{opacity:.45}
 .rt-mobile-dates{display:none;font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px;white-space:nowrap}
 .wd{font-size:11px;color:var(--t3);margin-left:2px}
 /* FILTER ROW */
@@ -766,7 +771,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 <div class="modal"><div class="mhdr"><div class="mttl" id="destModalTitle">Add Destination</div><button class="mx" onclick="closeDestModal()">&#x2715;</button></div>
 <div class="mbody">
   <div class="msect"><div class="msttl">Destination</div><div class="mflds">
-    <div class="f2"><div class="fg"><label class="flbl">Act</label><select class="fi" id="f_act"></select></div><div class="fg"><label class="flbl">Status</label><select class="fi" id="f_status"><option value="planned">Planned</option><option value="confirmed">Confirmed</option><option value="wishlist">Wishlist</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Act</label><select class="fi" id="f_act"></select></div><div class="fg"><label class="flbl">Status</label><select class="fi" id="f_status"><option value="planned">Planned</option><option value="partial">Partially Confirmed</option><option value="confirmed">Confirmed</option><option value="wishlist">Wishlist</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Country</label><select class="fi" id="f_country" onchange="onCountryChange()"><option value="">— Select country —</option></select></div><div class="fg"><label class="flbl">City / Region</label><input class="fi" id="f_city" type="text" placeholder="e.g. Barcelona"/></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Flag</label><input class="fi" id="f_flag" type="text" readonly placeholder="Auto-filled from country" style="cursor:default;opacity:.85"/></div><div class="fg"><label class="flbl">Priority (1-5)</label><select class="fi" id="f_priority"><option value="5">★★★★★ Must do</option><option value="4">★★★★ High</option><option value="3" selected>★★★ Medium</option><option value="2">★★ Low</option><option value="1">★ Someday</option></select></div></div>
   </div></div>
@@ -940,7 +945,8 @@ document.addEventListener('click',e=>{const pop=document.getElementById('themePo
 applyTheme();
 
 // ── FILTER PERSISTENCE ────────────────────────────────────────────────────────
-let AF=JSON.parse(localStorage.getItem('ae_filters')||'["planned","confirmed","wishlist","completed","cancelled"]');
+let AF=JSON.parse(localStorage.getItem('ae_filters')||'["planned","partial","confirmed","wishlist","completed","cancelled"]');
+if(!AF.includes('partial'))AF.push('partial'); // backward-compat: filters saved before this status existed
 function saveF(){localStorage.setItem('ae_filters',JSON.stringify(AF));}
 let BF=JSON.parse(localStorage.getItem('ae_bkt_filters')||'["pending","achieved"]'); // bucket list status filter
 function saveBF(){localStorage.setItem('ae_bkt_filters',JSON.stringify(BF));}
@@ -1294,7 +1300,26 @@ const sDests=()=>[...cDests()].sort((a,b)=>{
   if(a.arrival&&b.arrival)return a.arrival.localeCompare(b.arrival);
   if(a.arrival)return-1;if(b.arrival)return 1;return 0;
 });
-function autoStatus(){cDests().forEach(d=>{if(d.departure&&d.departure<today&&d.status!=='cancelled')d.status='completed';});}
+// Figures out what a destination's status *should* be from its actual booking data, ignoring
+// whatever it's currently set to. Used both to auto-update statuses on every render and, in
+// saveDest(), to detect when someone has deliberately chosen something different from this so
+// that override can be respected going forward instead of getting silently reverted.
+function computeAutoStatus(d){
+  if(d.status==='cancelled')return'cancelled';
+  if(d.departure&&d.departure<today)return'completed';
+  if(d.status==='wishlist')return'wishlist'; // a deliberate aspirational state, never auto-escalated by booking data
+  const accomOK=!!d.hotel;
+  const transOK=!!(d.mot&&d.t_company);
+  if(accomOK&&transOK)return'confirmed';
+  if(accomOK||transOK)return'partial';
+  return'planned';
+}
+function autoStatus(){
+  cDests().forEach(d=>{
+    if(d.statusManual)return; // respects an explicit manual override — see saveDest()
+    d.status=computeAutoStatus(d);
+  });
+}
 
 // ── UI STATE ──────────────────────────────────────────────────────────────────
 let tab='dashboard',curActId=null,curDestId=null;
@@ -1330,7 +1355,8 @@ function renderSB(){
     </div>`;
     if(isA)dd.forEach(d=>{
       const isD=curDestId===d.id;
-      h+=`<div class="dest-row${isD?' active':''}" onclick="viewDestSB('${d.id}')">
+      const isPast=d.departure&&d.departure<today;
+      h+=`<div class="dest-row${isD?' active':''}${isPast?' past':''}" onclick="viewDestSB('${d.id}')">
         <span style="font-size:14px;flex-shrink:0">${d.flag||'📍'}</span>
         <div style="flex:1;min-width:0"><div class="dest-city">${esc(d.city)}</div><div class="dest-meta">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'TBD'}</div></div>
         <div class="dot5" style="background:${sco(d.status)}"></div>
@@ -1342,6 +1368,7 @@ function renderSB(){
 }
 function sco(s){return s==='confirmed'?'#4BC896':s==='completed'?'#5B9BD8':s==='cancelled'?'#666':s==='wishlist'?'#9B5BD8':'#8B6914';}
 function scls(s){return'sbadge sb-'+(s||'planned');}
+function statusLabel(s){return s==='partial'?'Partially Confirmed':(s||'planned');}
 function selAct(id){curActId=curActId===id?null:id;curDestId=null;renderSB();renderContent();}
 
 // Act card click from Command page → opens left pane sidebar showing that act's stops
@@ -1393,16 +1420,61 @@ function renderContent(){
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
+// ── TOUR OVERVIEW date-frame scoping ── (same 3-mode pattern as Budget's, but its own
+// independent state, and defaults to 'total-tour' here per spec rather than 'current-end')
+let dashDateMode=localStorage.getItem('ae_dash_datemode')||'total-tour';
+let dashCustomStart=null,dashCustomEnd=null;
+function dashEffectiveRange(){
+  const bounds=budgetTourBounds();
+  const todayIso=calIso(new Date());
+  if(dashDateMode==='current-end')return{start:todayIso,end:bounds.end};
+  if(dashDateMode==='custom')return{start:dashCustomStart||bounds.start,end:dashCustomEnd||bounds.end};
+  return{start:bounds.start,end:bounds.end}; // 'total-tour' default
+}
+function dashSetDateMode(mode){
+  dashDateMode=mode;localStorage.setItem('ae_dash_datemode',mode);
+  if(mode!=='custom'){const r=dashEffectiveRange();dashCustomStart=r.start;dashCustomEnd=r.end;}
+  renderContent();
+}
+function dashSetCustomDate(which,val){
+  dashDateMode='custom';localStorage.setItem('ae_dash_datemode','custom');
+  if(which==='start')dashCustomStart=val;else dashCustomEnd=val;
+  renderContent();
+}
+// Destinations with no dates are always included (can't be excluded by a range they don't have
+// a date to test against), same "don't silently hide things" principle used in Budget.
+function dashFilteredDests(range){
+  return cDests().filter(d=>d.status!=='cancelled').filter(d=>!d.arrival||!d.departure||(d.arrival<=range.end&&d.departure>=range.start));
+}
 function renderDash(){
   autoStatus();
-  const countries=new Set(cDests().filter(d=>d.status!=='cancelled').map(d=>d.country)).size;
-  const days=cDests().reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
+  const range=dashEffectiveRange();
+  const fDests=dashFilteredDests(range);
+  const countriesAll=[...new Set(fDests.map(d=>d.country))];
+  const countriesVisited=countriesAll.filter(c=>fDests.some(d=>d.country===c&&d.departure&&d.departure<today));
+  const destTotal=fDests.length;
+  const destVisited=fDests.filter(d=>d.departure&&d.departure<today).length;
+  const evDests=fDests.filter(d=>d.event);
+  const evTotal=evDests.length;
+  const evVisited=evDests.filter(d=>{const marker=d.event_start||d.arrival;return marker&&marker<today;}).length;
+  const totalNightsInRange=fDests.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
+  const intensity=destTotal>0?totalNightsInRange/destTotal:0;
+  const rStart=range.start?new Date(range.start+'T12:00:00'):null;
+  const rEnd=range.end?new Date(range.end+'T12:00:00'):null;
+  const totalRangeDays=(rStart&&rEnd)?Math.max(0,Math.round((rEnd-rStart)/864e5)):0;
+  const todayDate=new Date(today+'T12:00:00');
+  let daysElapsed=0;
+  if(rStart){
+    if(todayDate<rStart)daysElapsed=0;
+    else if(rEnd&&todayDate>rEnd)daysElapsed=totalRangeDays;
+    else daysElapsed=Math.round((todayDate-rStart)/864e5);
+  }
   const evCnt=cDests().filter(d=>d.event).length;
   const bktDone=cur().bucket.filter(b=>b.done).length;
   const bktTot=cur().bucket.length;
   const totBudget=calcTotBudget();
   const totSpent=calcTotSpent();
-  const confirmed=cDests().filter(d=>d.status==='confirmed').length;
+  const confirmedCount=fDests.filter(d=>d.status==='confirmed').length;
   const visitedCountries=[...new Set(cDests().filter(d=>d.status!=='cancelled').map(d=>d.country))].sort();
   const countryFlagChips=visitedCountries.map(c=>{
     const flag=cDests().find(d=>d.country===c)?.flag||'🌍';
@@ -1424,8 +1496,9 @@ function renderDash(){
         <div style="font-size:13px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.city)}, ${esc(d.country)}</div>
         <div style="font-size:11px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'TBD'}${d.event?' · '+esc(d.event):''}</div>
       </div>
-      <span class="${scls(d.status)}">${d.status}</span>
+      <span class="${scls(d.status)}">${statusLabel(d.status)}</span>
     </div>`).join('');
+  const dateModeBtn=(mode,lbl)=>`<button onclick="dashSetDateMode('${mode}')" style="border:none;background:${dashDateMode===mode?'var(--gold)':'transparent'};color:${dashDateMode===mode?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s;white-space:nowrap">${lbl}</button>`;
   return`<div class="panel">
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;position:relative;overflow:hidden;box-shadow:var(--shadow)">
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(201,168,76,.05) 0%,transparent 60%);pointer-events:none"></div>
@@ -1436,13 +1509,25 @@ function renderDash(){
       <div style="font-size:10px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem">World Tour Planner</div>
       <div class="tour-quote" style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;max-width:580px;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
     </div>
+    <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem">
+      <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
+        ${dateModeBtn('current-end','Current → End')}${dateModeBtn('total-tour','Total Tour')}${dateModeBtn('custom','Custom')}
+      </div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="fi" type="date" value="${range.start||''}" onchange="dashSetCustomDate('start',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+        <span style="color:var(--t3);font-size:12px">→</span>
+        <input class="fi" type="date" value="${range.end||''}" onchange="dashSetCustomDate('end',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+      </div>
+      <span style="font-size:11px;color:var(--t3);font-family:var(--font-ui)">Scopes the boxes below</span>
+    </div>
     <div class="sgrid">
-      <div class="scard" onclick="goToCountryList()"><div class="sval">${countries}</div><div class="slbl">Countries</div></div>
-      <div class="scard" onclick="goTab('route')"><div class="sval">${cDests().length}</div><div class="slbl">Destinations</div><div class="ssub">${confirmed} confirmed</div></div>
-      <div class="scard" onclick="goTab('events')"><div class="sval">${evCnt}</div><div class="slbl">Events</div></div>
+      <div class="scard" onclick="goToCountryList()"><div class="sval">${countriesVisited.length}/${countriesAll.length}</div><div class="slbl">Countries</div></div>
+      <div class="scard" onclick="goTab('route')"><div class="sval">${destVisited}/${destTotal}</div><div class="slbl">Destinations</div><div class="ssub">${confirmedCount} confirmed</div></div>
+      <div class="scard" onclick="goTab('events')"><div class="sval">${evVisited}/${evTotal}</div><div class="slbl">Events</div></div>
       <div class="scard" onclick="goTab('bucket')"><div class="sval">${bktDone}/${bktTot}</div><div class="slbl">Bucket List</div><div class="ssub">${Math.round(bktDone/(bktTot||1)*100)}% done</div></div>
       <div class="scard" onclick="goTab('budget')"><div class="sval" style="font-size:17px">$${Math.round(totSpent/1000*10)/10}k</div><div class="slbl">Spent</div><div class="ssub">of $${Math.round(totBudget/1000)}k budget</div></div>
-      <div class="scard"><div class="sval">${days}</div><div class="slbl">Days Planned</div></div>
+      <div class="scard"><div class="sval">${daysElapsed}/${totalRangeDays}</div><div class="slbl">Days Planned</div></div>
+      <div class="scard"><div class="sval">${intensity.toFixed(1)}</div><div class="slbl">Intensity</div><div class="ssub">avg nights/stop</div></div>
     </div>
     <div class="sec-ttl">Journey Acts <span style="font-size:10px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(click to open in sidebar)</span></div>
     <div class="sgrid" style="margin-bottom:1rem">${actCards}</div>
@@ -1493,7 +1578,7 @@ function renderProfile(){
   return`<div class="prof-wrap">
     <div class="prof-top">
       <div style="text-align:center;flex-shrink:0"><div class="prof-flag">${d.flag||'📍'}</div><div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.country)}</div></div>
-      <div class="prof-meta"><div class="prof-city">${esc(d.city)}</div><div class="prof-cntry">${esc(d.country)}</div><div class="ptags"><span class="tag gld">${esc(am.name)}</span><span class="${scls(d.status)}">${d.status}</span>${d.priority?`<span class="tag">${'★'.repeat(parseInt(d.priority))}</span>`:''}</div></div>
+      <div class="prof-meta"><div class="prof-city">${esc(d.city)}</div><div class="prof-cntry">${esc(d.country)}</div><div class="ptags"><span class="tag gld">${esc(am.name)}</span><span class="${scls(d.status)}">${statusLabel(d.status)}</span>${d.priority?`<span class="tag">${'★'.repeat(parseInt(d.priority))}</span>`:''}</div></div>
       <div style="display:flex;gap:4px;flex-shrink:0"><button class="abtn" onclick="openDestModal('${d.id}')"><i class="ti ti-edit"></i></button><button class="abtn del" onclick="removeDest('${d.id}')"><i class="ti ti-trash"></i></button></div>
     </div>
     ${d.event?`<div class="ev-pill"><i class="ti ti-confetti" style="color:${am.color};font-size:16px"></i><div><div style="font-size:13px;color:var(--t1);font-family:var(--font-ui)">${esc(d.event)}</div>${d.event_date?`<div style="font-size:11px;color:var(--gold);font-family:var(--font-ui)">${esc(d.event_date)}</div>`:''}</div></div>`:''}
@@ -1502,7 +1587,7 @@ function renderProfile(){
         <div class="drow"><span class="dlbl">Arrival</span><span class="dval gld">${d.arrival?fD(d.arrival):'TBD'} <span style="color:var(--t3)">${wS(d.arrival)}</span></span></div>
         <div class="drow"><span class="dlbl">Departure</span><span class="dval gld">${d.departure?fD(d.departure):'TBD'} <span style="color:var(--t3)">${wS(d.departure)}</span></span></div>
         <div class="drow"><span class="dlbl">Nights</span><span class="dval">${nights||'—'}</span></div>
-        <div class="drow"><span class="dlbl">Status</span><span class="dval ${d.status==='confirmed'?'grn':d.status==='cancelled'?'red':''}">${d.status}</span></div>
+        <div class="drow"><span class="dlbl">Status</span><span class="dval ${d.status==='confirmed'?'grn':d.status==='cancelled'?'red':d.status==='partial'?'gld':''}">${statusLabel(d.status)}</span></div>
         <div class="drow"><span class="dlbl">Act</span><span class="dval" style="color:${am.color}">${esc(am.name)}</span></div>
       </div>
       <div class="pblk"><div class="bttl">Accommodation</div>
@@ -1550,8 +1635,9 @@ const FIELDS=[
 function renderRoute(){
   if(routeEditMode)return renderRouteEdit();
   const sorted=sDests();
-  const sts=['planned','confirmed','wishlist','completed','cancelled'];
-  const fitems=sts.map(s=>`<label class="fmi"><input type="checkbox" ${AF.includes(s)?'checked':''} onchange="toggleF('${s}')"/> ${s.charAt(0).toUpperCase()+s.slice(1)}</label>`).join('');
+  const sts=['planned','partial','confirmed','wishlist','completed','cancelled'];
+  const stsLbl=s=>s==='partial'?'Partially Confirmed':s.charAt(0).toUpperCase()+s.slice(1);
+  const fitems=sts.map(s=>`<label class="fmi"><input type="checkbox" ${AF.includes(s)?'checked':''} onchange="toggleF('${s}')"/> ${stsLbl(s)}</label>`).join('');
   const filt=sorted.filter(d=>AF.includes(d.status)).filter(d=>routeMatchesSearch(d,routeSearch));
   const rows=routeRowsHtml(filt);
   return`<div class="panel">
@@ -1588,7 +1674,8 @@ function routeRowsHtml(filt){
   return filt.map(d=>{
     const am=aM(d.act);
     const n=dBtw(d.arrival,d.departure);
-    return`<tr class="${d.status==='cancelled'?'cancelled':''}" onclick="viewDest('${d.id}')">
+    const isPast=d.departure&&d.departure<today;
+    return`<tr class="${d.status==='cancelled'?'cancelled':''}${isPast?' past':''}" onclick="viewDest('${d.id}')">
       <td style="padding:.4rem .4rem .4rem .6rem"><span style="font-size:16px">${d.flag||'📍'}</span></td>
       <td><div class="rt-dest-name" style="font-size:15px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">${esc(d.city)}</div><div class="rt-dest-country" style="font-size:12px;color:var(--t3)">${esc(d.country)}</div>
         <div class="rt-mobile-dates">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'—'} <i class="ti ti-arrow-right" style="font-size:11px;vertical-align:middle"></i> ${d.departure?fD(d.departure)+' '+wS(d.departure):'—'}${n>0?' · '+n+'n':''}</div>
@@ -1596,7 +1683,7 @@ function routeRowsHtml(filt){
       <td class="hm"><div style="font-size:14px">${d.arrival?fD(d.arrival):'—'} <span class="wd">${wS(d.arrival)}</span></div></td>
       <td class="hm"><div style="font-size:14px">${d.departure?fD(d.departure):'—'} <span class="wd">${wS(d.departure)}</span></div></td>
       <td class="hm" style="color:var(--t3)">${n>0?n+'n':'—'}</td>
-      <td><span class="${scls(d.status)}">${d.status}</span></td>
+      <td><span class="${scls(d.status)}">${statusLabel(d.status)}</span></td>
       <td class="hm" style="color:${am.color};font-size:13px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(am.name)}</td>
       <td style="padding:.4rem .4rem" onclick="event.stopPropagation()">
         <div style="display:flex;gap:3px">
@@ -2293,7 +2380,7 @@ function processImportedRows(rows,input){
       const f=FIELDS.find(x=>x.l.toLowerCase()===h.trim().toLowerCase()||x.k.toLowerCase()===h.trim().toLowerCase());
       return f?f.k:null;
     });
-    const STATUS_OPTS=['planned','confirmed','wishlist','completed','cancelled'];
+    const STATUS_OPTS=['planned','partial','confirmed','wishlist','completed','cancelled'];
     const MOT_OPTS=['Flight','Train','Ferry','Car Rental','Motorbike','Bus','Private Transfer','Cruise'];
     const TPAID_OPTS=['no','partial','yes'];
     const VISA_OPTS=['Physical','E-Visa','On Arrival'];
@@ -2805,7 +2892,7 @@ function project(lat,lng){
 // calendar library is loaded in this single-file app, so this is a from-scratch implementation
 // in the same spirit as FullCalendar/Notion Timeline: multi-day bars, drag-to-move, drag-edges-
 // to-resize, conflict detection, and a draft/Save/Cancel flow mirroring Edit Route).
-const CAL_STATUS_COLOR={planned:'#B8923C',confirmed:'#3DAB82',wishlist:'#8B4BC8',completed:'#5B8BC8',cancelled:'#A85050'};
+const CAL_STATUS_COLOR={planned:'#B8923C',partial:'#D88C4B',confirmed:'#3DAB82',wishlist:'#8B4BC8',completed:'#5B8BC8',cancelled:'#A85050'};
 const CAL_MAX_SLOTS=4; // max stacked destination rows per week before collapsing into "+N more"
 let calView='month';
 let calCursor=new Date();calCursor.setHours(12,0,0,0);calCursor.setDate(1);
@@ -3101,7 +3188,7 @@ function calPopupHTML(id){
   return`<div class="mhdr"><div class="mttl">${d.flag||'📍'} ${esc(d.city)}, ${esc(d.country)}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
   <div class="mbody">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem;flex-wrap:wrap">
-      <span class="${scls(d.status)}">${d.status}</span>
+      <span class="${scls(d.status)}">${statusLabel(d.status)}</span>
       <span class="tag" style="color:${am.color}">${esc(am.name)}</span>
       <span style="font-size:11px;color:var(--t3);font-family:var(--font-ui)">${fD(d.arrival)} → ${fD(d.departure)} · ${nights}n</span>
     </div>
@@ -3149,7 +3236,7 @@ function renderCalendar(){
   const mots=[...new Set(cDests().map(d=>d.mot).filter(Boolean))].sort();
   const filterMenuHTML=`
     <div class="fmi" onclick="calSetFilter('status',null)" style="${!calFilterStatus?'color:var(--gold)':''}">All statuses</div>
-    ${['planned','confirmed','wishlist','completed','cancelled'].map(s=>`<div class="fmi" onclick="calSetFilter('status','${s}')" style="${calFilterStatus===s?'color:var(--gold)':''}">${s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
+    ${['planned','partial','confirmed','wishlist','completed','cancelled'].map(s=>`<div class="fmi" onclick="calSetFilter('status','${s}')" style="${calFilterStatus===s?'color:var(--gold)':''}">${s==='partial'?'Partially Confirmed':s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
     <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
     <div class="fmi" onclick="calSetFilter('accom','missing')" style="${calFilterAccom==='missing'?'color:var(--gold)':''}">Missing accommodation</div>
     <div class="fmi" onclick="calSetFilter('accom','with')" style="${calFilterAccom==='with'?'color:var(--gold)':''}">Has accommodation</div>
@@ -3834,6 +3921,10 @@ document.addEventListener('click',e=>{const fm=document.getElementById('fmenu');
 // view-state toggles in this app (theme, filters, etc).
 let budgetViewMode=localStorage.getItem('ae_budget_view')||'per';
 function setBudgetViewMode(mode){budgetViewMode=mode;localStorage.setItem('ae_budget_view',mode);renderContent();}
+let budgetBreakdownMode=false; // toggles Budget between the main summary and the monthly Planned vs Actual sub-section
+function toggleBudgetBreakdownMode(){budgetBreakdownMode=!budgetBreakdownMode;renderContent();}
+let budgetBdStartMonth=null,budgetBdEndMonth=null; // 'YYYY-MM' — null means "default to the full tour span"
+function budgetBdSetMonth(which,val){if(which==='start')budgetBdStartMonth=val;else budgetBdEndMonth=val;renderContent();}
 
 function getLinked(cat){
   const dd=cDests();
@@ -3842,11 +3933,11 @@ function getLinked(cat){
     const budg=dd.filter(d=>d.cost>0).map(d=>{
       const persons=d.persons>0?d.persons:1;
       const amt=perPerson?d.cost/persons:d.cost,paid=perPerson?(d.paid||0)/persons:(d.paid||0);
-      return{id:'ah_'+d.id,lbl:`Hotel: ${d.city} — ${d.hotel||'TBD'}`,amt,paid,isPaid:paid>=amt,persons};
+      return{id:'ah_'+d.id,lbl:`Hotel: ${d.city} — ${d.hotel||'TBD'}`,amt,paid,isPaid:paid>=amt,persons,date:d.arrival,endDate:d.departure,nights:dBtw(d.arrival,d.departure)};
     });
     const spent=dd.filter(d=>d.cost>0&&(d.paid||0)>0).map(d=>{
       const persons=d.persons>0?d.persons:1;
-      return{id:'ah_'+d.id,lbl:`Hotel: ${d.city}`,amt:perPerson?(d.paid||0)/persons:(d.paid||0)};
+      return{id:'ah_'+d.id,lbl:`Hotel: ${d.city}`,amt:perPerson?(d.paid||0)/persons:(d.paid||0),date:d.arrival,endDate:d.departure};
     });
     return{budg,spent};
   }
@@ -3855,39 +3946,78 @@ function getLinked(cat){
       const persons=d.t_persons>0?d.t_persons:1;
       const amt=perPerson?d.t_cost/persons:d.t_cost;
       const paid=d.t_paid==='yes'?amt:0;
-      return{id:'at_'+d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt,paid,isPaid:d.t_paid==='yes',persons};
+      return{id:'at_'+d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt,paid,isPaid:d.t_paid==='yes',persons,date:d.arrival};
     });
     const spent=dd.filter(d=>d.t_cost>0&&d.t_paid==='yes').map(d=>{
       const persons=d.t_persons>0?d.t_persons:1;
-      return{id:'at_'+d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt:perPerson?d.t_cost/persons:d.t_cost};
+      return{id:'at_'+d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt:perPerson?d.t_cost/persons:d.t_cost,date:d.arrival};
     });
     return{budg,spent};
   }
   if(cat.linked==='events'){
     const budg=dd.filter(d=>d.event_cost>0).map(d=>{
       const persons=d.event_persons>0?d.event_persons:1;
-      return{id:'ae_'+d.id,lbl:`${d.event||'Event'}: ${d.city}`,amt:perPerson?d.event_cost/persons:d.event_cost,paid:0,isPaid:false,persons};
+      return{id:'ae_'+d.id,lbl:`${d.event||'Event'}: ${d.city}`,amt:perPerson?d.event_cost/persons:d.event_cost,paid:0,isPaid:false,persons,date:d.event_start||d.arrival};
     });
     return{budg,spent:[]};
   }
   if(cat.linked==='visas'){
     const budg=dd.filter(d=>d.visa_required&&d.visa_cost>0).map(d=>{
       const persons=d.visa_persons>0?d.visa_persons:1;
-      return{id:'av_'+d.id,lbl:`Visa (${d.visa_type||'Physical'}): ${d.city}`,amt:perPerson?d.visa_cost/persons:d.visa_cost,paid:0,isPaid:false,persons};
+      return{id:'av_'+d.id,lbl:`Visa (${d.visa_type||'Physical'}): ${d.city}`,amt:perPerson?d.visa_cost/persons:d.visa_cost,paid:0,isPaid:false,persons,date:d.arrival};
     });
     return{budg,spent:[]};
   }
   return{budg:[],spent:[]};
 }
+// ── Date-frame scoping ──────────────────────────────────────────────────────────
+// Scopes the whole Budget screen to a window of time. Items with no resolvable date (e.g. a
+// manual expense logged without a date) are always included rather than silently excluded —
+// hiding real money just because it has no date attached would be worse than the date frame
+// being slightly inclusive at the edges. Manually-set flat category ceilings (cat.budget) have
+// no date of their own either, so those are always included in full, same as before.
+let budgetDateMode=localStorage.getItem('ae_budget_datemode')||'current-end'; // 'current-end' | 'total-tour' | 'custom'
+let budgetCustomStart=null,budgetCustomEnd=null;
+function budgetParsedDate(s){return /^\d{4}-\d{2}-\d{2}$/.test(s||'')?s:null;}
+function budgetTourBounds(){
+  const arrivals=cDests().map(d=>d.arrival).filter(Boolean).sort();
+  const departures=cDests().map(d=>d.departure).filter(Boolean).sort();
+  return{start:arrivals[0]||null,end:departures[departures.length-1]||null};
+}
+function budgetEffectiveRange(){
+  const bounds=budgetTourBounds();
+  const todayIso=calIso(new Date());
+  if(budgetDateMode==='total-tour')return{start:bounds.start,end:bounds.end};
+  if(budgetDateMode==='custom')return{start:budgetCustomStart||bounds.start,end:budgetCustomEnd||bounds.end};
+  return{start:todayIso,end:bounds.end}; // 'current-end' default
+}
+function budgetSetDateMode(mode){
+  budgetDateMode=mode;localStorage.setItem('ae_budget_datemode',mode);
+  if(mode!=='custom'){const r=budgetEffectiveRange();budgetCustomStart=r.start;budgetCustomEnd=r.end;}
+  renderContent();
+}
+function budgetSetCustomDate(which,val){
+  budgetDateMode='custom';localStorage.setItem('ae_budget_datemode','custom');
+  if(which==='start')budgetCustomStart=val;else budgetCustomEnd=val;
+  renderContent();
+}
+function budgetItemInRange(item,start,end){
+  if(!item.date)return true;
+  if(!start||!end)return true;
+  const itemEnd=item.endDate||item.date;
+  return item.date<=end&&itemEnd>=start;
+}
+
 function calcTotSpent(){
   const perPerson=budgetViewMode==='per';
+  const range=budgetEffectiveRange();
   return cur().budget.reduce((tot,cat)=>{
     const lk=getLinked(cat);
-    const manS=(cat.expenses||[]).reduce((s,e)=>{
+    const manS=(cat.expenses||[]).filter(e=>budgetItemInRange({date:budgetParsedDate(e.date)},range.start,range.end)).reduce((s,e)=>{
       const persons=e.persons>0?e.persons:1;
       return s+(perPerson?e.amount/persons:e.amount);
     },0);
-    const autoS=lk.spent.reduce((s,e)=>s+e.amt,0);
+    const autoS=lk.spent.filter(e=>budgetItemInRange(e,range.start,range.end)).reduce((s,e)=>s+e.amt,0);
     return tot+manS+autoS;
   },0);
 }
@@ -3896,27 +4026,66 @@ function calcTotSpent(){
 // same way each category row already computes its own totB. Previously this just summed the flat
 // c.budget numbers and ignored linked costs entirely, so a freshly imported tour with real
 // destination costs but no manually-typed category ceilings showed "$0 Total Budget" even though
-// Spent correctly showed a real number.
+// Spent correctly showed a real number. cat.budget itself has no date, so it's always included
+// in full — only the destination-linked portion is scoped to the date frame.
 function calcTotBudget(){
+  const range=budgetEffectiveRange();
   return cur().budget.reduce((tot,cat)=>{
     const lk=getLinked(cat);
-    const autoBudg=lk.budg.reduce((s,e)=>s+e.amt,0);
+    const autoBudg=lk.budg.filter(e=>budgetItemInRange(e,range.start,range.end)).reduce((s,e)=>s+e.amt,0);
     return tot+cat.budget+autoBudg;
   },0);
 }
+// Average cost per night across every BOOKED accommodation (has a hotel name set) within the
+// current date frame, regardless of whether it's been paid yet — paid status is irrelevant to
+// what a night actually costs. Respects the Per Person / All Travelers toggle like everything
+// else on this screen.
+function calcAvgCostPerNight(){
+  const perPerson=budgetViewMode==='per';
+  const range=budgetEffectiveRange();
+  const booked=cDests().filter(d=>d.hotel&&d.cost>0&&d.arrival&&d.departure)
+    .filter(d=>budgetItemInRange({date:d.arrival,endDate:d.departure},range.start,range.end));
+  let totCost=0,totNights=0;
+  booked.forEach(d=>{
+    const persons=d.persons>0?d.persons:1;
+    const nights=dBtw(d.arrival,d.departure);
+    if(nights<=0)return;
+    totCost+=perPerson?d.cost/persons:d.cost;
+    totNights+=nights;
+  });
+  return totNights>0?totCost/totNights:0;
+}
+const cBudgetAvailable=()=>budgetViewMode==='per'?(cur().budgetAvailablePer||0):(cur().budgetAvailableAll||0);
+// Asks for both figures at once so switching Per Person / All Travelers always has a real number
+// behind it instead of silently re-using one value for both. Whatever was entered last time stays
+// put (pre-filled) until the person explicitly changes it again.
+function budgetEditAvailable(){
+  const curPer=cur().budgetAvailablePer||0,curAll=cur().budgetAvailableAll||0;
+  const per=prompt('Total Available — Per Person ($):',curPer||'');
+  if(per!==null){const n=parseFloat(per);cur().budgetAvailablePer=isNaN(n)?0:n;}
+  const all=prompt('Total Available — All Travelers ($):',curAll||'');
+  if(all!==null){const n=parseFloat(all);cur().budgetAvailableAll=isNaN(n)?0:n;}
+  renderContent();
+}
 function renderBudget(){
+  if(budgetBreakdownMode)return renderBudgetBreakdown();
   const bud=cur().budget;
   const perPerson=budgetViewMode==='per';
+  const range=budgetEffectiveRange();
   const order=(cur().budgetOrder&&cur().budgetOrder.length?cur().budgetOrder:bud.map(c=>c.id));
   const ordCats=order.map(id=>bud.find(c=>c.id===id)).filter(Boolean);
   const totBudget=calcTotBudget();
   const totSpent=calcTotSpent();
+  const stillOwe=totBudget-totSpent;
+  const totAvailable=cBudgetAvailable();
+  const remaining=totAvailable-stillOwe;
+  const avgNight=calcAvgCostPerNight();
   const catRows=ordCats.map(c=>{
     const lk=getLinked(c);
-    const manS=(c.expenses||[]).reduce((s,e)=>{const persons=e.persons>0?e.persons:1;return s+(perPerson?e.amount/persons:e.amount);},0);
-    const autoS=lk.spent.reduce((s,e)=>s+e.amt,0);
+    const manS=(c.expenses||[]).filter(e=>budgetItemInRange({date:budgetParsedDate(e.date)},range.start,range.end)).reduce((s,e)=>{const persons=e.persons>0?e.persons:1;return s+(perPerson?e.amount/persons:e.amount);},0);
+    const autoS=lk.spent.filter(e=>budgetItemInRange(e,range.start,range.end)).reduce((s,e)=>s+e.amt,0);
     const totS=manS+autoS;
-    const autoBudg=lk.budg.reduce((s,e)=>s+e.amt,0);
+    const autoBudg=lk.budg.filter(e=>budgetItemInRange(e,range.start,range.end)).reduce((s,e)=>s+e.amt,0);
     const totB=c.budget+autoBudg;
     const pct=totB>0?Math.min(100,totS/totB*100):0;
     const isA=selBudCat===c.id;
@@ -3941,12 +4110,13 @@ function renderBudget(){
     const cat=bud.find(c=>c.id===selBudCat);
     if(cat){
       const lk=getLinked(cat);
-      const manExp=[...(cat.expenses||[])].sort((a,b)=>b.amount-a.amount);
-      const hasLk=lk.budg.length>0;
+      const linkedBudgInRange=lk.budg.filter(e=>budgetItemInRange(e,range.start,range.end));
+      const manExp=[...(cat.expenses||[])].filter(e=>budgetItemInRange({date:budgetParsedDate(e.date)},range.start,range.end)).sort((a,b)=>b.amount-a.amount);
+      const hasLk=linkedBudgInRange.length>0;
       let rows='';
       if(hasLk){
         rows+=`<div style="padding:.4rem .75rem;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui);background:rgba(255,255,255,.02)">Linked from destinations</div>`;
-        lk.budg.sort((a,b)=>b.amt-a.amt).forEach(e=>{
+        linkedBudgInRange.sort((a,b)=>b.amt-a.amt).forEach(e=>{
           const paidAmt=lk.spent.find(s=>s.id===e.id)?.amt||0;
           const personsNote=e.persons>1?`<div style="font-size:11px;color:var(--t3);margin-top:1px">${perPerson?`Split ${e.persons} ways`:`${e.persons} people total`}</div>`:'';
           rows+=`<div class="bexp" style="opacity:.85">
@@ -3959,7 +4129,7 @@ function renderBudget(){
         });
       }
       rows+=`<div style="padding:.4rem .75rem;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui);background:rgba(255,255,255,.02)">Manual expenses</div>`;
-      if(manExp.length===0)rows+=`<div style="padding:.75rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No manual expenses recorded</div>`;
+      if(manExp.length===0)rows+=`<div style="padding:.75rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No manual expenses recorded in this date frame</div>`;
       manExp.forEach(e=>{
         const persons=e.persons>0?e.persons:1;
         const shown=perPerson?e.amount/persons:e.amount;
@@ -3975,20 +4145,40 @@ function renderBudget(){
       </div>`;
     }
   }
+  const dateModeBtn=(mode,lbl)=>`<button onclick="budgetSetDateMode('${mode}')" style="border:none;background:${budgetDateMode===mode?'var(--gold)':'transparent'};color:${budgetDateMode===mode?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s;white-space:nowrap">${lbl}</button>`;
   return`<div class="panel">
-    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:.75rem">
-      <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:2px">
-        <button onclick="setBudgetViewMode('per')" style="border:none;background:${perPerson?'var(--gold)':'transparent'};color:${perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">Per Person</button>
-        <button onclick="setBudgetViewMode('all')" style="border:none;background:${!perPerson?'var(--gold)':'transparent'};color:${!perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">All Travelers</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;flex-wrap:wrap;gap:.6rem">
+      <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+        <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
+          ${dateModeBtn('current-end','Current → End')}${dateModeBtn('total-tour','Total Tour')}${dateModeBtn('custom','Custom')}
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input class="fi" type="date" value="${range.start||''}" onchange="budgetSetCustomDate('start',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+          <span style="color:var(--t3);font-size:12px">→</span>
+          <input class="fi" type="date" value="${range.end||''}" onchange="budgetSetCustomDate('end',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <button class="fbtn" onclick="toggleBudgetBreakdownMode()" title="See planned vs actual spend broken down by month and category"><i class="ti ti-calendar-stats"></i> Monthly Breakdown</button>
+        <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:2px">
+          <button onclick="setBudgetViewMode('per')" style="border:none;background:${perPerson?'var(--gold)':'transparent'};color:${perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">Per Person</button>
+          <button onclick="setBudgetViewMode('all')" style="border:none;background:${!perPerson?'var(--gold)':'transparent'};color:${!perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">All Travelers</button>
+        </div>
       </div>
     </div>
     <div class="sgrid">
-      <div class="scard"><div class="sval">$${Math.round(totBudget/1000)}k</div><div class="slbl">Total Budget</div></div>
+      <div class="scard"><div class="sval">$${Math.round(totBudget).toLocaleString()}</div><div class="slbl">Planned Spent</div></div>
       <div class="scard"><div class="sval" style="color:var(--red)">$${Math.round(totSpent).toLocaleString()}</div><div class="slbl">Spent</div></div>
-      <div class="scard"><div class="sval" style="color:var(--green)">$${Math.round(totBudget-totSpent).toLocaleString()}</div><div class="slbl">Remaining</div></div>
+      <div class="scard"><div class="sval" style="color:var(--gold)">$${Math.round(stillOwe).toLocaleString()}</div><div class="slbl">Still Owe</div></div>
+      <div class="scard" style="cursor:pointer" onclick="budgetEditAvailable()" title="Click to set Per Person and All Travelers amounts">
+        <div class="sval">$${Math.round(totAvailable).toLocaleString()}</div>
+        <div class="slbl">Total Available <i class="ti ti-edit" style="font-size:10px"></i></div>
+      </div>
+      <div class="scard"><div class="sval" style="color:${remaining>=0?'var(--green)':'var(--red)'}">$${Math.round(remaining).toLocaleString()}</div><div class="slbl">Remaining</div></div>
+      <div class="scard"><div class="sval">$${avgNight.toFixed(0)}</div><div class="slbl">Avg Cost / Night</div></div>
     </div>
     <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin:-.5rem 0 .75rem;line-height:1.5">
-      <i class="ti ti-info-circle"></i> Showing destination-linked costs and manual expenses ${perPerson?'split per person sharing each cost':'as full totals for all travelers'}. Manually-set category budget ceilings are entered as flat amounts and are not affected by this toggle.
+      <i class="ti ti-info-circle"></i> Scoped to ${fD(range.start)||'the start'} – ${fD(range.end)||'the end'}. Showing destination-linked costs and manual expenses ${perPerson?'split per person sharing each cost':'as full totals for all travelers'}. Manually-set category budget ceilings and undated expenses are always shown in full, regardless of the date frame. Total Available keeps separate Per Person and All Travelers figures — click the box to set or update either one.
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Categories</div>
@@ -3996,6 +4186,96 @@ function renderBudget(){
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No categories yet</div>'}</div>
     ${detHTML}
+  </div>`;
+}
+function budgetMonthKey(dateStr){return dateStr?dateStr.slice(0,7):null;}
+// Gathers every planned and actual amount across every category, each tagged with its resolved
+// date (or null for undated) so the breakdown can bucket them by month. A category's flat manual
+// ceiling (cat.budget) has no date of its own, so it lands in "No Date Defined" as a planned
+// amount, same logic as everywhere else on this screen.
+function budgetAllItemsByCategory(){
+  const perPerson=budgetViewMode==='per';
+  return cur().budget.map(cat=>{
+    const lk=getLinked(cat);
+    const plannedItems=lk.budg.map(e=>({amt:e.amt,date:e.date||null}));
+    if(cat.budget>0)plannedItems.push({amt:cat.budget,date:null});
+    const actualItems=[
+      ...lk.spent.map(e=>({amt:e.amt,date:e.date||null})),
+      ...(cat.expenses||[]).map(e=>{
+        const persons=e.persons>0?e.persons:1;
+        return{amt:perPerson?e.amount/persons:e.amount,date:budgetParsedDate(e.date)};
+      })
+    ];
+    return{cat,plannedItems,actualItems};
+  });
+}
+function budgetBdMonthRange(){
+  const bounds=budgetTourBounds();
+  const startM=budgetBdStartMonth||(bounds.start?bounds.start.slice(0,7):null);
+  const endM=budgetBdEndMonth||(bounds.end?bounds.end.slice(0,7):null);
+  return{startM,endM};
+}
+function budgetMonthsBetween(startM,endM){
+  if(!startM||!endM)return[];
+  const months=[];
+  let[y,m]=startM.split('-').map(Number);
+  const[ey,em]=endM.split('-').map(Number);
+  let safety=0;
+  while((y<ey||(y===ey&&m<=em))&&safety++<240){
+    months.push(`${y}-${String(m).padStart(2,'0')}`);
+    m++;if(m>12){m=1;y++;}
+  }
+  return months;
+}
+function renderBudgetBreakdown(){
+  const{startM,endM}=budgetBdMonthRange();
+  const months=budgetMonthsBetween(startM,endM);
+  const data=budgetAllItemsByCategory();
+  const catRowsFor=(mKeyMatch)=>{
+    let planned=0,actual=0;
+    const rows=data.map(({cat,plannedItems,actualItems})=>{
+      const p=plannedItems.filter(i=>mKeyMatch(i.date)).reduce((s,i)=>s+i.amt,0);
+      const a=actualItems.filter(i=>mKeyMatch(i.date)).reduce((s,i)=>s+i.amt,0);
+      if(p===0&&a===0)return'';
+      planned+=p;actual+=a;
+      return`<div class="drow"><span class="dlbl" style="color:${cat.color}">${esc(cat.name)}</span><span class="dval">Planned $${p.toLocaleString(undefined,{maximumFractionDigits:0})} · Actual $${a.toLocaleString(undefined,{maximumFractionDigits:0})}</span></div>`;
+    }).join('');
+    return{rows,planned,actual};
+  };
+  const monthSections=months.map(mKey=>{
+    const{rows,planned,actual}=catRowsFor(d=>budgetMonthKey(d)===mKey);
+    if(!rows)return'';
+    const[y,m]=mKey.split('-');
+    const label=new Date(parseInt(y),parseInt(m)-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    return`<div style="margin-bottom:.75rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
+      <div style="padding:.5rem .75rem;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+        <div style="font-size:13px;color:var(--t1);font-family:var(--font-display);font-weight:600">${label}</div>
+        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui)">Planned $${planned.toLocaleString(undefined,{maximumFractionDigits:0})} · Actual $${actual.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+      </div>
+      <div style="padding:.3rem .75rem">${rows}</div>
+    </div>`;
+  }).join('');
+  const noDate=catRowsFor(d=>!d);
+  const noDateHTML=noDate.rows?`<div style="margin-bottom:.75rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
+      <div style="padding:.5rem .75rem;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+        <div style="font-size:13px;color:var(--t1);font-family:var(--font-ui);font-weight:600">No Date Defined</div>
+        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui)">Planned $${noDate.planned.toLocaleString(undefined,{maximumFractionDigits:0})} · Actual $${noDate.actual.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+      </div>
+      <div style="padding:.3rem .75rem">${noDate.rows}</div>
+    </div>`:'';
+  return`<div class="panel">
+    <div class="frow">
+      <button class="fbtn" onclick="toggleBudgetBreakdownMode()"><i class="ti ti-arrow-left"></i> Back to Budget</button>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="fi" type="month" value="${startM||''}" onchange="budgetBdSetMonth('start',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+        <span style="color:var(--t3);font-size:12px">→</span>
+        <input class="fi" type="month" value="${endM||''}" onchange="budgetBdSetMonth('end',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+      </div>
+    </div>
+    <div class="sec-ttl">Planned vs Actual — by Month</div>
+    <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin:-.4rem 0 .75rem;line-height:1.5"><i class="ti ti-info-circle"></i> "No Date Defined" always shows in full, regardless of the month range above — those amounts have no date to filter by.</div>
+    ${noDateHTML}
+    ${monthSections||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No dated expenses in this month range.</div>'}
   </div>`;
 }
 function selBC(id){selBudCat=selBudCat===id?null:id;renderContent();}
@@ -4647,6 +4927,12 @@ function saveDest(){
   // older rendering paths that still expect a single human-readable event date string.
   d.event_date=d.event_start?(d.event_end&&d.event_end!==d.event_start?fD(d.event_start)+'–'+fD(d.event_end):fD(d.event_start)):'';
   if(!d.city){alert('Please enter a city name.');return;}
+  const existing=editDestId?dBy(editDestId):null;
+  if(existing&&d.status===existing.status){
+    d.statusManual=existing.statusManual; // status field wasn't touched — leave auto-tracking as it was
+  }else{
+    d.statusManual=(d.status!==computeAutoStatus(d)); // either new, or deliberately changed in the dropdown
+  }
   if(editDestId){const idx=cDests().findIndex(x=>x.id===editDestId);if(idx>=0)cur().destinations[idx]=d;}
   else cur().destinations.push(d);
   closeDestModal();curActId=d.act;curDestId=d.id;renderSB();renderContent();
