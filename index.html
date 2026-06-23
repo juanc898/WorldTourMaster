@@ -463,6 +463,64 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .globe-node-current{animation:globePulse 1.8s ease-in-out infinite}
 @keyframes globePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
 .globe-legend{position:absolute;bottom:5.6rem;left:1rem;z-index:10;display:flex;flex-direction:column;gap:4px;background:rgba(10,13,22,.6);backdrop-filter:blur(6px);border-radius:6px;padding:.5rem .7rem;max-width:200px}
+
+/* ── CALENDAR ── */
+.cal-toolbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}
+.cal-nav-grp{display:flex;align-items:center;gap:2px;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:2px}
+.cal-nav-btn{background:none;border:none;color:var(--t2);cursor:pointer;padding:5px 8px;border-radius:4px;font-size:14px;font-family:var(--font-ui);display:flex;align-items:center;transition:background .15s,color .15s}
+.cal-nav-btn:hover{background:rgba(201,168,76,.12);color:var(--gold)}
+.cal-label{font-size:15px;color:var(--t1);font-family:var(--font-display);font-weight:600;min-width:140px;text-align:center}
+.cal-view-tog{display:flex;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden}
+.cal-view-btn{background:none;border:none;padding:6px 12px;font-size:12px;font-family:var(--font-ui);color:var(--t3);cursor:pointer;transition:background .15s,color .15s}
+.cal-view-btn.active{background:var(--gold);color:var(--bg)}
+.cal-draft-banner{display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;margin-bottom:.6rem;background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);border-radius:var(--radius);font-family:var(--font-ui);font-size:12px;color:var(--t1);flex-wrap:wrap}
+.cal-conflict-banner{padding:.6rem .75rem;margin-top:.75rem;margin-bottom:.6rem;background:rgba(200,75,75,.1);border:1px solid rgba(200,75,75,.4);border-radius:var(--radius);font-family:var(--font-ui);font-size:12px;color:var(--t2);line-height:1.6}
+.cal-conflict-banner b{color:var(--red)}
+.cal-grid-wrap{background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.cal-daynames{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--bd)}
+.cal-dayname{padding:.4rem 0;text-align:center;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--font-ui)}
+.cal-week{position:relative;border-bottom:1px solid rgba(128,128,128,.1)}
+.cal-week:last-child{border-bottom:none}
+.cal-week-bg{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-day{border-right:1px solid rgba(128,128,128,.08);min-height:34px;padding:3px 3px 4px;transition:background .15s}
+.cal-day:last-child{border-right:none}
+.cal-day.other-month{opacity:.35}
+.cal-day.is-today .cal-daynum{background:var(--gold);color:var(--bg);border-radius:50%}
+.cal-day.drop-target{background:rgba(201,168,76,.1)}
+.cal-daynum{font-size:11px;color:var(--t2);font-family:var(--font-ui);width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cal-day-add{display:none;width:14px;height:14px;align-items:center;justify-content:center;border-radius:3px;color:var(--t3);cursor:pointer;font-size:11px;float:right}
+.cal-day:hover .cal-day-add{display:flex}
+.cal-chip-row{height:17px;margin-top:2px;position:relative}
+.cal-chip{position:absolute;top:0;left:0;height:15px;display:flex;align-items:center;gap:3px;padding:0 5px;font-size:10px;font-family:var(--font-ui);color:#fff;cursor:grab;overflow:hidden;white-space:nowrap;box-sizing:border-box;transition:filter .15s,box-shadow .2s;z-index:2}
+.cal-chip:hover{filter:brightness(1.18);z-index:3}
+.cal-chip.cont-l{border-top-left-radius:0;border-bottom-left-radius:0;margin-left:-1px}
+.cal-chip.cont-r{border-top-right-radius:0;border-bottom-right-radius:0;margin-right:-1px}
+.cal-chip:not(.cont-l){border-top-left-radius:8px;border-bottom-left-radius:8px}
+.cal-chip:not(.cont-r){border-top-right-radius:8px;border-bottom-right-radius:8px}
+.cal-chip.completed{opacity:.5;filter:saturate(.6)}
+.cal-chip.upcoming-soon{box-shadow:0 0 0 1px rgba(255,255,255,.25),0 0 9px 1px currentColor}
+.cal-chip.is-current{animation:calPulse 2.4s ease-in-out infinite}
+@keyframes calPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 0 0 3px rgba(255,255,255,.35)}}
+.cal-chip-dots{display:flex;gap:2px;flex-shrink:0}
+.cal-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.cal-dot.on{background:#4BC896;box-shadow:0 0 3px #4BC896}
+.cal-dot.off{background:#E05050}
+.cal-more-pill{position:absolute;left:2px;font-size:9px;color:var(--t3);font-family:var(--font-ui);cursor:pointer;padding:0 3px}
+.cal-more-pill:hover{color:var(--gold)}
+.cal-resize-handle{position:absolute;top:0;bottom:0;width:5px;cursor:ew-resize;z-index:4}
+.cal-resize-handle.l{left:0}.cal-resize-handle.r{right:0}
+/* Year view */
+.cal-year-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+.cal-mini-month{background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:.6rem;cursor:pointer;transition:border-color .15s,transform .15s}
+.cal-mini-month:hover{border-color:var(--gold-dim);transform:translateY(-1px)}
+.cal-mini-ttl{font-size:12px;color:var(--t1);font-family:var(--font-ui);font-weight:600;margin-bottom:.4rem;text-align:center}
+.cal-mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.cal-mini-cell{aspect-ratio:1;border-radius:2px;background:rgba(128,128,128,.08)}
+.cal-year-summary{display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem}
+/* Quick-view popup (reuses .mo/.modal but slightly tighter) */
+.cal-pop-section{margin-bottom:.6rem}
+.cal-pop-section:last-child{margin-bottom:0}
+
 @media(max-width:699px){
   .globe-wrap{height:calc(100vh - 96px);height:calc(100dvh - 96px)}
   .globe-hud{padding:.5rem .6rem}
@@ -490,6 +548,13 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   .hm{display:none}
   .rt-mobile-dates{display:block}
   .theme-pop{right:-40px;max-width:90vw}
+  .cal-year-grid{grid-template-columns:repeat(2,1fr)}
+  .cal-label{min-width:auto;font-size:13px}
+  .cal-day{min-height:30px;padding:2px}
+  .cal-daynum{font-size:10px;width:16px;height:16px}
+  .cal-chip{font-size:9px;height:14px}
+  .cal-chip-dots{display:none}
+  .cal-resize-handle{width:8px}
   #routeEditTbl{table-layout:fixed;width:100%}
   /* Row-number column dropped on phone — it wasn't worth the width it cost. */
   #routeEditTbl th:first-child,#routeEditTbl td:first-child{width:0;padding:0!important;border:none;overflow:hidden}
@@ -671,6 +736,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 <nav class="nav">
   <div class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Tour Overview</div>
   <div class="nav-tab" data-tab="route" onclick="switchTab('route',this)"><i class="ti ti-map-2"></i> Route</div>
+  <div class="nav-tab" data-tab="calendar" onclick="switchTab('calendar',this)"><i class="ti ti-calendar"></i> Calendar</div>
   <div class="nav-tab" data-tab="map" onclick="switchTab('map',this)"><i class="ti ti-world"></i> Map</div>
   <div class="nav-tab" data-tab="events" onclick="switchTab('events',this)"><i class="ti ti-confetti"></i> Events</div>
   <div class="nav-tab" data-tab="budget" onclick="switchTab('budget',this)"><i class="ti ti-chart-pie"></i> Budget</div>
@@ -802,6 +868,10 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 </div>
 <div class="mfoot"><button class="btng" onclick="closeEventCatModal()">Cancel</button><button class="btnp" onclick="saveEventCat()">Save</button></div>
 </div></div>
+<!-- CALENDAR QUICK-VIEW MODAL -->
+<div class="mo" id="calPopModal" style="display:none" onclick="if(event.target===this)calClosePopup()">
+<div class="modal" style="max-width:460px" id="calPopBody"></div>
+</div>
 <!-- TOUR MANAGE MODAL -->
 <div class="mo" id="tourModal" style="display:none" onclick="if(event.target===this)closeTourModal()">
 <div class="modal" style="max-width:440px"><div class="mhdr"><div class="mttl">Manage Tours</div><button class="mx" onclick="closeTourModal()">&#x2715;</button></div>
@@ -1313,6 +1383,7 @@ function renderContent(){
   const el=document.getElementById('mainContent');
   if(tab==='dashboard')el.innerHTML=curDestId&&dBy(curDestId)?renderProfile():renderDash();
   else if(tab==='route')el.innerHTML=renderRoute();
+  else if(tab==='calendar')el.innerHTML=renderCalendar();
   else if(tab==='map')el.innerHTML=renderMap();
   else if(tab==='events')el.innerHTML=renderEvents();
   else if(tab==='budget')el.innerHTML=renderBudget();
@@ -2727,6 +2798,409 @@ function project(lat,lng){
   p=rotateY(p,svgGlobe.rotY*Math.PI/180);
   p=rotateX(p,svgGlobe.rotX*Math.PI/180);
   return p; // p.z>0 means facing viewer (visible)
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────────────────────
+// A custom month/year calendar built to match the rest of the app's design system (no external
+// calendar library is loaded in this single-file app, so this is a from-scratch implementation
+// in the same spirit as FullCalendar/Notion Timeline: multi-day bars, drag-to-move, drag-edges-
+// to-resize, conflict detection, and a draft/Save/Cancel flow mirroring Edit Route).
+const CAL_STATUS_COLOR={planned:'#B8923C',confirmed:'#3DAB82',wishlist:'#8B4BC8',completed:'#5B8BC8',cancelled:'#A85050'};
+const CAL_MAX_SLOTS=4; // max stacked destination rows per week before collapsing into "+N more"
+let calView='month';
+let calCursor=new Date();calCursor.setHours(12,0,0,0);calCursor.setDate(1);
+let calYearCursor=new Date().getFullYear();
+let calDraft=null; // working copy of cur().destinations while dragging/resizing — null means "no pending changes", same draft/Save/Cancel pattern as Edit Route's routeDraft
+let calFilterStatus=null,calFilterCountry=null,calFilterMot=null,calFilterAccom=null,calFilterTransport=null;
+let calClipboard=null; // a copied destination, for the simplified "paste at this day" flow
+let calPopupId=null;
+let calDragId=null;
+let calResizeCtx=null;
+
+const calActiveDests=()=>calDraft||cur().destinations;
+function calIso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function calShiftIso(iso,n){const dt=new Date(iso+'T12:00:00');dt.setDate(dt.getDate()+n);return calIso(dt);}
+function calEnsureDraft(){if(!calDraft)calDraft=JSON.parse(JSON.stringify(cur().destinations));}
+function calHasDraftChanges(){
+  if(!calDraft)return false;
+  if(calDraft.length!==cur().destinations.length)return true;
+  return calDraft.some(d=>{const live=dBy(d.id);return live&&(live.arrival!==d.arrival||live.departure!==d.departure);});
+}
+function calSaveChanges(){
+  if(!calHasDraftChanges()){calDraft=null;renderContent();return;}
+  if(!confirm('Save these date changes to your itinerary? This will update the live plan.'))return;
+  cur().destinations=calDraft;calDraft=null;autoStatus();renderContent();
+}
+function calCancelChanges(){
+  if(!calHasDraftChanges()){calDraft=null;renderContent();return;}
+  if(!confirm('Discard these unsaved date changes?'))return;
+  calDraft=null;renderContent();
+}
+function calSetView(v){calView=v;renderContent();}
+function calNav(delta){
+  if(calView==='month')calCursor=new Date(calCursor.getFullYear(),calCursor.getMonth()+delta,1,12);
+  else calYearCursor+=delta;
+  renderContent();
+}
+function calGoToday(){
+  const t=new Date();
+  if(calView==='month')calCursor=new Date(t.getFullYear(),t.getMonth(),1,12);
+  else calYearCursor=t.getFullYear();
+  renderContent();
+}
+function calToggleFilterMenu(){document.getElementById('calFilterMenu')?.classList.toggle('open');}
+function calSetFilter(key,val){
+  if(key==='status')calFilterStatus=(calFilterStatus===val)?null:val;
+  else if(key==='country')calFilterCountry=(calFilterCountry===val)?null:val;
+  else if(key==='mot')calFilterMot=(calFilterMot===val)?null:val;
+  else if(key==='accom')calFilterAccom=(calFilterAccom===val)?null:val;
+  else if(key==='transport')calFilterTransport=(calFilterTransport===val)?null:val;
+  renderContent();
+}
+function calClearFilters(){calFilterStatus=null;calFilterCountry=null;calFilterMot=null;calFilterAccom=null;calFilterTransport=null;renderContent();}
+function calMatchesFilters(d){
+  if(calFilterStatus&&d.status!==calFilterStatus)return false;
+  if(calFilterCountry&&d.country!==calFilterCountry)return false;
+  if(calFilterMot&&d.mot!==calFilterMot)return false;
+  if(calFilterAccom==='missing'&&d.hotel)return false;
+  if(calFilterAccom==='with'&&!d.hotel)return false;
+  if(calFilterTransport==='missing'&&(d.t_company||d.t_ref))return false;
+  if(calFilterTransport==='with'&&!(d.t_company||d.t_ref))return false;
+  return true;
+}
+
+function calBuildWeeks(year,month){
+  const firstOfMonth=new Date(year,month,1,12);
+  const startOffset=firstOfMonth.getDay();
+  let cur=new Date(year,month,1-startOffset,12);
+  const weeks=[];let safety=0,seenInMonth=false;
+  while(safety++<6){
+    const week=[];
+    for(let i=0;i<7;i++){
+      const inMonth=cur.getMonth()===month;
+      if(inMonth)seenInMonth=true;
+      week.push({date:new Date(cur),iso:calIso(cur),inMonth});
+      cur.setDate(cur.getDate()+1);
+    }
+    weeks.push(week);
+    if(seenInMonth&&week[6].date.getMonth()!==month&&week[6].date>firstOfMonth)break;
+  }
+  return weeks;
+}
+// Figures out which destinations touch a given week, clips each to that week's 7 columns, and
+// greedily assigns each a stacking "slot" so overlapping stays never render on top of each other —
+// the same technique Google Calendar's month view uses for multi-day events.
+function calWeekSegments(week,dests){
+  const wStart=week[0].iso,wEnd=week[6].iso;
+  const inWeek=dests.filter(d=>d.arrival&&d.departure&&d.arrival<=wEnd&&d.departure>=wStart&&calMatchesFilters(d));
+  const segs=inWeek.map(d=>{
+    let startIdx=week.findIndex(w=>w.iso>=d.arrival);if(startIdx<0)startIdx=0;
+    let endIdx=0;for(let i=6;i>=0;i--){if(week[i].iso<=d.departure){endIdx=i;break;}}
+    return{d,startIdx,endIdx,startsHere:week[startIdx].iso===d.arrival,endsHere:week[endIdx].iso===d.departure,slot:0};
+  }).sort((a,b)=>{
+    if(a.d.arrival!==b.d.arrival)return a.d.arrival<b.d.arrival?-1:1;
+    return(b.endIdx-b.startIdx)-(a.endIdx-a.startIdx);
+  });
+  const slots=[];
+  segs.forEach(s=>{
+    let slot=0;
+    while(true){
+      const taken=slots[slot]||(slots[slot]=[]);
+      if(!taken.some(([a,b])=>!(s.endIdx<a||s.startIdx>b))){taken.push([s.startIdx,s.endIdx]);s.slot=slot;break;}
+      slot++;
+    }
+  });
+  return segs;
+}
+function calRenderMonth(){
+  const y=calCursor.getFullYear(),m=calCursor.getMonth();
+  const weeks=calBuildWeeks(y,m);
+  const dests=calActiveDests();
+  const todayIso=calIso(new Date());
+  const soonIso=calIso(new Date(Date.now()+12*864e5));
+  const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const weeksHTML=weeks.map(week=>{
+    const segs=calWeekSegments(week,dests);
+    const maxSlot=segs.length?Math.max(...segs.map(s=>s.slot)):-1;
+    const visibleSegs=segs.filter(s=>s.slot<CAL_MAX_SLOTS);
+    const hiddenCount=segs.length-visibleSegs.length;
+    const barsHeight=Math.max(0,Math.min(maxSlot+1,CAL_MAX_SLOTS))*17;
+    const weekHeight=27+barsHeight+(hiddenCount>0?13:0)+5;
+    const bgHTML=week.map(day=>{
+      const isToday=day.iso===todayIso;
+      return`<div class="cal-day ${day.inMonth?'':'other-month'} ${isToday?'is-today':''}" data-iso="${day.iso}"
+        ondragover="calDragOverCell(event)" ondrop="calDropOnCell(event,'${day.iso}')" ondragleave="this.classList.remove('drop-target')">
+        <div class="cal-daynum">${day.date.getDate()}</div>
+        <span class="cal-day-add" onclick="calAddAt('${day.iso}')" title="Add destination here"><i class="ti ti-plus"></i></span>
+      </div>`;
+    }).join('');
+    const barsHTML=visibleSegs.map(s=>{
+      const d=s.d,am=aM(d.act);
+      const color=CAL_STATUS_COLOR[d.status]||CAL_STATUS_COLOR.planned;
+      const isCompleted=d.departure<todayIso&&d.status!=='cancelled';
+      const isCurrent=d.arrival<=todayIso&&d.departure>=todayIso;
+      const isSoon=!isCurrent&&!isCompleted&&d.arrival>=todayIso&&d.arrival<=soonIso;
+      const accomOn=!!d.hotel,transOn=!!(d.t_company||d.t_ref);
+      const nights=dBtw(d.arrival,d.departure);
+      const span=s.endIdx-s.startIdx;
+      const label=span>=2?`${d.flag||'📍'} ${esc(d.city)}${nights>0?' · '+nights+'n':''}`:span===1?`${d.flag||'📍'} ${esc(d.city)}`:`${d.flag||'📍'}`;
+      return`<div class="cal-chip ${isCompleted?'completed':''} ${isSoon?'upcoming-soon':''} ${isCurrent?'is-current':''} ${s.startsHere?'':'cont-l'} ${s.endsHere?'':'cont-r'}"
+        style="grid-column:${s.startIdx+1}/${s.endIdx+2};grid-row:${s.slot+1};background:${color};color:${color}"
+        draggable="true" ondragstart="calDragStart(event,'${d.id}')" ondragend="calDragEnd(event)"
+        onclick="event.stopPropagation();calOpenPopup('${d.id}')" title="${esc(d.city)}, ${esc(d.country)} · ${fD(d.arrival)} – ${fD(d.departure)}">
+        <span style="color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">${isCompleted?'✓ ':''}${label}</span>
+        ${span>=1?`<span class="cal-chip-dots"><span class="cal-dot ${accomOn?'on':'off'}" title="Accommodation ${accomOn?'booked':'missing'}"></span><span class="cal-dot ${transOn?'on':'off'}" title="Transportation ${transOn?'booked':'missing'}"></span></span>`:''}
+        ${s.startsHere?`<div class="cal-resize-handle l" onmousedown="calResizeStart(event,'${d.id}','l')"></div>`:''}
+        ${s.endsHere?`<div class="cal-resize-handle r" onmousedown="calResizeStart(event,'${d.id}','r')"></div>`:''}
+      </div>`;
+    }).join('');
+    return`<div class="cal-week" style="height:${weekHeight}px">
+      <div class="cal-week-bg" style="height:${weekHeight}px">${bgHTML}</div>
+      <div class="cal-week-bars" style="top:27px;height:${barsHeight}px;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:17px;position:absolute;left:2px;right:2px">${barsHTML}</div>
+      ${hiddenCount>0?`<div class="cal-more-pill" style="top:${27+barsHeight}px" onclick="calShowDayList('${week[0].iso}','${week[6].iso}')">+${hiddenCount} more</div>`:''}
+    </div>`;
+  }).join('');
+  return`<div class="cal-grid-wrap">
+    <div class="cal-daynames">${dayNames.map(n=>`<div class="cal-dayname">${n}</div>`).join('')}</div>
+    ${weeksHTML}
+  </div>`;
+}
+function calShowDayList(wStart,wEnd){
+  const dests=calActiveDests().filter(d=>d.arrival&&d.departure&&d.arrival<=wEnd&&d.departure>=wStart&&calMatchesFilters(d))
+    .sort((a,b)=>a.arrival<b.arrival?-1:1);
+  const rows=dests.map(d=>`<div class="drow" style="cursor:pointer" onclick="calClosePopup();calOpenPopup('${d.id}')"><span class="dlbl">${d.flag||'📍'} ${esc(d.city)}, ${esc(d.country)}</span><span class="dval">${fD(d.arrival)} – ${fD(d.departure)}</span></div>`).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Destinations this week</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div><div class="mbody">${rows}</div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+
+// ── Year view ──
+function calRenderYear(){
+  const year=calYearCursor;
+  const dests=calActiveDests().filter(calMatchesFilters);
+  const countries=new Set(dests.filter(d=>d.status!=='cancelled').map(d=>d.country));
+  const totalNights=dests.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
+  const monthsHTML=Array.from({length:12},(_,m)=>{
+    const monthName=new Date(year,m,1).toLocaleDateString('en-US',{month:'long'});
+    const daysInMonth=new Date(year,m+1,0).getDate();
+    const firstDow=new Date(year,m,1).getDay();
+    const cells=[];
+    for(let i=0;i<firstDow;i++)cells.push('<div class="cal-mini-cell" style="background:none"></div>');
+    for(let day=1;day<=daysInMonth;day++){
+      const iso=calIso(new Date(year,m,day,12));
+      const match=dests.find(d=>d.arrival&&d.departure&&d.arrival<=iso&&d.departure>=iso);
+      const color=match?(CAL_STATUS_COLOR[match.status]||CAL_STATUS_COLOR.planned):null;
+      cells.push(`<div class="cal-mini-cell" style="${color?`background:${color}`:''}" title="${match?esc(match.city)+', '+esc(match.country):''}"></div>`);
+    }
+    return`<div class="cal-mini-month" onclick="calJumpToMonth(${year},${m})">
+      <div class="cal-mini-ttl">${monthName}</div>
+      <div class="cal-mini-grid">${cells.join('')}</div>
+    </div>`;
+  }).join('');
+  return`<div class="cal-year-summary">
+    <div><span class="sval">${countries.size}</span><span style="font-size:12px;color:var(--t3);font-family:var(--font-ui)"> countries</span></div>
+    <div><span class="sval">${totalNights}</span><span style="font-size:12px;color:var(--t3);font-family:var(--font-ui)"> nights planned</span></div>
+    <div><span class="sval">${dests.length}</span><span style="font-size:12px;color:var(--t3);font-family:var(--font-ui)"> destinations</span></div>
+  </div>
+  <div class="cal-year-grid">${monthsHTML}</div>`;
+}
+function calJumpToMonth(year,month){calCursor=new Date(year,month,1,12);calView='month';renderContent();}
+
+// ── Drag-to-move ──
+function calDragStart(e,id){
+  if(calPopupId)calClosePopup();
+  calDragId=id;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',id);
+  setTimeout(()=>{e.target.style.opacity='.35';},0);
+}
+function calDragEnd(e){e.target.style.opacity='';calDragId=null;}
+function calDragOverCell(e){e.preventDefault();e.currentTarget.classList.add('drop-target');}
+function calDropOnCell(e,iso){
+  e.preventDefault();e.currentTarget.classList.remove('drop-target');
+  const id=calDragId||e.dataTransfer.getData('text/plain');
+  if(!id)return;
+  calEnsureDraft();
+  const d=calDraft.find(x=>x.id===id);if(!d||!d.arrival)return;
+  const deltaDays=dBtw(d.arrival,iso);
+  if(!deltaDays)return;
+  d.arrival=calShiftIso(d.arrival,deltaDays);
+  d.departure=calShiftIso(d.departure,deltaDays);
+  renderContent();
+}
+// ── Drag-the-edges to extend/shorten ── (commits on release rather than live-previewing every
+// pixel of movement, which keeps it light — the trade-off being you see the new dates once you
+// let go rather than while dragging)
+function calResizeStart(e,id,edge){
+  e.preventDefault();e.stopPropagation();
+  const weekEl=e.target.closest('.cal-week');
+  const dayCell=weekEl?weekEl.querySelector('.cal-day'):null;
+  const dayWidth=dayCell?dayCell.getBoundingClientRect().width:40;
+  calResizeCtx={id,edge,startX:e.clientX,dayWidth};
+  document.addEventListener('mouseup',calResizeEnd);
+}
+function calResizeEnd(e){
+  document.removeEventListener('mouseup',calResizeEnd);
+  if(!calResizeCtx)return;
+  const{id,edge,startX,dayWidth}=calResizeCtx;
+  const deltaDays=Math.round((e.clientX-startX)/dayWidth);
+  calResizeCtx=null;
+  if(!deltaDays)return;
+  calEnsureDraft();
+  const d=calDraft.find(x=>x.id===id);if(!d)return;
+  if(edge==='l'){
+    let na=calShiftIso(d.arrival,deltaDays);
+    if(na>=d.departure)na=d.departure;
+    d.arrival=na;
+  }else{
+    let nd=calShiftIso(d.departure,deltaDays);
+    if(nd<=d.arrival)nd=d.arrival;
+    d.departure=nd;
+  }
+  renderContent();
+}
+// ── Add / Copy / Duplicate / Paste ──
+function calAddAt(iso){
+  if(calClipboard&&confirm(`Paste "${calClipboard.city}" here, starting ${fD(iso)}?\n\n(Cancel to add a brand-new destination instead.)`)){
+    const span=dBtw(calClipboard.arrival,calClipboard.departure);
+    const copy=JSON.parse(JSON.stringify(calClipboard));copy.id=uid();copy.arrival=iso;copy.departure=calShiftIso(iso,span);
+    cDests().push(copy);renderContent();return;
+  }
+  openDestModal();
+  const a=document.getElementById('f_arrival'),dep=document.getElementById('f_departure');
+  if(a)a.value=iso;if(dep)dep.value=iso;
+  if(typeof recalcD==='function')recalcD();
+}
+function calCopy(id){
+  const d=calActiveDests().find(x=>x.id===id);
+  if(d){calClipboard=JSON.parse(JSON.stringify(d));}
+  calClosePopup();renderContent();
+}
+function calDuplicate(id){
+  const d=cDests().find(x=>x.id===id);if(!d)return;
+  const copy=JSON.parse(JSON.stringify(d));copy.id=uid();
+  cDests().push(copy);
+  calClosePopup();renderContent();
+}
+function calClearClipboard(){calClipboard=null;renderContent();}
+
+// ── Quick-view popup ──
+function calOpenPopup(id){
+  calPopupId=id;
+  document.getElementById('calPopBody').innerHTML=calPopupHTML(id);
+  document.getElementById('calPopModal').style.display='flex';
+}
+function calClosePopup(){
+  const m=document.getElementById('calPopModal');if(m)m.style.display='none';
+  calPopupId=null;
+}
+function calPopupHTML(id){
+  const d=calActiveDests().find(x=>x.id===id);if(!d)return'';
+  const am=aM(d.act);
+  const nights=dBtw(d.arrival,d.departure);
+  const accomOn=!!d.hotel,transOn=!!(d.t_company||d.t_ref);
+  return`<div class="mhdr"><div class="mttl">${d.flag||'📍'} ${esc(d.city)}, ${esc(d.country)}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+  <div class="mbody">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem;flex-wrap:wrap">
+      <span class="${scls(d.status)}">${d.status}</span>
+      <span class="tag" style="color:${am.color}">${esc(am.name)}</span>
+      <span style="font-size:11px;color:var(--t3);font-family:var(--font-ui)">${fD(d.arrival)} → ${fD(d.departure)} · ${nights}n</span>
+    </div>
+    <div class="cal-pop-section"><div class="bttl">Booking Status</div>
+      <div class="drow"><span class="dlbl">Accommodation</span><span class="dval" style="background:none;padding:0;color:${accomOn?'#4BC896':'#E05050'}">${accomOn?'✓ '+esc(d.hotel):'✗ Not booked'}</span></div>
+      <div class="drow"><span class="dlbl">Transportation</span><span class="dval" style="background:none;padding:0;color:${transOn?'#4BC896':'#E05050'}">${transOn?'✓ '+esc(d.t_company||d.mot||'Booked'):'✗ Not booked'}</span></div>
+    </div>
+    ${d.event?`<div class="cal-pop-section"><div class="bttl">Event</div><div class="drow"><span class="dlbl">${esc(d.event)}</span><span class="dval gld">${esc(d.event_type||'')}</span></div></div>`:''}
+    <div class="cal-pop-section"><div class="bttl">Budget</div>
+      <div class="drow"><span class="dlbl">Hotel cost</span><span class="dval">${d.cost>0?'$'+parseFloat(d.cost).toFixed(2):'—'}</span></div>
+      <div class="drow"><span class="dlbl">Transport cost</span><span class="dval">${d.t_cost>0?'$'+parseFloat(d.t_cost).toFixed(2):'—'}</span></div>
+      ${d.event_cost>0?`<div class="drow"><span class="dlbl">Event cost</span><span class="dval">$${parseFloat(d.event_cost).toFixed(2)}</span></div>`:''}
+    </div>
+    ${d.notes?`<div class="cal-pop-section"><div class="bttl">Notes</div><div class="notes-box">${esc(d.notes)}</div></div>`:''}
+  </div>
+  <div class="mfoot" style="flex-wrap:wrap;gap:6px">
+    <button class="btng" onclick="calCopy('${d.id}')"><i class="ti ti-copy"></i> Copy</button>
+    <button class="btng" onclick="calDuplicate('${d.id}')"><i class="ti ti-stack-2"></i> Duplicate</button>
+    <button class="btnp" onclick="calClosePopup();openDestModal('${d.id}')"><i class="ti ti-edit"></i> Edit Full Details</button>
+  </div>`;
+}
+
+// ── Conflict detection ── (overlapping stays + the existing Schengen 90/180 calculator, reused
+// as-is from the Visas tab so the two stay perfectly in sync)
+function calDetectConflicts(){
+  const dests=calActiveDests().filter(d=>d.status!=='cancelled'&&d.arrival&&d.departure).sort((a,b)=>a.arrival<b.arrival?-1:1);
+  const overlaps=[];
+  for(let i=0;i<dests.length;i++){
+    for(let j=i+1;j<dests.length;j++){
+      const a=dests[i],b=dests[j];
+      if(a.arrival<b.departure&&a.departure>b.arrival&&(a.city!==b.city||a.country!==b.country)){
+        overlaps.push([a,b]);
+      }
+    }
+  }
+  const schengenDests=dests.filter(d=>SCHENGEN_COUNTRIES.has(d.country));
+  const schengenResult=calcSchengenUsage(schengenDests.map(d=>({start:d.arrival,end:d.departure})));
+  return{overlaps,schengenResult};
+}
+
+// ── Main render ──
+function renderCalendar(){
+  const draftActive=calHasDraftChanges();
+  const countries=[...new Set(cDests().map(d=>d.country))].sort();
+  const mots=[...new Set(cDests().map(d=>d.mot).filter(Boolean))].sort();
+  const filterMenuHTML=`
+    <div class="fmi" onclick="calSetFilter('status',null)" style="${!calFilterStatus?'color:var(--gold)':''}">All statuses</div>
+    ${['planned','confirmed','wishlist','completed','cancelled'].map(s=>`<div class="fmi" onclick="calSetFilter('status','${s}')" style="${calFilterStatus===s?'color:var(--gold)':''}">${s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
+    <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
+    <div class="fmi" onclick="calSetFilter('accom','missing')" style="${calFilterAccom==='missing'?'color:var(--gold)':''}">Missing accommodation</div>
+    <div class="fmi" onclick="calSetFilter('accom','with')" style="${calFilterAccom==='with'?'color:var(--gold)':''}">Has accommodation</div>
+    <div class="fmi" onclick="calSetFilter('transport','missing')" style="${calFilterTransport==='missing'?'color:var(--gold)':''}">Missing transportation</div>
+    <div class="fmi" onclick="calSetFilter('transport','with')" style="${calFilterTransport==='with'?'color:var(--gold)':''}">Has transportation</div>
+    <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
+    <div style="padding:.3rem .6rem;font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em">Country</div>
+    ${countries.map(c=>`<div class="fmi" onclick="calSetFilter('country','${esc(c).replace(/'/g,"\\'")}')" style="${calFilterCountry===c?'color:var(--gold)':''}">${esc(c)}</div>`).join('')}
+    ${mots.length?`<div style="border-top:1px solid var(--bd);margin:.3rem 0"></div><div style="padding:.3rem .6rem;font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em">Transport type</div>${mots.map(t=>`<div class="fmi" onclick="calSetFilter('mot','${esc(t).replace(/'/g,"\\'")}')" style="${calFilterMot===t?'color:var(--gold)':''}">${esc(t)}</div>`).join('')}`:''}
+    <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
+    <div class="fmi" onclick="calClearFilters()">Clear all filters</div>
+  `;
+  const activeFilterCount=[calFilterStatus,calFilterCountry,calFilterMot,calFilterAccom,calFilterTransport].filter(Boolean).length;
+  const conflicts=calDetectConflicts();
+  const totalConflicts=conflicts.overlaps.length+(conflicts.schengenResult.violation?1:0);
+  const conflictHTML=totalConflicts?`<div class="cal-conflict-banner"><i class="ti ti-alert-triangle"></i> <b>${totalConflicts} potential conflict${totalConflicts>1?'s':''}</b> detected
+    <ul style="margin:.4rem 0 0 1.1rem;padding:0">
+      ${conflicts.overlaps.slice(0,4).map(([a,b])=>`<li>${a.flag||''} ${esc(a.city)} and ${b.flag||''} ${esc(b.city)} overlap on the calendar — you can't be in both at once.</li>`).join('')}
+      ${conflicts.overlaps.length>4?`<li>+ ${conflicts.overlaps.length-4} more overlapping date range${conflicts.overlaps.length-4>1?'s':''}.</li>`:''}
+      ${conflicts.schengenResult.violation?`<li>Schengen 90/180-day limit exceeded — first crossed around ${fD(conflicts.schengenResult.violationDate)}. See the Visas tab for the full breakdown.</li>`:''}
+    </ul>
+  </div>`:'';
+  const draftHTML=draftActive?`<div class="cal-draft-banner"><i class="ti ti-pencil"></i> You have unsaved date changes.
+    <button class="btnp" style="padding:4px 10px;font-size:11px" onclick="calSaveChanges()">Save Changes</button>
+    <button class="btng" style="padding:4px 10px;font-size:11px" onclick="calCancelChanges()">Cancel Changes</button>
+  </div>`:'';
+  const monthLabel=calCursor.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  return`<div class="panel">
+    ${draftHTML}
+    <div class="cal-toolbar">
+      <div class="cal-view-tog">
+        <button class="cal-view-btn ${calView==='month'?'active':''}" onclick="calSetView('month')">Month</button>
+        <button class="cal-view-btn ${calView==='year'?'active':''}" onclick="calSetView('year')">Year</button>
+      </div>
+      <div class="cal-nav-grp">
+        <button class="cal-nav-btn" onclick="calNav(-1)"><i class="ti ti-chevron-left"></i></button>
+        <button class="cal-nav-btn" onclick="calGoToday()" style="font-size:11px">Today</button>
+        <button class="cal-nav-btn" onclick="calNav(1)"><i class="ti ti-chevron-right"></i></button>
+      </div>
+      <div class="cal-label">${calView==='month'?monthLabel:calYearCursor}</div>
+      <div style="position:relative">
+        <button class="fbtn" onclick="calToggleFilterMenu()"><i class="ti ti-filter"></i> Filters${activeFilterCount?' ('+activeFilterCount+')':''} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="calFilterMenu" style="max-height:340px;overflow-y:auto">${filterMenuHTML}</div>
+      </div>
+      <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>
+      ${calClipboard?`<span style="font-size:11px;color:var(--gold);font-family:var(--font-ui)"><i class="ti ti-clipboard"></i> "${esc(calClipboard.city)}" copied — click a day's + to paste it there <button class="abtn" onclick="calClearClipboard()" style="padding:0 4px;font-size:10px">✕</button></span>`:''}
+    </div>
+    ${calView==='month'?calRenderMonth():calRenderYear()}
+    ${conflictHTML}
+    <div style="margin-top:.6rem;font-family:var(--font-ui);font-size:11px;color:var(--t3);text-align:center">Drag a destination to move it · drag its edges to extend or shorten · click it for details · hover a day for a quick add</div>
+  </div>`;
 }
 
 function renderMap(){
