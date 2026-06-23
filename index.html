@@ -86,7 +86,7 @@ body{font-size:15px;transition:background .3s,color .3s}
   --green:#3F7D5C;--red:#9C3B3B;--blue:#2F5F8A;--purple:#5B4A8A;
   --font-display:'Playfair Display',Georgia,serif;
   --font-body:'EB Garamond',Georgia,serif;--font-ui:'EB Garamond',Georgia,serif;
-  --radius:1px;--shadow:0 2px 8px rgba(80,60,20,.08);--glow:none;
+  --radius:6px;--shadow:0 2px 8px rgba(80,60,20,.08);--glow:none;
   --card-bg:var(--sf);--accent-grad:linear-gradient(135deg,var(--gold-dim),var(--gold));
   --navy:#1C2B45;
 }
@@ -200,6 +200,13 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="punk"] .re-dest-name{font-size:15px!important}
 [data-theme="punk"] .tourovr-act-name{font-size:13px!important}
 [data-theme="classic"] .tourovr-act-name{font-size:13px!important}
+[data-theme="classic"] .act-nm{font-size:13px}
+[data-theme="classic"] .act-sub{font-size:12px}
+[data-theme="classic"] .tour-quote{font-size:14px}
+[data-theme="classic"] .sb-planned,[data-theme="modern"] .sb-planned{background:rgba(20,130,145,.14);color:#0E6E7E}
+[data-theme="classic"] .sb-partial,[data-theme="modern"] .sb-partial{background:rgba(150,125,20,.16);color:#7A6314}
+[data-theme="classic"] .sb-wishlist,[data-theme="modern"] .sb-wishlist{background:rgba(160,50,170,.14);color:#8C3A93}
+[data-theme="classic"] .sb-completed,[data-theme="modern"] .sb-completed{background:rgba(90,90,100,.16);color:#5A5A64}
 [data-theme="futurist"] .tourovr-act-name{font-size:13px!important}
 [data-theme="punk"] .tour-sel{background:#1A1A1A;color:#fff;border-color:#333}
 [data-theme="punk"] .scard,[data-theme="punk"] .pblk,[data-theme="punk"] .pblk-f,[data-theme="punk"] .modal,[data-theme="punk"] .ev-item,[data-theme="punk"] .bkt,[data-theme="punk"] .bcat{
@@ -334,12 +341,12 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .abtn.del:hover{border-color:var(--red);color:var(--red)}
 /* STATUS BADGES */
 .sbadge{font-size:11px;padding:2px 7px;border-radius:var(--radius);font-family:var(--font-ui);white-space:nowrap;text-transform:capitalize}
-.sb-planned{background:rgba(139,105,20,.25);color:#D4A84C}
+.sb-planned{background:rgba(75,200,216,.18);color:#4BC8D8}
 .sb-confirmed{background:rgba(75,200,150,.18);color:#4BC896}
 .sb-cancelled{background:rgba(200,75,75,.15);color:#C84B4B}
-.sb-wishlist{background:rgba(139,75,200,.18);color:#9B5BD8}
-.sb-completed{background:rgba(75,139,200,.18);color:#5B9BD8}
-.sb-partial{background:rgba(216,140,75,.2);color:#D88C4B}
+.sb-wishlist{background:rgba(216,140,230,.18);color:#E08CE6}
+.sb-completed{background:rgba(190,190,196,.18);color:#C4C4CC}
+.sb-partial{background:rgba(216,200,75,.2);color:#D8C84B}
 /* ROUTE TABLE */
 .rtbl{width:100%;border-collapse:collapse;font-family:var(--font-ui);font-size:14px}
 .rtbl th{padding:.4rem .6rem;text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--bd);font-weight:400;background:var(--sf)}
@@ -608,7 +615,10 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
      destination names under Journey Acts in the left pane (.dest-city), appearance for appearance. ── */
   .rt-dest-name{font-size:12px!important}
   [data-theme="futurist"] .rt-dest-name{font-size:14px!important}
-  [data-theme="classic"] .rt-dest-name{font-size:13px!important}
+  [data-theme="classic"] .rt-dest-name{font-size:14px!important}
+  [data-theme="classic"] .act-nm{font-size:12px}
+  [data-theme="classic"] .act-sub{font-size:11px}
+  [data-theme="classic"] .tour-quote{font-size:13px}
   .re-dest-name{font-size:11px!important}
   [data-theme="futurist"] .re-dest-name{font-size:13px!important}
   [data-theme="classic"] .re-dest-name{font-size:12px!important}
@@ -880,6 +890,28 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <div class="fg"><label class="flbl">Color</label><input class="fi" id="eventcat_color" type="color" value="#C9A84C" style="height:42px;padding:4px"/></div>
 </div>
 <div class="mfoot"><button class="btng" onclick="closeEventCatModal()">Cancel</button><button class="btnp" onclick="saveEventCat()">Save</button></div>
+</div></div>
+<!-- BUDGET EXPENSE MODAL -->
+<div class="mo" id="budExpModal" style="display:none" onclick="if(event.target===this)closeBudExpModal()">
+<div class="modal" style="max-width:440px">
+<div class="mhdr"><div class="mttl" id="budExpModalTitle">Add Expense</div><button class="mx" onclick="closeBudExpModal()">&#x2715;</button></div>
+<div class="mbody">
+  <div class="fg"><label class="flbl">Description</label><input class="fi" id="bexp_label" type="text" placeholder="e.g. Airport taxi"/></div>
+  <div class="f2">
+    <div class="fg"><label class="flbl">Planned Amount ($)</label><input class="fi" id="bexp_planned" type="number" step="0.01" placeholder="0.00"/></div>
+    <div class="fg"><label class="flbl">Paid Amount ($)</label><input class="fi" id="bexp_amount" type="number" step="0.01" placeholder="0.00"/></div>
+  </div>
+  <div class="f2">
+    <div class="fg"><label class="flbl">Persons sharing this</label><input class="fi" id="bexp_persons" type="number" min="1" value="1"/></div>
+    <div class="fg"><label class="flbl">Date</label><input class="fi" id="bexp_date" type="date" onchange="toggleBexpRecur()"/></div>
+  </div>
+  <div class="fg" style="display:flex;align-items:center;gap:8px;margin-top:.25rem" id="bexpRecurRow">
+    <input type="checkbox" id="bexp_recurrent" onchange="toggleBexpRecur()" style="width:16px;height:16px;flex-shrink:0"/>
+    <label for="bexp_recurrent" style="font-size:13px;color:var(--t2);font-family:var(--font-ui);cursor:pointer">Recurring — repeat monthly on this date until the tour ends</label>
+  </div>
+  <div id="bexpRecurNote" style="display:none;font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:.3rem;padding-left:24px"></div>
+</div>
+<div class="mfoot"><button class="btng" onclick="closeBudExpModal()">Cancel</button><button class="btnp" onclick="saveBudExp()">Save</button></div>
 </div></div>
 <!-- CALENDAR QUICK-VIEW MODAL -->
 <div class="mo" id="calPopModal" style="display:none" onclick="if(event.target===this)calClosePopup()">
@@ -1506,7 +1538,7 @@ function renderDash(){
   const totBudget=calcTotBudget();
   const totSpent=calcTotSpent();
   const confirmedCount=fDests.filter(d=>d.status==='confirmed').length;
-  const visitedCountries=[...new Set(cDests().filter(d=>d.status!=='cancelled').map(d=>d.country))].sort();
+  const visitedCountries=countriesAll.slice().sort();
   const countryFlagChips=visitedCountries.map(c=>{
     const flag=cDests().find(d=>d.country===c)?.flag||'🌍';
     return`<div style="display:flex;align-items:center;gap:6px;padding:.3rem .6rem;background:var(--sf2);border:1px solid var(--bd);border-radius:20px"><span style="font-size:17px">${flagHtml(flag)}</span><span style="font-size:12px;color:var(--t2);font-family:var(--font-ui)">${esc(c)}</span></div>`;
@@ -1538,7 +1570,7 @@ function renderDash(){
         <button class="abtn" onclick="openTourEditModal()" style="flex-shrink:0;font-size:11px;margin-top:2px"><i class="ti ti-edit"></i> Edit</button>
       </div>
       <div style="font-size:10px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem">World Tour Planner</div>
-      <div class="tour-quote" style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;max-width:580px;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
+      <div class="tour-quote" style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
     </div>
     <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem">
       <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
@@ -1682,9 +1714,14 @@ function renderRoute(){
         <button class="fbtn" onclick="toggleFMenu()"><i class="ti ti-filter"></i> Filter <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="fmenu">${fitems}</div>
       </div>
-      <button class="fbtn" onclick="exportTemplate()" title="Download Excel template"><i class="ti ti-file-spreadsheet"></i> Template</button>
-      <label class="fbtn" style="cursor:pointer" title="Import from Excel or CSV"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importCSV(this)"/></label>
-      <button class="fbtn" onclick="exportCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleIOMenu('routeIOMenu')" title="Template, Import, Export"><i class="ti ti-arrow-up"></i></button>
+        <div class="fmenu" id="routeIOMenu">
+          <div class="fmi" onclick="exportTemplate();toggleIOMenu('routeIOMenu')"><i class="ti ti-file-spreadsheet"></i> Download Template</div>
+          <label class="fmi" style="cursor:pointer"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importCSV(this);toggleIOMenu('routeIOMenu')"/></label>
+          <div class="fmi" onclick="exportCSV();toggleIOMenu('routeIOMenu')"><i class="ti ti-download"></i> Export</div>
+        </div>
+      </div>
       <button class="fbtn" onclick="toggleRouteEditMode()" title="Quickly edit dates and nights for every destination in one grid"><i class="ti ti-calendar-time"></i> Edit Route</button>
       <button class="fbtn" onclick="confirmRecalculateDates()" title="Close any gaps or overlaps between destinations, in chronological order, after editing dates or nights"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
       <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:12px">Remove All</button>
@@ -1936,6 +1973,7 @@ function recalculateDates(){
 }
 
 function toggleFMenu(){document.getElementById('fmenu')?.classList.toggle('open');}
+function toggleIOMenu(id){document.getElementById(id)?.classList.toggle('open');}
 function toggleF(s){if(AF.includes(s))AF=AF.filter(x=>x!==s);else AF.push(s);saveF();renderContent();}
 function removeAllDests(){if(confirm('Remove ALL destinations from this tour?\nThis cannot be undone.')){{cDests().splice(0);curDestId=null;renderSB();renderContent();}}}
 function viewDest(id){if(tab==='map'&&typeof teardownGlobe==='function')teardownGlobe();curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));renderSB();renderContent();}
@@ -2923,7 +2961,13 @@ function project(lat,lng){
 // calendar library is loaded in this single-file app, so this is a from-scratch implementation
 // in the same spirit as FullCalendar/Notion Timeline: multi-day bars, drag-to-move, drag-edges-
 // to-resize, conflict detection, and a draft/Save/Cancel flow mirroring Edit Route).
-const CAL_STATUS_COLOR={planned:'#B8923C',partial:'#D88C4B',confirmed:'#3DAB82',wishlist:'#8B4BC8',completed:'#5B8BC8',cancelled:'#A85050'};
+const CAL_STATUS_COLOR={planned:'#4BC8D8',partial:'#D8C84B',confirmed:'#3DAB82',wishlist:'#E08CE6',completed:'#C4C4CC',cancelled:'#A85050'};
+const CAL_STATUS_COLOR_LIGHT={planned:'#0E6E7E',partial:'#7A6314',confirmed:'#2F8F66',wishlist:'#8C3A93',completed:'#5A5A64',cancelled:'#9C3B3B'};
+function calStatusColor(status){
+  const theme=document.body.getAttribute('data-theme');
+  const map=(theme==='classic'||theme==='modern')?CAL_STATUS_COLOR_LIGHT:CAL_STATUS_COLOR;
+  return map[status]||map.planned;
+}
 const CAL_MAX_SLOTS=4; // max stacked destination rows per week before collapsing into "+N more"
 let calView='month';
 let calCursor=new Date();calCursor.setHours(12,0,0,0);calCursor.setDate(1);
@@ -3054,7 +3098,7 @@ function calRenderMonth(){
     }).join('');
     const barsHTML=visibleSegs.map(s=>{
       const d=s.d,am=aM(d.act);
-      const color=CAL_STATUS_COLOR[d.status]||CAL_STATUS_COLOR.planned;
+      const color=calStatusColor(d.status);
       const isCompleted=d.departure<todayIso&&d.status!=='cancelled';
       const isCurrent=d.arrival<=todayIso&&d.departure>=todayIso;
       const isSoon=!isCurrent&&!isCompleted&&d.arrival>=todayIso&&d.arrival<=soonIso;
@@ -3106,7 +3150,7 @@ function calRenderYear(){
     for(let day=1;day<=daysInMonth;day++){
       const iso=calIso(new Date(year,m,day,12));
       const match=dests.find(d=>d.arrival&&d.departure&&d.arrival<=iso&&d.departure>=iso);
-      const color=match?(CAL_STATUS_COLOR[match.status]||CAL_STATUS_COLOR.planned):null;
+      const color=match?calStatusColor(match.status):null;
       cells.push(`<div class="cal-mini-cell" style="${color?`background:${color}`:''}" title="${match?esc(match.city)+', '+esc(match.country):''}"></div>`);
     }
     return`<div class="cal-mini-month" onclick="calJumpToMonth(${year},${m})">
@@ -3954,8 +3998,27 @@ let budgetViewMode=localStorage.getItem('ae_budget_view')||'per';
 function setBudgetViewMode(mode){budgetViewMode=mode;localStorage.setItem('ae_budget_view',mode);renderContent();}
 let budgetBreakdownMode=false; // toggles Budget between the main summary and the monthly Planned vs Actual sub-section
 function toggleBudgetBreakdownMode(){budgetBreakdownMode=!budgetBreakdownMode;renderContent();}
-let budgetBdStartMonth=null,budgetBdEndMonth=null; // 'YYYY-MM' — null means "default to the full tour span"
-function budgetBdSetMonth(which,val){if(which==='start')budgetBdStartMonth=val;else budgetBdEndMonth=val;renderContent();}
+let budgetBdStartMonth=null,budgetBdEndMonth=null; // 'YYYY-MM' — null means "let the mode below decide"
+let budgetBdMode=localStorage.getItem('ae_budget_bd_mode')||'current-end'; // 'current-end' | 'total-tour' | 'custom'
+function budgetBdComputeRange(mode){
+  const bounds=budgetTourBounds();
+  const todayM=calIso(new Date()).slice(0,7);
+  const endM=bounds.end?bounds.end.slice(0,7):todayM;
+  if(mode==='current-end')return{startM:todayM,endM};
+  if(mode==='total-tour')return{startM:bounds.start?bounds.start.slice(0,7):todayM,endM};
+  return{startM:budgetBdStartMonth||todayM,endM:budgetBdEndMonth||endM};
+}
+function budgetBdSetMode(mode){
+  budgetBdMode=mode;localStorage.setItem('ae_budget_bd_mode',mode);
+  const r=budgetBdComputeRange(mode);
+  budgetBdStartMonth=r.startM;budgetBdEndMonth=r.endM;
+  renderContent();
+}
+function budgetBdSetMonth(which,val){
+  budgetBdMode='custom';localStorage.setItem('ae_budget_bd_mode','custom');
+  if(which==='start')budgetBdStartMonth=val;else budgetBdEndMonth=val;
+  renderContent();
+}
 
 function getLinked(cat){
   const dd=cDests();
@@ -4060,11 +4123,16 @@ function calcTotSpent(){
 // Spent correctly showed a real number. cat.budget itself has no date, so it's always included
 // in full — only the destination-linked portion is scoped to the date frame.
 function calcTotBudget(){
+  const perPerson=budgetViewMode==='per';
   const range=budgetEffectiveRange();
   return cur().budget.reduce((tot,cat)=>{
     const lk=getLinked(cat);
     const autoBudg=lk.budg.filter(e=>budgetItemInRange(e,range.start,range.end)).reduce((s,e)=>s+e.amt,0);
-    return tot+cat.budget+autoBudg;
+    const manB=(cat.expenses||[]).filter(e=>budgetItemInRange({date:budgetParsedDate(e.date)},range.start,range.end)).reduce((s,e)=>{
+      const persons=e.persons>0?e.persons:1;
+      return s+(perPerson?(e.planned||0)/persons:(e.planned||0));
+    },0);
+    return tot+cat.budget+autoBudg+manB;
   },0);
 }
 // Average cost per night across every BOOKED accommodation (has a hotel name set) within the
@@ -4117,7 +4185,8 @@ function renderBudget(){
     const autoS=lk.spent.filter(e=>budgetItemInRange(e,range.start,range.end)).reduce((s,e)=>s+e.amt,0);
     const totS=manS+autoS;
     const autoBudg=lk.budg.filter(e=>budgetItemInRange(e,range.start,range.end)).reduce((s,e)=>s+e.amt,0);
-    const totB=c.budget+autoBudg;
+    const manB=(c.expenses||[]).filter(e=>budgetItemInRange({date:budgetParsedDate(e.date)},range.start,range.end)).reduce((s,e)=>{const persons=e.persons>0?e.persons:1;return s+(perPerson?(e.planned||0)/persons:(e.planned||0));},0);
+    const totB=c.budget+autoBudg+manB;
     const pct=totB>0?Math.min(100,totS/totB*100):0;
     const isA=selBudCat===c.id;
     return`<div class="bcat${isA?' active':''}" draggable="true" data-id="${c.id}"
@@ -4163,14 +4232,16 @@ function renderBudget(){
       if(manExp.length===0)rows+=`<div style="padding:.75rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No manual expenses recorded in this date frame</div>`;
       manExp.forEach(e=>{
         const persons=e.persons>0?e.persons:1;
-        const shown=perPerson?e.amount/persons:e.amount;
+        const shownAmt=perPerson?e.amount/persons:e.amount;
+        const shownPlanned=perPerson?(e.planned||0)/persons:(e.planned||0);
         const personsNote=persons>1?`<div style="font-size:11px;color:var(--t3)">${perPerson?`Split ${persons} ways`:`${persons} people`}</div>`:'';
-        rows+=`<div class="bexp"><div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--t2)">${esc(e.label)}</div><div style="font-size:11px;color:var(--t3)">${esc(e.date||'')}</div>${personsNote}</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-size:13px;color:var(--gold)">$${shown.toFixed(2)}</span><button class="abtn del" onclick="removeBudExp('${cat.id}','${e.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button></div></div>`;
+        const recurNote=e.recurId?`<div style="font-size:11px;color:var(--t3)"><i class="ti ti-repeat" style="font-size:10px"></i> Recurring</div>`:'';
+        rows+=`<div class="bexp"><div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--t2)">${esc(e.label)}</div><div style="font-size:11px;color:var(--t3)">${esc(e.date||'')}</div>${personsNote}${recurNote}</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-size:12px;color:var(--t3)">Planned $${shownPlanned.toFixed(0)}</span><span style="font-size:13px;color:var(--gold)">Paid $${shownAmt.toFixed(2)}</span><button class="abtn" onclick="openBudExpModal('${cat.id}','${e.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button><button class="abtn del" onclick="removeBudExp('${cat.id}','${e.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button></div></div>`;
       });
       detHTML=`<div style="margin-top:1rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
         <div style="padding:.5rem .75rem;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
           <div style="font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui)">${esc(cat.name)} — Details</div>
-          <button class="abtn" onclick="addBudExp('${cat.id}')" style="font-size:11px"><i class="ti ti-plus"></i> Add expense</button>
+          <button class="abtn" onclick="openBudExpModal('${cat.id}')" style="font-size:11px"><i class="ti ti-plus"></i> Add expense</button>
         </div>
         ${rows}
       </div>`;
@@ -4190,6 +4261,16 @@ function renderBudget(){
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:.6rem">
+        <div style="position:relative">
+          <button class="fbtn" onclick="toggleIOMenu('budgetIOMenu')" title="Template, Import, Export"><i class="ti ti-arrow-up"></i></button>
+          <div class="fmenu" id="budgetIOMenu">
+            <div class="fmi" onclick="exportBudgetTemplate();toggleIOMenu('budgetIOMenu')"><i class="ti ti-file-spreadsheet"></i> Download Template</div>
+            <label class="fmi" style="cursor:pointer"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importBudgetCSV(this);toggleIOMenu('budgetIOMenu')"/></label>
+            <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
+            <div class="fmi" onclick="exportBudgetCSV('manual');toggleIOMenu('budgetIOMenu')"><i class="ti ti-download"></i> Export — Manual Only</div>
+            <div class="fmi" onclick="exportBudgetCSV('all');toggleIOMenu('budgetIOMenu')"><i class="ti ti-download"></i> Export — All (incl. Automatic)</div>
+          </div>
+        </div>
         <button class="fbtn" onclick="toggleBudgetBreakdownMode()" title="See planned vs actual spend broken down by month and category"><i class="ti ti-calendar-stats"></i> Monthly Breakdown</button>
         <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:2px">
           <button onclick="setBudgetViewMode('per')" style="border:none;background:${perPerson?'var(--gold)':'transparent'};color:${perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">Per Person</button>
@@ -4198,9 +4279,9 @@ function renderBudget(){
       </div>
     </div>
     <div class="sgrid">
-      <div class="scard"><div class="sval">$${Math.round(totBudget).toLocaleString()}</div><div class="slbl">Planned Spent</div></div>
-      <div class="scard"><div class="sval" style="color:var(--red)">$${Math.round(totSpent).toLocaleString()}</div><div class="slbl">Spent</div></div>
-      <div class="scard"><div class="sval" style="color:var(--gold)">$${Math.round(stillOwe).toLocaleString()}</div><div class="slbl">Still Owe</div></div>
+      <div class="scard"><div class="sval">$${Math.round(totBudget).toLocaleString()}</div><div class="slbl">Trip Cost</div></div>
+      <div class="scard"><div class="sval" style="color:${totSpent>=0?'var(--green)':'var(--red)'}">$${Math.round(totSpent).toLocaleString()}</div><div class="slbl">Paid</div></div>
+      <div class="scard"><div class="sval" style="color:${stillOwe>0?'var(--red)':'var(--green)'}">$${Math.round(stillOwe).toLocaleString()}</div><div class="slbl">Still Owe</div></div>
       <div class="scard" style="cursor:pointer" onclick="budgetEditAvailable()" title="Click to set Per Person and All Travelers amounts">
         <div class="sval">$${Math.round(totAvailable).toLocaleString()}</div>
         <div class="slbl">Total Available <i class="ti ti-edit" style="font-size:10px"></i></div>
@@ -4230,6 +4311,11 @@ function budgetAllItemsByCategory(){
     const lk=getLinked(cat);
     const plannedItems=lk.budg.map(e=>({amt:e.amt,date:e.date||null}));
     if(cat.budget>0)plannedItems.push({amt:cat.budget,date:null});
+    (cat.expenses||[]).forEach(e=>{
+      if(!e.planned)return;
+      const persons=e.persons>0?e.persons:1;
+      plannedItems.push({amt:perPerson?e.planned/persons:e.planned,date:budgetParsedDate(e.date)});
+    });
     const actualItems=[
       ...lk.spent.map(e=>({amt:e.amt,date:e.date||null})),
       ...(cat.expenses||[]).map(e=>{
@@ -4241,10 +4327,7 @@ function budgetAllItemsByCategory(){
   });
 }
 function budgetBdMonthRange(){
-  const bounds=budgetTourBounds();
-  const startM=budgetBdStartMonth||(bounds.start?bounds.start.slice(0,7):null);
-  const endM=budgetBdEndMonth||(bounds.end?bounds.end.slice(0,7):null);
-  return{startM,endM};
+  return budgetBdComputeRange(budgetBdMode);
 }
 function budgetMonthsBetween(startM,endM){
   if(!startM||!endM)return[];
@@ -4294,13 +4377,22 @@ function renderBudgetBreakdown(){
       </div>
       <div style="padding:.3rem .75rem">${noDate.rows}</div>
     </div>`:'';
+  const perPerson=budgetViewMode==='per';
+  const bdModeBtn=(mode,lbl)=>`<button onclick="budgetBdSetMode('${mode}')" style="border:none;background:${budgetBdMode===mode?'var(--gold)':'transparent'};color:${budgetBdMode===mode?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s;white-space:nowrap">${lbl}</button>`;
   return`<div class="panel">
     <div class="frow">
       <button class="fbtn" onclick="toggleBudgetBreakdownMode()"><i class="ti ti-arrow-left"></i> Back to Budget</button>
+      <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
+        ${bdModeBtn('current-end','Current → End')}${bdModeBtn('total-tour','Total Tour')}${bdModeBtn('custom','Custom')}
+      </div>
       <div style="display:flex;align-items:center;gap:4px">
         <input class="fi" type="month" value="${startM||''}" onchange="budgetBdSetMonth('start',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
         <span style="color:var(--t3);font-size:12px">→</span>
         <input class="fi" type="month" value="${endM||''}" onchange="budgetBdSetMonth('end',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+      </div>
+      <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:2px;margin-left:auto">
+        <button onclick="setBudgetViewMode('per')" style="border:none;background:${perPerson?'var(--gold)':'transparent'};color:${perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">Per Person</button>
+        <button onclick="setBudgetViewMode('all')" style="border:none;background:${!perPerson?'var(--gold)':'transparent'};color:${!perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">All Travelers</button>
       </div>
     </div>
     <div class="sec-ttl">Planned vs Actual — by Month</div>
@@ -4321,7 +4413,68 @@ function bdDrop(e,tid){
   order.splice(si,1);order.splice(ti,0,bdDragSrc);
   cur().budgetOrder=order;bdDragSrc=null;renderContent();
 }
-function addBudExp(catId){const lbl=prompt('Expense description:');if(!lbl)return;const amt=parseFloat(prompt('Amount ($):'));if(isNaN(amt))return;const persons=parseInt(prompt('Persons sharing this expense:','1'))||1;const date=prompt('Date (optional):','')||'';const cat=cur().budget.find(c=>c.id===catId);if(cat){cat.expenses=cat.expenses||[];cat.expenses.push({id:uid(),label:lbl,amount:amt,persons,date});renderContent();}}
+let budExpCatId=null,budExpEditId=null;
+function openBudExpModal(catId,expId){
+  budExpCatId=catId;budExpEditId=expId||null;
+  document.getElementById('budExpModalTitle').textContent=expId?'Edit Expense':'Add Expense';
+  const cat=cur().budget.find(c=>c.id===catId);
+  const exp=expId?(cat?.expenses||[]).find(e=>e.id===expId):null;
+  document.getElementById('bexp_label').value=exp?.label||'';
+  document.getElementById('bexp_planned').value=exp?.planned||'';
+  document.getElementById('bexp_amount').value=exp?.amount||'';
+  document.getElementById('bexp_persons').value=exp?.persons||1;
+  document.getElementById('bexp_date').value=budgetParsedDate(exp?.date)||'';
+  document.getElementById('bexp_recurrent').checked=false;
+  // Recurrence only applies when creating a new entry — editing touches just that one instance,
+  // so the option to repeat monthly wouldn't mean anything here.
+  document.getElementById('bexpRecurRow').style.display=expId?'none':'flex';
+  toggleBexpRecur();
+  document.getElementById('budExpModal').style.display='flex';
+}
+function closeBudExpModal(){document.getElementById('budExpModal').style.display='none';}
+function toggleBexpRecur(){
+  const on=document.getElementById('bexp_recurrent').checked;
+  const note=document.getElementById('bexpRecurNote');
+  if(on){
+    const bounds=budgetTourBounds();
+    note.style.display='block';
+    note.textContent=bounds.end?`Will repeat monthly through ${fD(bounds.end)} (the end of the tour).`:'Will repeat monthly until the end of the tour — add destinations with dates first so there\'s an end date to repeat through.';
+  }else note.style.display='none';
+}
+function saveBudExp(){
+  const label=document.getElementById('bexp_label').value.trim();
+  if(!label){alert('Please enter a description.');return;}
+  const planned=parseFloat(document.getElementById('bexp_planned').value)||0;
+  const amount=parseFloat(document.getElementById('bexp_amount').value)||0;
+  const persons=parseInt(document.getElementById('bexp_persons').value)||1;
+  const date=document.getElementById('bexp_date').value||'';
+  const recurrent=document.getElementById('bexp_recurrent').checked;
+  const cat=cur().budget.find(c=>c.id===budExpCatId);
+  if(!cat)return;
+  cat.expenses=cat.expenses||[];
+  if(budExpEditId){
+    const e=cat.expenses.find(x=>x.id===budExpEditId);
+    if(e){e.label=label;e.planned=planned;e.amount=amount;e.persons=persons;e.date=date;}
+  }else if(recurrent&&date){
+    const bounds=budgetTourBounds();
+    const endIso=bounds.end||date;
+    const recurId=uid();
+    let cursor=new Date(date+'T12:00:00');
+    const endDate=new Date(endIso+'T12:00:00');
+    const anchorDay=cursor.getDate();
+    let safety=0;
+    while(cursor<=endDate&&safety++<240){
+      cat.expenses.push({id:uid(),label,planned,amount,persons,date:calIso(cursor),recurId});
+      const nextMonth=new Date(cursor.getFullYear(),cursor.getMonth()+1,1,12);
+      const daysInNext=new Date(nextMonth.getFullYear(),nextMonth.getMonth()+1,0).getDate();
+      nextMonth.setDate(Math.min(anchorDay,daysInNext));
+      cursor=nextMonth;
+    }
+  }else{
+    cat.expenses.push({id:uid(),label,planned,amount,persons,date});
+  }
+  closeBudExpModal();renderContent();
+}
 function removeBudExp(catId,expId){const cat=cur().budget.find(c=>c.id===catId);if(cat){cat.expenses=cat.expenses.filter(e=>e.id!==expId);renderContent();}}
 function removeBudCat(id){if(!confirm('Remove this budget category?'))return;cur().budget=cur().budget.filter(c=>c.id!==id);if(selBudCat===id)selBudCat=null;renderContent();}
 function openBudgetModal(editId){
@@ -4344,12 +4497,21 @@ function saveBudgetCat(){
 
 // ── BUCKET LIST (with categories + achieved/pending filter) ──────────────────
 let bktCatFilter=null; // null = all categories, or specific category id
+let bktSortMode=localStorage.getItem('ae_bkt_sort')||'category'; // 'category' (default) | 'custom' (after a manual drag)
+function setBktSortMode(mode){bktSortMode=mode;localStorage.setItem('ae_bkt_sort',mode);renderContent();}
 let bktCatMgmtMode=false; // toggles Bucket List between the main list and the "Manage Categories" sub-section
 function toggleBktCatMgmtMode(){bktCatMgmtMode=!bktCatMgmtMode;renderContent();}
 
 function renderBucket(){
   if(bktCatMgmtMode)return renderBktCatMgmt();
-  const allBkt=[...cur().bucket].sort((a,b)=>(a.order||0)-(b.order||0));
+  const catOrderIdx=id=>{const i=cBktCats().findIndex(c=>c.id===id);return i<0?9999:i;};
+  const allBkt=[...cur().bucket].sort((a,b)=>{
+    if(bktSortMode==='category'){
+      const ca=catOrderIdx(a.category),cb=catOrderIdx(b.category);
+      if(ca!==cb)return ca-cb;
+    }
+    return(a.order||0)-(b.order||0);
+  });
   const done=allBkt.filter(b=>b.done).length;
   // apply status filter
   let bkt=allBkt.filter(b=>{
@@ -4405,9 +4567,18 @@ function renderBucket(){
         <div class="fmenu" id="bcmenu">${catMenuItems}</div>
       </div>
       <button class="fbtn" onclick="toggleBktCatMgmtMode()" title="Create, rename, or remove Bucket List categories"><i class="ti ti-tag"></i> Manage Categories</button>
-      <button class="fbtn" onclick="exportBktTemplate()" title="Download Excel template"><i class="ti ti-file-spreadsheet"></i> Template</button>
-      <label class="fbtn" style="cursor:pointer" title="Import from Excel or CSV"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importBktCSV(this)"/></label>
-      <button class="fbtn" onclick="exportBktCSV()" title="Export to Excel"><i class="ti ti-download"></i> Export</button>
+      <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
+        <button onclick="setBktSortMode('category')" style="border:none;background:${bktSortMode==='category'?'var(--gold)':'transparent'};color:${bktSortMode==='category'?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s">By Category</button>
+        <button onclick="setBktSortMode('custom')" style="border:none;background:${bktSortMode==='custom'?'var(--gold)':'transparent'};color:${bktSortMode==='custom'?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s" title="Drag-and-drop order">Custom Order</button>
+      </div>
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleIOMenu('bktIOMenu')" title="Template, Import, Export"><i class="ti ti-arrow-up"></i></button>
+        <div class="fmenu" id="bktIOMenu">
+          <div class="fmi" onclick="exportBktTemplate();toggleIOMenu('bktIOMenu')"><i class="ti ti-file-spreadsheet"></i> Download Template</div>
+          <label class="fmi" style="cursor:pointer"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importBktCSV(this);toggleIOMenu('bktIOMenu')"/></label>
+          <div class="fmi" onclick="exportBktCSV();toggleIOMenu('bktIOMenu')"><i class="ti ti-download"></i> Export</div>
+        </div>
+      </div>
       <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${bkt.length}/${allBkt.length} shown</span>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
@@ -4456,7 +4627,9 @@ function bktDrop(e,tid){
   const si=bkt.findIndex(b=>b.id===bktDragSrc),ti=bkt.findIndex(b=>b.id===tid);
   if(si<0||ti<0)return;
   const[moved]=bkt.splice(si,1);bkt.splice(ti,0,moved);
-  bkt.forEach((b,i)=>b.order=i);bktDragSrc=null;renderContent();
+  bkt.forEach((b,i)=>b.order=i);bktDragSrc=null;
+  bktSortMode='custom';localStorage.setItem('ae_bkt_sort','custom'); // a manual drag is an explicit re-sort — stop auto-grouping by category
+  renderContent();
 }
 // ── VISAS ─────────────────────────────────────────────────────────────────────
 let userNationality=localStorage.getItem('ae_nationality')||'';
@@ -4651,6 +4824,147 @@ function removeBktItem(id){if(!confirm('Remove this experience?'))return;cur().b
 // Independent of the Add/Edit Experience form — this is its own small field schema, not tied
 // to FIELDS (which is destination-specific). Reuses the same xlsx reader/writer and fuzzy-typo
 // matching already built for the Route section's Template/Import/Export.
+// ── BUDGET import / export ──────────────────────────────────────────────────────
+// "Destination ID" is a hidden-in-spirit column included only in the "All" export — it's what
+// makes re-importing an auto-linked row safe: matching by exact ID rather than guessing from a
+// description string is the difference between a reliable conflict check and a fragile one.
+const BUDGET_FIELDS=[
+  {k:'category',l:'Category'},
+  {k:'source',l:'Source'},
+  {k:'label',l:'Description'},
+  {k:'planned',l:'Planned Amount'},
+  {k:'amount',l:'Paid Amount'},
+  {k:'persons',l:'Persons'},
+  {k:'date',l:'Date'},
+  {k:'recurring',l:'Recurring'},
+  {k:'destId',l:'Destination ID'},
+];
+function exportBudgetTemplate(){
+  const fields=BUDGET_FIELDS.filter(f=>f.k!=='source'&&f.k!=='destId');
+  const header=fields.map(f=>f.l);
+  const example=['Accommodation','Airport taxi','45','45','2','2026-07-15','No'];
+  buildXlsxFromRows([header,example],'Budget').then(blob=>downloadBlob(blob,'budget_template.xlsx'));
+}
+// Linked rows in the "All" export reflect the raw destination fields directly — not whatever the
+// Per Person / All Travelers toggle happens to show at export time — so re-importing later is
+// never thrown off by which view mode was active when the file was made.
+function budgetLinkedRawRows(cat){
+  if(!cat.linked)return[];
+  return cDests().filter(d=>{
+    if(cat.linked==='hotels')return d.cost>0;
+    if(cat.linked==='transport')return d.t_cost>0;
+    if(cat.linked==='events')return d.event_cost>0;
+    if(cat.linked==='visas')return d.visa_required&&d.visa_cost>0;
+    return false;
+  }).map(d=>{
+    if(cat.linked==='hotels')return{label:`Hotel: ${d.city} — ${d.hotel||'TBD'}`,planned:d.cost,paid:d.paid||0,date:d.arrival,destId:d.id};
+    if(cat.linked==='transport')return{label:`${d.mot||'Transport'}: ${d.city}`,planned:d.t_cost,paid:d.t_paid==='yes'?d.t_cost:0,date:d.arrival,destId:d.id};
+    if(cat.linked==='events')return{label:`${d.event||'Event'}: ${d.city}`,planned:d.event_cost,paid:0,date:d.event_start||d.arrival,destId:d.id};
+    return{label:`Visa (${d.visa_type||'Physical'}): ${d.city}`,planned:d.visa_cost,paid:0,date:d.arrival,destId:d.id};
+  });
+}
+function exportBudgetCSV(scope){ // scope: 'manual' | 'all'
+  const includeAll=scope==='all';
+  const fields=BUDGET_FIELDS.filter(f=>includeAll||(f.k!=='source'&&f.k!=='destId'));
+  const header=fields.map(f=>f.l);
+  const rows=[];
+  cur().budget.forEach(cat=>{
+    (cat.expenses||[]).forEach(e=>{
+      const rec={category:cat.name,source:'Manual',label:e.label||'',planned:e.planned||0,amount:e.amount||0,persons:e.persons||1,date:e.date||'',recurring:e.recurId?'Yes':'No',destId:''};
+      rows.push(fields.map(f=>String(rec[f.k]??'')));
+    });
+    if(includeAll)budgetLinkedRawRows(cat).forEach(item=>{
+      const rec={category:cat.name,source:'Auto-Linked',label:item.label,planned:item.planned,amount:item.paid,persons:1,date:item.date||'',recurring:'No',destId:item.destId};
+      rows.push(fields.map(f=>String(rec[f.k]??'')));
+    });
+  });
+  buildXlsxFromRows([header,...rows],'Budget').then(blob=>downloadBlob(blob,scope==='all'?'budget_export_all.xlsx':'budget_export_manual.xlsx'));
+}
+function importBudgetCSV(input){
+  const file=input.files[0];if(!file)return;
+  const isXlsx=/\.xlsx$/i.test(file.name);
+  if(isXlsx){
+    parseXlsxFile(file).then(rows=>processImportedBudgetRows(rows,input)).catch(err=>{
+      alert('Could not read this Excel file. If it was saved in an unusual format, try "Save As" → CSV in Excel and upload that instead.\n\n('+err.message+')');
+      input.value='';
+    });
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result.replace(/^\uFEFF/,'');
+    const delimiter=detectDelimiter(text);
+    const rows=parseCSVFile(text,delimiter);
+    processImportedBudgetRows(rows,input);
+  };
+  reader.readAsText(file,'UTF-8');
+}
+function processImportedBudgetRows(rows,input){
+  if(rows.length<2){alert('No data rows found in the file.');input.value='';return;}
+  const rawHdrs=rows[0];
+  const fkeys=rawHdrs.map(h=>{
+    const f=BUDGET_FIELDS.find(x=>x.l.toLowerCase()===String(h).trim().toLowerCase());
+    return f?f.k:null;
+  });
+  const newCatsCreated=[];
+  const manualAdded=[];
+  const skippedLinked=[];
+  const linkedConflicts=[]; // {destId,label,linked,importedPlanned,importedPaid,livePlanned,livePaid}
+  for(let i=1;i<rows.length;i++){
+    const vals=rows[i];
+    if(!vals||!vals.some(v=>v&&String(v).trim()))continue;
+    const obj={category:'',source:'Manual',label:'',planned:'0',amount:'0',persons:'1',date:'',recurring:'No',destId:''};
+    fkeys.forEach((k,j)=>{if(k&&vals[j]!==undefined)obj[k]=String(vals[j]).trim();});
+    if(!obj.label)continue;
+    const isLinked=obj.source.toLowerCase().startsWith('auto');
+    let cat=cur().budget.find(c=>c.name.toLowerCase()===obj.category.toLowerCase());
+    if(isLinked){
+      if(!cat||!obj.destId){skippedLinked.push(obj.label);continue;}
+      const d=dBy(obj.destId);
+      if(!d){skippedLinked.push(obj.label);continue;}
+      const importedPlanned=parseFloat(obj.planned)||0,importedPaid=parseFloat(obj.amount)||0;
+      let livePlanned=0,livePaid=0;
+      if(cat.linked==='hotels'){livePlanned=d.cost||0;livePaid=d.paid||0;}
+      else if(cat.linked==='transport'){livePlanned=d.t_cost||0;livePaid=d.t_paid==='yes'?d.t_cost:0;}
+      else if(cat.linked==='events'){livePlanned=d.event_cost||0;}
+      else if(cat.linked==='visas'){livePlanned=d.visa_cost||0;}
+      if(Math.abs(importedPlanned-livePlanned)>0.01||Math.abs(importedPaid-livePaid)>0.01){
+        linkedConflicts.push({destId:d.id,label:obj.label,linked:cat.linked,importedPlanned,importedPaid,livePlanned,livePaid});
+      }
+      continue;
+    }
+    if(!cat){
+      const palette=['#C9A84C','#4B8BC8','#4BC896','#C84B6B','#C8C84B','#8B4BC8'];
+      cat={id:uid(),name:obj.category||'Imported',budget:0,color:palette[newCatsCreated.length%palette.length],expenses:[],linked:null};
+      cur().budget.push(cat);newCatsCreated.push(cat);
+    }
+    cat.expenses=cat.expenses||[];
+    cat.expenses.push({id:uid(),label:obj.label,planned:parseFloat(obj.planned)||0,amount:parseFloat(obj.amount)||0,persons:parseInt(obj.persons)||1,date:obj.date||''});
+    manualAdded.push(obj.label);
+  }
+  let msg=`Imported ${manualAdded.length} manual expense${manualAdded.length===1?'':'s'}.`;
+  if(newCatsCreated.length)msg+=`\nCreated ${newCatsCreated.length} new categor${newCatsCreated.length===1?'y':'ies'}: ${newCatsCreated.map(c=>c.name).join(', ')}.`;
+  if(skippedLinked.length)msg+=`\n${skippedLinked.length} auto-linked row${skippedLinked.length===1?'':'s'} skipped (couldn't match a destination).`;
+  if(linkedConflicts.length){
+    msg+=`\n\n${linkedConflicts.length} auto-linked value${linkedConflicts.length===1?'':'s'} in this file ${linkedConflicts.length===1?'differs':'differ'} from your current destination data:\n`+
+      linkedConflicts.slice(0,5).map(c=>`• ${c.label}: file has $${c.importedPlanned}/$${c.importedPaid} paid, your tour currently has $${c.livePlanned}/$${c.livePaid} paid`).join('\n')+
+      (linkedConflicts.length>5?`\n…and ${linkedConflicts.length-5} more.`:'')+
+      `\n\nClick OK to REPLACE your destination records with the imported amounts, or Cancel to KEEP what's currently in your tour.`;
+    if(confirm(msg)){
+      linkedConflicts.forEach(c=>{
+        const d=dBy(c.destId);if(!d)return;
+        if(c.linked==='hotels'){d.cost=c.importedPlanned;d.paid=c.importedPaid;}
+        else if(c.linked==='transport'){d.t_cost=c.importedPlanned;d.t_paid=c.importedPaid>0?'yes':'no';}
+        else if(c.linked==='events')d.event_cost=c.importedPlanned;
+        else if(c.linked==='visas')d.visa_cost=c.importedPlanned;
+      });
+      alert('Done — destination records updated with the imported amounts.');
+    }
+  }else{
+    alert(msg);
+  }
+  input.value='';renderContent();
+}
 const BKT_FIELDS=[
   {k:'text',l:'Experience',t:'text'},
   {k:'country',l:'Country',t:'text'},
