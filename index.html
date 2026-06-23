@@ -5,12 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>NOMAD — World Tour Planner</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.5.0/css/flag-icons.min.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@300;400;500;600;700;800&family=Cormorant:wght@400;500;600&family=Permanent+Marker&family=Archivo+Black&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
 body{font-size:15px;transition:background .3s,color .3s}
+/* Flag emoji render as real flags on phone but many desktop systems (Windows especially) fall
+   back to showing the plain two-letter code instead. Show the emoji on phone (already correct
+   there) and an actual flag-icons image on desktop, instead. */
+.flag-img{display:none!important}
+@media(min-width:600px){
+  .flag-emoji{display:none!important}
+  .flag-img{display:inline-block!important;vertical-align:middle}
+}
 
 /* ══════════════════════════════════════════════════════
    THEME SYSTEM — 7 distinct themes via [data-theme]
@@ -914,6 +923,28 @@ const wS=s=>{if(!s)return'';return WD[new Date(s+'T12:00:00').getDay()];};
 const dBtw=(a,b)=>{if(!a||!b)return 0;return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5);};
 const uid=()=>'i'+Date.now()+Math.floor(Math.random()*9999);
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// A flag emoji is built from two Unicode Regional Indicator Symbols — this just reverses that
+// back into the lowercase ISO 3166-1 alpha-2 code (🇵🇱 -> 'pl') so flag-icons can render an
+// actual flag image from it.
+function flagToCode(emoji){
+  if(!emoji)return null;
+  const chars=[...emoji];
+  if(chars.length<2)return null;
+  const a=chars[0].codePointAt(0),b=chars[1].codePointAt(0);
+  const base=0x1F1E6;
+  if(a<base||a>base+25||b<base||b>base+25)return null;
+  return String.fromCharCode(97+(a-base))+String.fromCharCode(97+(b-base));
+}
+// Renders a flag that looks right everywhere: the emoji on phone (already renders as a real flag
+// there) and an actual flag-icons image on desktop (where many systems — Windows especially —
+// just show the plain two-letter code instead of a flag glyph). The 📍 placeholder (no country
+// set yet) has no flag to look up, so it always just shows as the pin emoji on both.
+function flagHtml(emoji){
+  const code=flagToCode(emoji);
+  const emojiSpan=`<span class="flag-emoji">${emoji||'📍'}</span>`;
+  if(!code)return emojiSpan;
+  return`<span class="flag-img fi fi-${code}"></span>${emojiSpan}`;
+}
 const today=new Date().toISOString().split('T')[0];
 
 // ── THEME SYSTEM ──────────────────────────────────────────────────────────────
@@ -1357,7 +1388,7 @@ function renderSB(){
       const isD=curDestId===d.id;
       const isPast=d.departure&&d.departure<today;
       h+=`<div class="dest-row${isD?' active':''}${isPast?' past':''}" onclick="viewDestSB('${d.id}')">
-        <span style="font-size:14px;flex-shrink:0">${d.flag||'📍'}</span>
+        <span style="font-size:14px;flex-shrink:0">${flagHtml(d.flag)}</span>
         <div style="flex:1;min-width:0"><div class="dest-city">${esc(d.city)}</div><div class="dest-meta">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'TBD'}</div></div>
         <div class="dot5" style="background:${sco(d.status)}"></div>
       </div>`;
@@ -1478,7 +1509,7 @@ function renderDash(){
   const visitedCountries=[...new Set(cDests().filter(d=>d.status!=='cancelled').map(d=>d.country))].sort();
   const countryFlagChips=visitedCountries.map(c=>{
     const flag=cDests().find(d=>d.country===c)?.flag||'🌍';
-    return`<div style="display:flex;align-items:center;gap:6px;padding:.3rem .6rem;background:var(--sf2);border:1px solid var(--bd);border-radius:20px"><span style="font-size:17px">${flag}</span><span style="font-size:12px;color:var(--t2);font-family:var(--font-ui)">${esc(c)}</span></div>`;
+    return`<div style="display:flex;align-items:center;gap:6px;padding:.3rem .6rem;background:var(--sf2);border:1px solid var(--bd);border-radius:20px"><span style="font-size:17px">${flagHtml(flag)}</span><span style="font-size:12px;color:var(--t2);font-family:var(--font-ui)">${esc(c)}</span></div>`;
   }).join('');
   const actCards=cActs().map(act=>{
     const dd=sDests().filter(d=>d.act===act.id);
@@ -1491,7 +1522,7 @@ function renderDash(){
   }).join('');
   const nextRows=sDests().filter(d=>d.arrival&&d.status!=='cancelled').slice(0,6).map(d=>`
     <div style="display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;border-bottom:1px solid rgba(128,128,128,.1);cursor:pointer;font-family:var(--font-ui);transition:background .15s" onclick="selDest('${d.id}')" onmouseover="this.style.background='rgba(201,168,76,.03)'" onmouseout="this.style.background=''">
-      <span style="font-size:19px;flex-shrink:0">${d.flag||'📍'}</span>
+      <span style="font-size:19px;flex-shrink:0">${flagHtml(d.flag)}</span>
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.city)}, ${esc(d.country)}</div>
         <div style="font-size:11px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'TBD'}${d.event?' · '+esc(d.event):''}</div>
@@ -1577,7 +1608,7 @@ function renderProfile(){
   const todoItems=d.todo?d.todo.split('\n').filter(t=>t.trim()).map(t=>`<li class="todo-item">${esc(t)}</li>`).join(''):'';
   return`<div class="prof-wrap">
     <div class="prof-top">
-      <div style="text-align:center;flex-shrink:0"><div class="prof-flag">${d.flag||'📍'}</div><div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.country)}</div></div>
+      <div style="text-align:center;flex-shrink:0"><div class="prof-flag">${flagHtml(d.flag)}</div><div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.country)}</div></div>
       <div class="prof-meta"><div class="prof-city">${esc(d.city)}</div><div class="prof-cntry">${esc(d.country)}</div><div class="ptags"><span class="tag gld">${esc(am.name)}</span><span class="${scls(d.status)}">${statusLabel(d.status)}</span>${d.priority?`<span class="tag">${'★'.repeat(parseInt(d.priority))}</span>`:''}</div></div>
       <div style="display:flex;gap:4px;flex-shrink:0"><button class="abtn" onclick="openDestModal('${d.id}')"><i class="ti ti-edit"></i></button><button class="abtn del" onclick="removeDest('${d.id}')"><i class="ti ti-trash"></i></button></div>
     </div>
@@ -1676,7 +1707,7 @@ function routeRowsHtml(filt){
     const n=dBtw(d.arrival,d.departure);
     const isPast=d.departure&&d.departure<today;
     return`<tr class="${d.status==='cancelled'?'cancelled':''}${isPast?' past':''}" onclick="viewDest('${d.id}')">
-      <td style="padding:.4rem .4rem .4rem .6rem"><span style="font-size:16px">${d.flag||'📍'}</span></td>
+      <td style="padding:.4rem .4rem .4rem .6rem"><span style="font-size:16px">${flagHtml(d.flag)}</span></td>
       <td><div class="rt-dest-name" style="font-size:15px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">${esc(d.city)}</div><div class="rt-dest-country" style="font-size:12px;color:var(--t3)">${esc(d.country)}</div>
         <div class="rt-mobile-dates">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'—'} <i class="ti ti-arrow-right" style="font-size:11px;vertical-align:middle"></i> ${d.departure?fD(d.departure)+' '+wS(d.departure):'—'}${n>0?' · '+n+'n':''}</div>
       </td>
@@ -1748,7 +1779,7 @@ function renderRouteEdit(){
     const am=aM(d.act);
     return`<tr data-id="${r.id}">
       <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:11px">${i+1}</td>
-      <td style="padding:.4rem .6rem"><span style="font-size:15px;margin-right:4px">${d.flag||'📍'}</span><span class="re-dest-name" style="font-size:14px;color:var(--t1)">${esc(d.city)}</span><div class="re-act-name" style="font-size:11px;color:${am.color}">${esc(am.name)}</div></td>
+      <td style="padding:.4rem .6rem"><span style="font-size:15px;margin-right:4px">${flagHtml(d.flag)}</span><span class="re-dest-name" style="font-size:14px;color:var(--t1)">${esc(d.city)}</span><div class="re-act-name" style="font-size:11px;color:${am.color}">${esc(am.name)}</div></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_a_${r.id}">${wS(r.arrival)}</span></div></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_d_${r.id}">${wS(r.departure)}</span></div></td>
       <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:12px;padding:.3rem .4rem;width:56px"/></td>
@@ -3030,7 +3061,7 @@ function calRenderMonth(){
       const accomOn=!!d.hotel,transOn=!!(d.t_company||d.t_ref);
       const nights=dBtw(d.arrival,d.departure);
       const span=s.endIdx-s.startIdx;
-      const label=span>=2?`${d.flag||'📍'} ${esc(d.city)}${nights>0?' · '+nights+'n':''}`:span===1?`${d.flag||'📍'} ${esc(d.city)}`:`${d.flag||'📍'}`;
+      const label=span>=2?`${flagHtml(d.flag)} ${esc(d.city)}${nights>0?' · '+nights+'n':''}`:span===1?`${flagHtml(d.flag)} ${esc(d.city)}`:`${flagHtml(d.flag)}`;
       return`<div class="cal-chip ${isCompleted?'completed':''} ${isSoon?'upcoming-soon':''} ${isCurrent?'is-current':''} ${s.startsHere?'':'cont-l'} ${s.endsHere?'':'cont-r'}"
         style="grid-column:${s.startIdx+1}/${s.endIdx+2};grid-row:${s.slot+1};background:${color};color:${color}"
         draggable="true" ondragstart="calDragStart(event,'${d.id}')" ondragend="calDragEnd(event)"
@@ -3055,7 +3086,7 @@ function calRenderMonth(){
 function calShowDayList(wStart,wEnd){
   const dests=calActiveDests().filter(d=>d.arrival&&d.departure&&d.arrival<=wEnd&&d.departure>=wStart&&calMatchesFilters(d))
     .sort((a,b)=>a.arrival<b.arrival?-1:1);
-  const rows=dests.map(d=>`<div class="drow" style="cursor:pointer" onclick="calClosePopup();calOpenPopup('${d.id}')"><span class="dlbl">${d.flag||'📍'} ${esc(d.city)}, ${esc(d.country)}</span><span class="dval">${fD(d.arrival)} – ${fD(d.departure)}</span></div>`).join('');
+  const rows=dests.map(d=>`<div class="drow" style="cursor:pointer" onclick="calClosePopup();calOpenPopup('${d.id}')"><span class="dlbl">${flagHtml(d.flag)} ${esc(d.city)}, ${esc(d.country)}</span><span class="dval">${fD(d.arrival)} – ${fD(d.departure)}</span></div>`).join('');
   document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Destinations this week</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div><div class="mbody">${rows}</div>`;
   document.getElementById('calPopModal').style.display='flex';
 }
@@ -3185,7 +3216,7 @@ function calPopupHTML(id){
   const am=aM(d.act);
   const nights=dBtw(d.arrival,d.departure);
   const accomOn=!!d.hotel,transOn=!!(d.t_company||d.t_ref);
-  return`<div class="mhdr"><div class="mttl">${d.flag||'📍'} ${esc(d.city)}, ${esc(d.country)}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+  return`<div class="mhdr"><div class="mttl">${flagHtml(d.flag)} ${esc(d.city)}, ${esc(d.country)}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
   <div class="mbody">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem;flex-wrap:wrap">
       <span class="${scls(d.status)}">${statusLabel(d.status)}</span>
@@ -3254,7 +3285,7 @@ function renderCalendar(){
   const totalConflicts=conflicts.overlaps.length+(conflicts.schengenResult.violation?1:0);
   const conflictHTML=totalConflicts?`<div class="cal-conflict-banner"><i class="ti ti-alert-triangle"></i> <b>${totalConflicts} potential conflict${totalConflicts>1?'s':''}</b> detected
     <ul style="margin:.4rem 0 0 1.1rem;padding:0">
-      ${conflicts.overlaps.slice(0,4).map(([a,b])=>`<li>${a.flag||''} ${esc(a.city)} and ${b.flag||''} ${esc(b.city)} overlap on the calendar — you can't be in both at once.</li>`).join('')}
+      ${conflicts.overlaps.slice(0,4).map(([a,b])=>`<li>${flagHtml(a.flag)} ${esc(a.city)} and ${flagHtml(b.flag)} ${esc(b.city)} overlap on the calendar — you can't be in both at once.</li>`).join('')}
       ${conflicts.overlaps.length>4?`<li>+ ${conflicts.overlaps.length-4} more overlapping date range${conflicts.overlaps.length-4>1?'s':''}.</li>`:''}
       ${conflicts.schengenResult.violation?`<li>Schengen 90/180-day limit exceeded — first crossed around ${fD(conflicts.schengenResult.violationDate)}. See the Visas tab for the full breakdown.</li>`:''}
     </ul>
@@ -3306,7 +3337,7 @@ function renderMap(){
     const flag=statsDests.find(d=>d.country===c)?.flag||'🌍';
     const citiesInC=statsDests.filter(d=>d.country===c).map(d=>d.city).join(', ');
     return`<div style="display:flex;align-items:center;gap:10px;padding:.7rem .9rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);box-shadow:var(--shadow)">
-      <span style="font-size:26px;flex-shrink:0">${flag}</span>
+      <span style="font-size:26px;flex-shrink:0">${flagHtml(flag)}</span>
       <div style="min-width:0"><div style="font-size:14px;color:var(--t1);font-family:var(--font-ui);font-weight:600">${esc(c)}</div><div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(citiesInC)}</div></div>
     </div>`;
   }).join('');
@@ -3780,7 +3811,7 @@ function showGlobeInfo(d){
   const nights=dBtw(d.arrival,d.departure);
   const body=document.getElementById('globeInfoBody');
   if(!body)return;
-  body.innerHTML="<div class=\"gip-flag\">"+(d.flag||'📍')+"</div>"
+  body.innerHTML="<div class=\"gip-flag\">"+flagHtml(d.flag)+"</div>"
     +"<div class=\"gip-city\">"+esc(d.city)+"</div>"
     +"<div class=\"gip-country\">"+esc(d.country)+" · "+esc(am.name)+"</div>"
     +"<div class=\"gip-row\"><span>Status</span><span style=\"text-transform:capitalize\">"+esc(d.status)+"</span></div>"
@@ -3853,7 +3884,7 @@ function renderEvents(){
       <div style="width:12px;height:12px;border-radius:50%;background:${am.color};flex-shrink:0;margin-top:2px"></div>
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(d.event)}</div>
-        <div class="ev-loc"><span style="font-size:14px">${d.flag||'📍'}</span> ${esc(d.city)}, ${esc(d.country)}</div>
+        <div class="ev-loc"><span style="font-size:14px">${flagHtml(d.flag)}</span> ${esc(d.city)}, ${esc(d.country)}</div>
         ${d.event_date?`<div class="ev-date">${esc(d.event_date)}</div>`:''}
         ${d.event_cost>0?`<div class="ev-cost-lbl">$${parseFloat(d.event_cost).toFixed(2)}</div>`:''}
         <div class="pdots">${dots}</div>
@@ -4468,7 +4499,7 @@ function renderVisas(){
     const cityList=c.dests.map(d=>d.city).join(', ');
     const types=[...new Set(c.dests.map(d=>d.visa_type||'Physical'))];
     return`<div class="ev-item" onclick="openDestModal('${c.dests[0].id}')">
-      <span style="font-size:22px;flex-shrink:0">${c.flag||'📍'}</span>
+      <span style="font-size:22px;flex-shrink:0">${flagHtml(c.flag)}</span>
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(c.country)}</div>
         <div class="ev-loc">${esc(cityList)}</div>
@@ -4482,7 +4513,7 @@ function renderVisas(){
     const cityList=c.dests.map(d=>d.city).join(', ');
     const details=[...new Set(c.dests.map(d=>d.vaccines_detail).filter(Boolean))];
     return`<div class="ev-item" onclick="openDestModal('${c.dests[0].id}')">
-      <span style="font-size:22px;flex-shrink:0">${c.flag||'📍'}</span>
+      <span style="font-size:22px;flex-shrink:0">${flagHtml(c.flag)}</span>
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(c.country)}</div>
         <div class="ev-loc">${esc(cityList)}</div>
@@ -4496,7 +4527,7 @@ function renderVisas(){
     const am=aM(d.act);
     const statusObtained=d.visa_status==='Obtained';
     return`<div class="ev-item" onclick="openDestModal('${d.id}')">
-      <span style="font-size:22px;flex-shrink:0">${d.flag||'📍'}</span>
+      <span style="font-size:22px;flex-shrink:0">${flagHtml(d.flag)}</span>
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(d.city)}, ${esc(d.country)}</div>
         <div class="ev-loc">${esc(am.name)} · ${d.arrival?fD(d.arrival):'TBD'}${d.departure?' – '+fD(d.departure):''}</div>
@@ -4509,7 +4540,7 @@ function renderVisas(){
   const vaccineRows=vaccineDests.map(d=>{
     const am=aM(d.act);
     return`<div class="ev-item" onclick="openDestModal('${d.id}')">
-      <span style="font-size:22px;flex-shrink:0">${d.flag||'📍'}</span>
+      <span style="font-size:22px;flex-shrink:0">${flagHtml(d.flag)}</span>
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(d.city)}, ${esc(d.country)}</div>
         <div class="ev-loc">${esc(am.name)} · ${d.arrival?fD(d.arrival):'TBD'}</div>
@@ -4531,7 +4562,7 @@ function renderVisas(){
     <div class="sec-ttl">Your Passport / Nationality</div>
     <div class="scard" style="margin-bottom:1rem;cursor:default">
       <div style="display:flex;align-items:center;gap:.75rem">
-        <span style="font-size:32px">${natFlag||'🛂'}</span>
+        <span style="font-size:32px">${natFlag?flagHtml(natFlag):'🛂'}</span>
         <div style="flex:1">
           <select class="fi" id="nationalitySelect" onchange="setNationality(this.value)" style="font-size:14px">${natOptions}</select>
           <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:4px">Saved on this device — used to determine which destinations below need a visa</div>
@@ -4580,7 +4611,7 @@ function renderVisas(){
         ${schengenResult.violation?`<div style="font-size:12px;color:var(--red);font-family:var(--font-ui);line-height:1.5;margin-bottom:.5rem"><i class="ti ti-alert-triangle"></i> Your planned Schengen stays exceed the 90/180-day limit — the limit is first crossed around <strong>${fD(schengenResult.violationDate)}</strong>. You may need to split your Schengen time, add longer gaps between visits, or apply for a long-stay/national visa for part of the trip.</div>`:`<div style="font-size:12px;color:var(--t2);font-family:var(--font-ui);line-height:1.5;margin-bottom:.5rem">Based on your current itinerary, your Schengen stays stay within the 90/180-day limit at every point in the trip.</div>`}
         <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-bottom:.6rem">Counting ${schengenDests.length} Schengen destination${schengenDests.length===1?'':'s'} across ${schengenResult.totalDays} total calendar day${schengenResult.totalDays===1?'':'s'} in the zone:</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${schengenDests.map(d=>`<div style="display:flex;align-items:center;gap:5px;padding:.25rem .55rem;background:var(--sf2);border:1px solid var(--bd);border-radius:14px;font-size:11px;color:var(--t2);font-family:var(--font-ui);cursor:pointer" onclick="openDestModal('${d.id}')"><span>${d.flag||'📍'}</span>${esc(d.city)} (${dBtw(d.arrival,d.departure)}n)</div>`).join('')}
+          ${schengenDests.map(d=>`<div style="display:flex;align-items:center;gap:5px;padding:.25rem .55rem;background:var(--sf2);border:1px solid var(--bd);border-radius:14px;font-size:11px;color:var(--t2);font-family:var(--font-ui);cursor:pointer" onclick="openDestModal('${d.id}')"><span>${flagHtml(d.flag)}</span>${esc(d.city)} (${dBtw(d.arrival,d.departure)}n)</div>`).join('')}
         </div>
       `:`<div style="color:var(--t3);font-family:var(--font-ui);font-size:13px">No Schengen-area destinations with both arrival and departure dates set yet. Once you add destinations in Austria, France, Germany, Italy, Spain, or other Schengen countries, this calculator will check your planned stays against the 90/180-day rule automatically.</div>`}
     </div>
