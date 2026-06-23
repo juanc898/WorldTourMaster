@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>NOMAD — World Tour Planner</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.5.0/css/flag-icons.min.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@300;400;500;600;700;800&family=Cormorant:wght@400;500;600&family=Permanent+Marker&family=Archivo+Black&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -14,11 +13,11 @@ html,body{height:100%;overflow:hidden}
 body{font-size:15px;transition:background .3s,color .3s}
 /* Flag emoji render as real flags on phone but many desktop systems (Windows especially) fall
    back to showing the plain two-letter code instead. Show the emoji on phone (already correct
-   there) and an actual flag-icons image on desktop, instead. */
+   there) and an actual flag image on desktop instead. */
 .flag-img{display:none!important}
 @media(min-width:600px){
   .flag-emoji{display:none!important}
-  .flag-img{display:inline-block!important;vertical-align:middle}
+  .flag-img{display:inline-block!important;height:1em;width:1.333em;vertical-align:middle;object-fit:cover;border-radius:2px}
 }
 
 /* ══════════════════════════════════════════════════════
@@ -924,8 +923,7 @@ const dBtw=(a,b)=>{if(!a||!b)return 0;return Math.round((new Date(b+'T12:00:00')
 const uid=()=>'i'+Date.now()+Math.floor(Math.random()*9999);
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 // A flag emoji is built from two Unicode Regional Indicator Symbols — this just reverses that
-// back into the lowercase ISO 3166-1 alpha-2 code (🇵🇱 -> 'pl') so flag-icons can render an
-// actual flag image from it.
+// back into the lowercase ISO 3166-1 alpha-2 code (🇵🇱 -> 'pl') so a flag image can be looked up.
 function flagToCode(emoji){
   if(!emoji)return null;
   const chars=[...emoji];
@@ -936,14 +934,16 @@ function flagToCode(emoji){
   return String.fromCharCode(97+(a-base))+String.fromCharCode(97+(b-base));
 }
 // Renders a flag that looks right everywhere: the emoji on phone (already renders as a real flag
-// there) and an actual flag-icons image on desktop (where many systems — Windows especially —
-// just show the plain two-letter code instead of a flag glyph). The 📍 placeholder (no country
-// set yet) has no flag to look up, so it always just shows as the pin emoji on both.
+// there) and an actual flag image on desktop (where many systems — Windows especially — just show
+// the plain two-letter code instead of a flag glyph). Uses flagcdn.com directly — a plain <img src>
+// rather than a CSS-sprite library, since a sprite sheet's relative asset paths can silently fail
+// to resolve depending on how the page is hosted. The 📍 placeholder (no country set yet) has no
+// flag to look up, so it always just shows as the pin emoji on both.
 function flagHtml(emoji){
   const code=flagToCode(emoji);
   const emojiSpan=`<span class="flag-emoji">${emoji||'📍'}</span>`;
   if(!code)return emojiSpan;
-  return`<span class="flag-img fi fi-${code}"></span>${emojiSpan}`;
+  return`<img class="flag-img" src="https://flagcdn.com/24x18/${code}.png" srcset="https://flagcdn.com/48x36/${code}.png 2x" alt="${code}" loading="lazy" onerror="this.style.display='none'"/>${emojiSpan}`;
 }
 const today=new Date().toISOString().split('T')[0];
 
