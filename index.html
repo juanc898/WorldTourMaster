@@ -248,7 +248,6 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="classic"] .sb-wishlist,[data-theme="modern"] .sb-wishlist,[data-theme="punk"] .sb-wishlist{background:rgba(140,58,147,.16);color:#8C3A93}
 [data-theme="classic"] .sb-completed,[data-theme="modern"] .sb-completed,[data-theme="punk"] .sb-completed{background:rgba(0,120,20,.16);color:#007814}
 [data-theme="classic"] .sb-confirmed,[data-theme="modern"] .sb-confirmed,[data-theme="punk"] .sb-confirmed{background:rgba(0,120,20,.16);color:#007814}
-[data-theme="classic"] .sb-cancelled,[data-theme="modern"] .sb-cancelled,[data-theme="punk"] .sb-cancelled{background:rgba(140,59,59,.18);color:#8C3B3B}
 [data-theme="futurist"] .tourovr-act-name{font-size:13px!important}
 [data-theme="punk"] .tour-sel{background:#1A1A1A;color:#fff;border-color:#333}
 [data-theme="punk"] .scard,[data-theme="punk"] .pblk,[data-theme="punk"] .pblk-f,[data-theme="punk"] .modal,[data-theme="punk"] .ev-item,[data-theme="punk"] .bkt,[data-theme="punk"] .bcat{
@@ -379,7 +378,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .sbadge{font-size:11px;padding:2px 7px;border-radius:var(--radius);font-family:var(--font-ui);white-space:nowrap;text-transform:capitalize}
 .sb-planned{background:rgba(0,233,255,.18);color:#00E9FF}
 .sb-confirmed{background:rgba(0,154,29,.2);color:#009A1D}
-.sb-cancelled{background:rgba(168,80,80,.2);color:#A85050}
+.sb-cancelled{background:rgba(200,75,75,.12);color:var(--red)}
 .sb-wishlist{background:rgba(224,140,230,.18);color:#E08CE6}
 .sb-completed{background:rgba(0,154,29,.2);color:#009A1D}
 .sb-partial{background:rgba(216,200,75,.2);color:#D8C84B}
@@ -3267,9 +3266,11 @@ function isLightColor(hex){
   const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
   return(0.299*r+0.587*g+0.114*b)>150;
 }
+const RED_BY_THEME={mythic:'#C84B4B',executive:'#E5484D',futurist:'#FF4D6D',classic:'#9C3B3B',modern:'#B91C1C',surreal:'#C8506A',luxury:'#C85D5D',punk:'#E0102B'};
 function calStatusColor(status){
   if(customStatusColors[status])return customStatusColors[status];
   const theme=document.body.getAttribute('data-theme');
+  if(status==='cancelled')return RED_BY_THEME[theme]||'#C84B4B';
   if(theme==='punk')return CAL_STATUS_COLOR_PUNK[status]||CAL_STATUS_COLOR_PUNK.planned;
   const map=(theme==='classic'||theme==='modern')?CAL_STATUS_COLOR_LIGHT:CAL_STATUS_COLOR;
   return map[status]||map.planned;
