@@ -746,7 +746,8 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     <div class="hstat" onclick="goTab('route')" title="View Route"><div class="hstat-v" id="hDst">0</div><div class="hstat-l">Destinations</div></div>
     <div class="hstat" onclick="goTab('events')" title="View Events"><div class="hstat-v" id="hEvt">0</div><div class="hstat-l">Events</div></div>
     <div style="position:relative">
-      <button class="icon-btn" onclick="toggleThemePop(event)" id="stylesBtn" title="Choose appearance"><i class="ti ti-palette"></i></button>
+      <button class="icon-btn" onclick="toggleSettingsMenu(event)" id="settingsBtn" title="Settings"><i class="ti ti-settings"></i></button>
+      <div class="theme-pop" id="settingsPop" style="min-width:230px"></div>
       <div class="theme-pop" id="themePop"></div>
     </div>
     <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>
@@ -845,6 +846,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     <div class="fg"><label class="flbl">Notes, Memories &amp; Intel</label><textarea class="fi" id="f_notes" style="min-height:72px" placeholder="Research, memories, what to pack…"></textarea></div>
     <div class="fg"><label class="flbl">Things To Do (one per line)</label><textarea class="fi" id="f_todo" style="min-height:72px" placeholder="Visit the old medina&#10;Photograph sunrise&#10;Try the local cuisine"></textarea></div>
   </div></div>
+  <div class="msect" id="customFieldsSect" style="display:none"><div class="msttl">Custom Fields</div><div class="mflds" id="customFieldsContainer"></div></div>
 </div>
 <div class="mfoot"><button class="btng" onclick="closeDestModal()">Cancel</button><button class="btnp" onclick="saveDest()">Save Destination</button></div>
 </div></div>
@@ -991,7 +993,15 @@ function applyTheme(){
   document.body.setAttribute('data-theme',theme);
 }
 function setVisualTheme(id){theme=id;localStorage.setItem('ae_visual_theme',id);applyTheme();renderThemePop();document.getElementById('themePop').classList.remove('open');}
-function toggleThemePop(e){e.stopPropagation();renderThemePop();document.getElementById('themePop').classList.toggle('open');}
+function toggleThemePop(e){e.stopPropagation();document.getElementById('settingsPop')?.classList.remove('open');renderThemePop();document.getElementById('themePop').classList.toggle('open');}
+function toggleSettingsMenu(e){e.stopPropagation();document.getElementById('themePop')?.classList.remove('open');renderSettingsMenu();document.getElementById('settingsPop').classList.toggle('open');}
+document.addEventListener('click',e=>{
+  const themePopEl=document.getElementById('themePop');
+  const settingsPopEl=document.getElementById('settingsPop');
+  const btn=document.getElementById('settingsBtn');
+  if(themePopEl&&!themePopEl.contains(e.target)&&!btn.contains(e.target))themePopEl.classList.remove('open');
+  if(settingsPopEl&&!settingsPopEl.contains(e.target)&&!btn.contains(e.target))settingsPopEl.classList.remove('open');
+});
 function renderThemePop(){
   document.getElementById('themePop').innerHTML=THEMES.map(t=>`
     <div class="theme-opt${t.id===theme?' active':''}" onclick="setVisualTheme('${t.id}')">
@@ -1000,7 +1010,34 @@ function renderThemePop(){
       ${t.id===theme?'<i class="ti ti-check" style="color:var(--gold);font-size:15px"></i>':''}
     </div>`).join('');
 }
-document.addEventListener('click',e=>{const pop=document.getElementById('themePop');if(pop&&!pop.contains(e.target)&&e.target.id!=='stylesBtn'&&!document.getElementById('stylesBtn').contains(e.target))pop.classList.remove('open');});
+function renderSettingsMenu(){
+  const canUndo=undoStack.length>0,canRedo=redoStack.length>0;
+  document.getElementById('settingsPop').innerHTML=`
+    <div class="fmi" onclick="openAccountModal()"><i class="ti ti-user-circle" style="width:16px;flex-shrink:0"></i> Account Management</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.45rem .7rem;gap:8px">
+      <span style="font-size:13px;color:var(--t2);font-family:var(--font-ui);display:flex;align-items:center;gap:8px"><i class="ti ti-arrow-back-up" style="width:16px;flex-shrink:0"></i> Undo / Redo</span>
+      <div style="display:flex;gap:4px">
+        <button class="abtn" onclick="event.stopPropagation();performUndo()" style="${canUndo?'':'opacity:.35;cursor:default'}" title="Undo"><i class="ti ti-corner-up-left"></i></button>
+        <button class="abtn" onclick="event.stopPropagation();performRedo()" style="${canRedo?'':'opacity:.35;cursor:default'}" title="Redo"><i class="ti ti-corner-up-right"></i></button>
+      </div>
+    </div>
+    <div class="fmi" onclick="openAppSyncModal()"><i class="ti ti-plug-connected" style="width:16px;flex-shrink:0"></i> App Sync</div>
+    <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
+    <div class="fmi" onclick="openEditFormModal()"><i class="ti ti-forms" style="width:16px;flex-shrink:0"></i> Edit Form</div>
+    <div class="fmi" onclick="openStatusColorsModal()"><i class="ti ti-droplet-half-2" style="width:16px;flex-shrink:0"></i> Status Colors</div>
+    <div class="fmi" onclick="toggleThemePop(event)"><i class="ti ti-palette" style="width:16px;flex-shrink:0"></i> Mood</div>
+    <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
+    <div class="fmi" onclick="openCloseSessionModal()" style="color:var(--red)"><i class="ti ti-logout" style="width:16px;flex-shrink:0"></i> Close Session</div>
+  `;
+}
+function openComingSoonModal(title,desc){
+  document.getElementById('settingsPop').classList.remove('open');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">${esc(title)}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div><div class="mbody"><div style="text-align:center;padding:1.5rem 0"><i class="ti ti-clock-hour-4" style="font-size:40px;color:var(--t3)"></i><div style="margin-top:.75rem;font-family:var(--font-ui);font-size:14px;color:var(--t2)">${esc(desc)}</div><div style="margin-top:.4rem;font-family:var(--font-ui);font-size:12px;color:var(--t3)">This isn\'t wired up yet — coming in a future update.</div></div></div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function openAccountModal(){openComingSoonModal('Account Management','Manage your name, email, password, and other account details here.');}
+function openAppSyncModal(){openComingSoonModal('App Sync','Connect Nomad with other apps and services.');}
+function openCloseSessionModal(){openComingSoonModal('Close Session','Sign out of your account.');}
 applyTheme();
 
 // ── FILTER PERSISTENCE ────────────────────────────────────────────────────────
@@ -1510,7 +1547,47 @@ function updateHStats(){
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
+// ── UNDO / REDO ──────────────────────────────────────────────────────────────
+// Rather than instrumenting every single mutation site individually (there are hundreds across
+// this app), this takes advantage of one consistent pattern: every mutation is always followed
+// by a renderContent() call. So at the top of renderContent(), before re-rendering, we check
+// whether the full app state has changed since the last render — if so, the state as it was
+// *before* this change gets archived onto the undo stack. Performing an undo/redo itself updates
+// the "last seen" snapshot before re-rendering, so the undo/redo action doesn't re-capture itself.
+let undoStack=[],redoStack=[];
+let lastStateSnapshot=null;
+const MAX_UNDO=25;
+function captureUndoIfChanged(){
+  const snap=JSON.stringify(S);
+  if(lastStateSnapshot!==null&&snap!==lastStateSnapshot){
+    undoStack.push(lastStateSnapshot);
+    if(undoStack.length>MAX_UNDO)undoStack.shift();
+    redoStack=[];
+  }
+  lastStateSnapshot=snap;
+}
+function performUndo(){
+  if(!undoStack.length)return;
+  redoStack.push(JSON.stringify(S));
+  const prev=undoStack.pop();
+  S=JSON.parse(prev);
+  lastStateSnapshot=prev;
+  if(!S.tours[S.cur])S.cur=Object.keys(S.tours)[0]; // guard in case the current tour itself was undone away
+  curDestId=null;
+  renderSB();renderContent();
+}
+function performRedo(){
+  if(!redoStack.length)return;
+  undoStack.push(JSON.stringify(S));
+  const next=redoStack.pop();
+  S=JSON.parse(next);
+  lastStateSnapshot=next;
+  if(!S.tours[S.cur])S.cur=Object.keys(S.tours)[0];
+  curDestId=null;
+  renderSB();renderContent();
+}
 function renderContent(){
+  captureUndoIfChanged();
   autoStatus();
   const el=document.getElementById('mainContent');
   if(tab==='dashboard')el.innerHTML=curDestId&&dBy(curDestId)?renderProfile():renderDash();
@@ -2042,7 +2119,7 @@ function viewDest(id){if(tab==='map'&&typeof teardownGlobe==='function')teardown
 
 // ── CSV IMPORT / EXPORT ───────────────────────────────────────────────────────
 function exportTemplate(){
-  const header=FIELDS.map(f=>f.l);
+  const header=FIELDS.map(f=>f.l).concat(customFieldDefs.map(f=>`${f.label} [Custom]`));
   const example=FIELDS.map(f=>{
     if(f.k==='act')return'The Prelude';if(f.k==='act_desc')return'Excess, art, freedom, hedonism, aesthetic';if(f.k==='country')return'Spain';
     if(f.k==='city')return'Barcelona';
@@ -2050,20 +2127,24 @@ function exportTemplate(){
     if(f.k==='arrival')return'2027-08-01';if(f.k==='departure')return'2027-08-05';
     if(f.k==='visa_required')return'no';if(f.k==='vaccines_required')return'no';
     return'';
-  });
+  }).concat(customFieldDefs.map(()=>''));
   buildXlsxFromRows([header,example],'Destinations').then(blob=>{
     downloadBlob(blob,'angels_eye_template.xlsx');
   });
 }
 function exportCSV(){
-  const header=FIELDS.map(f=>f.l);
+  const header=FIELDS.map(f=>f.l).concat(customFieldDefs.map(f=>`${f.label} [Custom]`));
   const rows=sDests().map(d=>FIELDS.map(f=>{
     if(f.k==='act')return aM(d.act)?.name||'';
     if(f.k==='act_desc')return aM(d.act)?.subtitle||'';
     if(f.k==='todo')return(d.todo||'').replace(/\n/g,'|');
     if(f.k==='visa_required'||f.k==='vaccines_required')return d[f.k]?'yes':'no';
     return d[f.k]!=null?String(d[f.k]):'';
-  }));
+  }).concat(customFieldDefs.map(f=>{
+    const v=d.custom?.[f.id];
+    if(f.type==='toggle')return v?'yes':'no';
+    return v!=null?String(v):'';
+  })));
   buildXlsxFromRows([header,...rows],'Destinations').then(blob=>{
     downloadBlob(blob,'angels_eye_export.xlsx');
   });
@@ -2511,6 +2592,11 @@ function processImportedRows(rows,input){
       const f=FIELDS.find(x=>x.l.toLowerCase()===h.trim().toLowerCase()||x.k.toLowerCase()===h.trim().toLowerCase());
       return f?f.k:null;
     });
+    const customFkeys=rawHdrs.map(h=>{
+      const clean=h.trim().replace(/\s*\[Custom\]\s*$/i,'').toLowerCase();
+      const f=customFieldDefs.find(x=>x.label.toLowerCase()===clean);
+      return f?f.id:null;
+    });
     const STATUS_OPTS=['planned','partial','confirmed','wishlist','completed','cancelled'];
     const MOT_OPTS=['Flight','Train','Ferry','Car Rental','Motorbike','Bus','Private Transfer','Cruise'];
     const TPAID_OPTS=['no','partial','yes'];
@@ -2638,6 +2724,15 @@ function processImportedRows(rows,input){
       delete obj._actDesc;
       if(!obj.city)continue;
       if(!obj.flag&&obj.country)obj.flag=flagForCountryName(obj.country)||'📍';
+      if(customFieldDefs.length){
+        obj.custom={};
+        customFkeys.forEach((cid,j)=>{
+          if(!cid||vals[j]===undefined)return;
+          const v=vals[j].trim();if(!v)return;
+          const fdef=customFieldDefs.find(x=>x.id===cid);
+          obj.custom[cid]=fdef?.type==='toggle'?/^(yes|true|1)$/i.test(v):v;
+        });
+      }
       if(obj.arrival&&obj.departure){const ex=cDests().find(d=>d.city?.toLowerCase()===obj.city?.toLowerCase()&&d.arrival===obj.arrival);if(ex)conflict=true;}
       newD.push(obj);
     }
@@ -2850,6 +2945,110 @@ function addInlineEventCat(){
   if(!cat){cat={id:uid(),name:nm,color:col};cEventCats().push(cat);}
   populateEventCatDropdown(cat.name);
 }
+// ── CUSTOM FIELDS ("Edit Form") ──────────────────────────────────────────────────
+// Scope note: this lets the person add their own extra fields to the destination form (and have
+// them flow through to the CSV template/import/export). It does not yet allow editing or removing
+// the built-in fields themselves or their hard-coded dropdown options — doing that safely would
+// mean making nearly every part of the app (Budget linking, Calendar, Visa calculations, CSV
+// columns) read field definitions dynamically instead of by fixed name, which is a much bigger
+// rework. Built-ins are shown read-only here so it's clear what exists.
+const CUSTOM_FIELD_TYPES=[
+  {k:'text',l:'Text'},{k:'number',l:'Number'},{k:'date',l:'Date'},
+  {k:'select',l:'Multiple Choice'},{k:'yesno',l:'Yes / No'},{k:'toggle',l:'Toggle'},
+];
+let customFieldDefs=JSON.parse(localStorage.getItem('ae_custom_fields')||'[]'); // [{id,label,type,options:[...]}]
+function saveCustomFieldDefs(){localStorage.setItem('ae_custom_fields',JSON.stringify(customFieldDefs));}
+function renderCustomFieldsInForm(d){
+  const sect=document.getElementById('customFieldsSect');
+  const container=document.getElementById('customFieldsContainer');
+  if(!sect||!container)return;
+  if(!customFieldDefs.length){sect.style.display='none';return;}
+  sect.style.display='block';
+  container.innerHTML=customFieldDefs.map(f=>{
+    const val=d?.custom?.[f.id];
+    const id='cf_'+f.id;
+    if(f.type==='select'){
+      const opts=(f.options||[]).map(o=>`<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`).join('');
+      return`<div class="fg"><label class="flbl">${esc(f.label)}</label><select class="fi" id="${id}"><option value="">—</option>${opts}</select></div>`;
+    }
+    if(f.type==='yesno')return`<div class="fg"><label class="flbl">${esc(f.label)}</label><select class="fi" id="${id}"><option value="">—</option><option value="Yes" ${val==='Yes'?'selected':''}>Yes</option><option value="No" ${val==='No'?'selected':''}>No</option></select></div>`;
+    if(f.type==='toggle')return`<div class="fg" style="display:flex;align-items:center;gap:8px;padding-top:1.4rem"><input type="checkbox" id="${id}" ${val?'checked':''} style="width:16px;height:16px;flex-shrink:0"/><label class="flbl" style="margin:0" for="${id}">${esc(f.label)}</label></div>`;
+    if(f.type==='number')return`<div class="fg"><label class="flbl">${esc(f.label)}</label><input class="fi" id="${id}" type="number" value="${val??''}"/></div>`;
+    if(f.type==='date')return`<div class="fg"><label class="flbl">${esc(f.label)}</label><input class="fi" id="${id}" type="date" value="${val||''}"/></div>`;
+    return`<div class="fg"><label class="flbl">${esc(f.label)}</label><input class="fi" id="${id}" type="text" value="${esc(val||'')}"/></div>`;
+  }).join('');
+}
+function collectCustomFieldValues(){
+  const out={};
+  customFieldDefs.forEach(f=>{
+    const el=document.getElementById('cf_'+f.id);
+    if(!el)return;
+    out[f.id]=f.type==='toggle'?el.checked:el.value;
+  });
+  return out;
+}
+function openEditFormModal(){
+  document.getElementById('settingsPop').classList.remove('open');
+  renderEditFormModal();
+  document.getElementById('calPopModal').style.display='flex';
+}
+function renderEditFormModal(){
+  const builtinRows=FIELDS.map(f=>`<div class="drow"><span class="dlbl">${esc(f.l)}</span><span class="dval" style="color:var(--t3);font-size:11px">${esc(f.t)} · built-in</span></div>`).join('');
+  const customRows=customFieldDefs.map(f=>{
+    const typeLbl=CUSTOM_FIELD_TYPES.find(t=>t.k===f.type)?.l||f.type;
+    return`<div class="drow"><span class="dlbl">${esc(f.label)}</span><span class="dval" style="display:flex;align-items:center;gap:6px"><span style="color:var(--t3);font-size:11px">${esc(typeLbl)}</span><button class="abtn" onclick="openCustomFieldEditor('${f.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button><button class="abtn del" onclick="removeCustomField('${f.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button></span></div>`;
+  }).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Edit Form</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody">
+      <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-bottom:.75rem;line-height:1.5">Add your own fields to the destination form. They'll show up in Add/Edit Destination and in the Excel template/export. Built-in fields are listed below for reference and aren't editable yet.</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
+        <div class="bttl" style="margin:0">Custom Fields</div>
+        <button class="abtn" onclick="openCustomFieldEditor()" style="font-size:11px"><i class="ti ti-plus"></i> Add Field</button>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;margin-bottom:1rem">${customRows||'<div style="padding:.75rem;color:var(--t3);font-family:var(--font-ui);font-size:12px">No custom fields yet.</div>'}</div>
+      <div class="bttl">Built-in Fields (read-only)</div>
+      <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;max-height:240px;overflow-y:auto">${builtinRows}</div>
+    </div>`;
+}
+let editingCustomFieldId=null;
+function openCustomFieldEditor(fieldId){
+  editingCustomFieldId=fieldId||null;
+  const f=fieldId?customFieldDefs.find(x=>x.id===fieldId):null;
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">${fieldId?'Edit Field':'Add Field'}</div><button class="mx" onclick="openEditFormModal()">&#x2715;</button></div>
+    <div class="mbody">
+      <div class="fg"><label class="flbl">Field Label</label><input class="fi" id="cfd_label" type="text" value="${esc(f?.label||'')}" placeholder="e.g. Travel Insurance Provider"/></div>
+      <div class="fg"><label class="flbl">Field Type</label><select class="fi" id="cfd_type" onchange="toggleCfdOptionsRow()">${CUSTOM_FIELD_TYPES.map(t=>`<option value="${t.k}" ${f?.type===t.k?'selected':''}>${t.l}</option>`).join('')}</select></div>
+      <div class="fg" id="cfdOptionsRow" style="display:none"><label class="flbl">Options (one per line)</label><textarea class="fi" id="cfd_options" style="min-height:80px">${esc((f?.options||[]).join('\n'))}</textarea></div>
+    </div>
+    <div class="mfoot"><button class="btng" onclick="openEditFormModal()">Cancel</button><button class="btnp" onclick="saveCustomField()">Save</button></div>`;
+  toggleCfdOptionsRow();
+  document.getElementById('calPopModal').style.display='flex';
+}
+function toggleCfdOptionsRow(){
+  const type=document.getElementById('cfd_type')?.value;
+  const row=document.getElementById('cfdOptionsRow');
+  if(row)row.style.display=type==='select'?'block':'none';
+}
+function saveCustomField(){
+  const label=document.getElementById('cfd_label').value.trim();
+  if(!label){alert('Please enter a field label.');return;}
+  const type=document.getElementById('cfd_type').value;
+  const options=type==='select'?document.getElementById('cfd_options').value.split('\n').map(s=>s.trim()).filter(Boolean):undefined;
+  if(editingCustomFieldId){
+    const f=customFieldDefs.find(x=>x.id===editingCustomFieldId);
+    if(f){f.label=label;f.type=type;f.options=options;}
+  }else{
+    customFieldDefs.push({id:uid(),label,type,options});
+  }
+  saveCustomFieldDefs();
+  openEditFormModal();
+}
+function removeCustomField(fieldId){
+  if(!confirm('Remove this custom field? Existing destinations keep their saved value, it just won\'t show on the form anymore.'))return;
+  customFieldDefs=customFieldDefs.filter(f=>f.id!==fieldId);
+  saveCustomFieldDefs();
+  openEditFormModal();
+}
 function toggleVisaFields(){
   const checked=document.getElementById('f_visa_required')?.checked;
   const box=document.getElementById('visaExtraFields');
@@ -3026,9 +3225,172 @@ function project(lat,lng){
 const CAL_STATUS_COLOR={planned:'#2E9FE0',partial:'#D8C84B',confirmed:'#3DAB82',wishlist:'#E08CE6',completed:'#C4C4CC',cancelled:'#A85050'};
 const CAL_STATUS_COLOR_LIGHT={planned:'#1B6FA0',partial:'#7A6314',confirmed:'#2F8F66',wishlist:'#8C3A93',completed:'#5A5A64',cancelled:'#9C3B3B'};
 function calStatusColor(status){
+  if(customStatusColors[status])return customStatusColors[status];
   const theme=document.body.getAttribute('data-theme');
   const map=(theme==='classic'||theme==='modern')?CAL_STATUS_COLOR_LIGHT:CAL_STATUS_COLOR;
   return map[status]||map.planned;
+}
+// ── STATUS COLORS (user-customizable) ───────────────────────────────────────────
+// Badges across the app (Route, Profile, Events…) get their color from plain CSS classes
+// (.sb-planned etc.), while the Calendar and sidebar dots set color directly via calStatusColor()
+// above. To make one override apply everywhere without touching every render call site, a
+// generated stylesheet overrides the CSS classes, while calStatusColor() itself checks the same
+// override map. Together those two cover every place a status color appears.
+const STATUS_LIST=['planned','partial','confirmed','wishlist','completed','cancelled'];
+let customStatusColors=JSON.parse(localStorage.getItem('ae_status_colors')||'{}');
+function applyCustomStatusColors(){
+  let css='';
+  STATUS_LIST.forEach(s=>{
+    if(customStatusColors[s])css+=`.sb-${s}{background:${customStatusColors[s]}26!important;color:${customStatusColors[s]}!important}\n`;
+  });
+  let styleEl=document.getElementById('customStatusStyle');
+  if(!styleEl){styleEl=document.createElement('style');styleEl.id='customStatusStyle';document.head.appendChild(styleEl);}
+  styleEl.textContent=css;
+}
+function saveCustomStatusColor(status,color){
+  customStatusColors[status]=color;
+  localStorage.setItem('ae_status_colors',JSON.stringify(customStatusColors));
+  applyCustomStatusColors();
+}
+function resetCustomStatusColor(status){
+  delete customStatusColors[status];
+  localStorage.setItem('ae_status_colors',JSON.stringify(customStatusColors));
+  applyCustomStatusColors();
+}
+// ── Custom color picker (HSV square + hue slider + hex), modeled on Photoshop's "Solid Color" dialog ──
+let pickerStatus=null,pickerH=0,pickerS=1,pickerV=1;
+function hsvToHex(h,s,v){
+  let r,g,b;
+  const i=Math.floor(h/60)%6;
+  const f=h/60-Math.floor(h/60);
+  const p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
+  switch(i){
+    case 0:r=v;g=t;b=p;break;
+    case 1:r=q;g=v;b=p;break;
+    case 2:r=p;g=v;b=t;break;
+    case 3:r=p;g=q;b=v;break;
+    case 4:r=t;g=p;b=v;break;
+    default:r=v;g=p;b=q;
+  }
+  const toHex=n=>Math.round(Math.max(0,Math.min(1,n))*255).toString(16).padStart(2,'0');
+  return'#'+toHex(r)+toHex(g)+toHex(b);
+}
+function hexToHsv(hex){
+  hex=(hex||'#888888').replace('#','');
+  if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.substr(0,2),16)/255,g=parseInt(hex.substr(2,2),16)/255,b=parseInt(hex.substr(4,2),16)/255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+  let h=0;
+  if(d!==0){
+    if(max===r)h=60*(((g-b)/d)%6);
+    else if(max===g)h=60*((b-r)/d+2);
+    else h=60*((r-g)/d+4);
+  }
+  if(h<0)h+=360;
+  return{h,s:max===0?0:d/max,v:max};
+}
+function openColorPicker(status){
+  pickerStatus=status;
+  const hsv=hexToHsv(calStatusColor(status));
+  pickerH=hsv.h;pickerS=hsv.s;pickerV=hsv.v;
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Choose Color — ${statusLabel(status)}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody">
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="position:relative;width:190px;height:190px;border-radius:4px;cursor:crosshair;flex-shrink:0;touch-action:none" id="pickerSV" onpointerdown="pickerSVStart(event)">
+          <div id="pickerSVCursor" style="position:absolute;width:12px;height:12px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.5);transform:translate(-50%,-50%);pointer-events:none"></div>
+        </div>
+        <div style="position:relative;width:20px;height:190px;border-radius:4px;cursor:pointer;flex-shrink:0;touch-action:none" id="pickerHue" onpointerdown="pickerHueStart(event)">
+          <div id="pickerHueCursor" style="position:absolute;left:-3px;right:-3px;height:5px;border:2px solid #fff;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.5);pointer-events:none"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:130px">
+          <div>
+            <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-ui);margin-bottom:4px">New</div>
+            <div style="width:100%;height:46px;border-radius:6px;border:1px solid var(--bd)" id="pickerPreview"></div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-ui);margin-bottom:4px">Current</div>
+            <div style="width:100%;height:46px;border-radius:6px;border:1px solid var(--bd);background:${calStatusColor(status)}"></div>
+          </div>
+          <div class="fg" style="margin:0"><label class="flbl">Hex</label><input class="fi" id="pickerHex" type="text" maxlength="7" oninput="pickerHexInput(this.value)" style="font-family:monospace;text-transform:uppercase"/></div>
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btng" onclick="resetCustomStatusColor('${status}');calClosePopup();openStatusColorsModal()">Reset to Default</button>
+      <button class="btng" onclick="calClosePopup();openStatusColorsModal()">Cancel</button>
+      <button class="btnp" onclick="savePickerColor()">OK</button>
+    </div>`;
+  updatePickerUI();
+  document.getElementById('calPopModal').style.display='flex';
+}
+function updatePickerUI(){
+  const sv=document.getElementById('pickerSV');
+  if(!sv)return;
+  sv.style.background=`linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), hsl(${pickerH},100%,50%)`;
+  document.getElementById('pickerHue').style.background='linear-gradient(to bottom, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)';
+  const hex=hsvToHex(pickerH,pickerS,pickerV);
+  document.getElementById('pickerPreview').style.background=hex;
+  document.getElementById('pickerHex').value=hex;
+  document.getElementById('pickerSVCursor').style.left=(pickerS*190)+'px';
+  document.getElementById('pickerSVCursor').style.top=((1-pickerV)*190)+'px';
+  document.getElementById('pickerHueCursor').style.top=Math.max(0,(pickerH/360)*190-2)+'px';
+}
+function pickerSVStart(e){
+  e.preventDefault();
+  const rect=document.getElementById('pickerSV').getBoundingClientRect();
+  const move=ev=>{
+    const x=Math.min(Math.max(0,ev.clientX-rect.left),rect.width);
+    const y=Math.min(Math.max(0,ev.clientY-rect.top),rect.height);
+    pickerS=x/rect.width;pickerV=1-y/rect.height;
+    updatePickerUI();
+  };
+  move(e);
+  const up=()=>{document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',up);};
+  document.addEventListener('pointermove',move);
+  document.addEventListener('pointerup',up);
+}
+function pickerHueStart(e){
+  e.preventDefault();
+  const rect=document.getElementById('pickerHue').getBoundingClientRect();
+  const move=ev=>{
+    const y=Math.min(Math.max(0,ev.clientY-rect.top),rect.height);
+    pickerH=(y/rect.height)*360;
+    updatePickerUI();
+  };
+  move(e);
+  const up=()=>{document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',up);};
+  document.addEventListener('pointermove',move);
+  document.addEventListener('pointerup',up);
+}
+function pickerHexInput(val){
+  if(!/^#?[0-9A-Fa-f]{6}$/.test(val))return;
+  if(!val.startsWith('#'))val='#'+val;
+  const hsv=hexToHsv(val);
+  pickerH=hsv.h;pickerS=hsv.s;pickerV=hsv.v;
+  updatePickerUI();
+}
+function savePickerColor(){
+  saveCustomStatusColor(pickerStatus,hsvToHex(pickerH,pickerS,pickerV));
+  calClosePopup();
+  openStatusColorsModal();
+}
+function openStatusColorsModal(){
+  document.getElementById('settingsPop').classList.remove('open');
+  const rows=STATUS_LIST.map(s=>{
+    const color=calStatusColor(s);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:.6rem .2rem;border-bottom:1px solid rgba(128,128,128,.1);cursor:pointer" onclick="openColorPicker('${s}')">
+      <div style="width:22px;height:22px;border-radius:50%;background:${color};border:1px solid rgba(255,255,255,.25);flex-shrink:0"></div>
+      <span style="flex:1;font-size:14px;color:var(--t1);font-family:var(--font-ui)">${statusLabel(s)}</span>
+      ${customStatusColors[s]?`<button class="abtn" onclick="event.stopPropagation();resetCustomStatusColor('${s}');openStatusColorsModal()" title="Reset to default" style="font-size:11px"><i class="ti ti-restore"></i></button>`:''}
+      <i class="ti ti-chevron-right" style="color:var(--t3);font-size:14px"></i>
+    </div>`;
+  }).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Status Colors</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody">
+      <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-bottom:.5rem">Click a status to choose its color. Changes apply everywhere across the app immediately.</div>
+      ${rows}
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
 }
 const CAL_MAX_SLOTS=4; // max stacked destination rows per week before collapsing into "+N more"
 let calView='month';
@@ -5291,11 +5653,13 @@ function openDestModal(editId){
       sv('vaccines_detail',d.vaccines_detail);
       toggleVaccineFields();
       sv('notes',d.notes);sv('todo',d.todo);
+      renderCustomFieldsInForm(d);
       recalcD();
     }
   }else{
     populateCountryDropdown();
     populateEventCatDropdown();
+    renderCustomFieldsInForm(null);
     if(curActId)as.value=curActId;
   }
   document.getElementById('destModal').style.display='flex';
@@ -5334,6 +5698,7 @@ function saveDest(){
     vaccines_required:vaccinesRequired,vaccines_detail:vaccinesRequired?gv('vaccines_detail'):'',
     notes:document.getElementById('f_notes')?.value?.trim()||'',
     todo:document.getElementById('f_todo')?.value?.trim()||'',
+    custom:collectCustomFieldValues(),
   };
   // event_date kept in sync as a derived display string from the start/end pickers, for any
   // older rendering paths that still expect a single human-readable event date string.
@@ -5436,6 +5801,7 @@ function saveTourEdit(){
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+applyCustomStatusColors();
 renderSB();
 renderContent();
 </script>
