@@ -203,7 +203,7 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="classic"] .act-nm{font-size:13px}
 [data-theme="classic"] .act-sub{font-size:12px}
 [data-theme="classic"] .tour-quote{font-size:14px}
-[data-theme="classic"] .sb-planned,[data-theme="modern"] .sb-planned{background:rgba(20,130,145,.14);color:#0E6E7E}
+[data-theme="classic"] .sb-planned,[data-theme="modern"] .sb-planned{background:rgba(27,111,160,.14);color:#1B6FA0}
 [data-theme="classic"] .sb-partial,[data-theme="modern"] .sb-partial{background:rgba(150,125,20,.16);color:#7A6314}
 [data-theme="classic"] .sb-wishlist,[data-theme="modern"] .sb-wishlist{background:rgba(160,50,170,.14);color:#8C3A93}
 [data-theme="classic"] .sb-completed,[data-theme="modern"] .sb-completed{background:rgba(90,90,100,.16);color:#5A5A64}
@@ -341,8 +341,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .abtn.del:hover{border-color:var(--red);color:var(--red)}
 /* STATUS BADGES */
 .sbadge{font-size:11px;padding:2px 7px;border-radius:var(--radius);font-family:var(--font-ui);white-space:nowrap;text-transform:capitalize}
-.sb-planned{background:rgba(75,200,216,.18);color:#4BC8D8}
-.sb-confirmed{background:rgba(75,200,150,.18);color:#4BC896}
+.sb-planned{background:rgba(46,159,224,.18);color:#2E9FE0}
+.sb-confirmed{background:rgba(61,171,130,.18);color:#3DAB82}
 .sb-cancelled{background:rgba(200,75,75,.15);color:#C84B4B}
 .sb-wishlist{background:rgba(216,140,230,.18);color:#E08CE6}
 .sb-completed{background:rgba(190,190,196,.18);color:#C4C4CC}
@@ -358,6 +358,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .wd{font-size:11px;color:var(--t3);margin-left:2px}
 /* FILTER ROW */
 .frow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}
+@media(min-width:600px){.bd-toggle-wrap{margin-left:auto}}
 .fbtn{padding:5px 9px;background:var(--sf);border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-family:var(--font-ui);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px}
 .fbtn:hover{border-color:var(--bd);color:var(--t1)}
 .fmenu{position:absolute;top:calc(100% + 4px);left:0;background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);min-width:150px;z-index:50;display:none;padding:.25rem 0;box-shadow:0 4px 16px rgba(0,0,0,.4)}
@@ -3022,8 +3023,8 @@ function project(lat,lng){
 // calendar library is loaded in this single-file app, so this is a from-scratch implementation
 // in the same spirit as FullCalendar/Notion Timeline: multi-day bars, drag-to-move, drag-edges-
 // to-resize, conflict detection, and a draft/Save/Cancel flow mirroring Edit Route).
-const CAL_STATUS_COLOR={planned:'#4BC8D8',partial:'#D8C84B',confirmed:'#3DAB82',wishlist:'#E08CE6',completed:'#C4C4CC',cancelled:'#A85050'};
-const CAL_STATUS_COLOR_LIGHT={planned:'#0E6E7E',partial:'#7A6314',confirmed:'#2F8F66',wishlist:'#8C3A93',completed:'#5A5A64',cancelled:'#9C3B3B'};
+const CAL_STATUS_COLOR={planned:'#2E9FE0',partial:'#D8C84B',confirmed:'#3DAB82',wishlist:'#E08CE6',completed:'#C4C4CC',cancelled:'#A85050'};
+const CAL_STATUS_COLOR_LIGHT={planned:'#1B6FA0',partial:'#7A6314',confirmed:'#2F8F66',wishlist:'#8C3A93',completed:'#5A5A64',cancelled:'#9C3B3B'};
 function calStatusColor(status){
   const theme=document.body.getAttribute('data-theme');
   const map=(theme==='classic'||theme==='modern')?CAL_STATUS_COLOR_LIGHT:CAL_STATUS_COLOR;
@@ -4409,7 +4410,7 @@ function renderBudgetBreakdown(){
   const fmtM=n=>n.toLocaleString(undefined,{maximumFractionDigits:0});
   const oweHTML=(planned,paid)=>{
     const owe=planned-paid;
-    return`Planned $${fmtM(planned)} · <span style="color:${paid>=0?'var(--green)':'var(--red)'}">Paid $${fmtM(paid)}</span> · <span style="color:${owe>0?'var(--red)':'var(--green)'}">Still Owe $${fmtM(owe)}</span>`;
+    return`Planned $${fmtM(planned)} · Paid $<span style="color:${paid>=0?'var(--green)':'var(--red)'}">${fmtM(paid)}</span> · Still Owe $<span style="color:${owe>0?'var(--red)':'var(--green)'}">${fmtM(owe)}</span>`;
   };
   const catRowsFor=(mKeyMatch)=>{
     let planned=0,actual=0;
@@ -4456,7 +4457,7 @@ function renderBudgetBreakdown(){
         <span style="color:var(--t3);font-size:12px">→</span>
         <input class="fi" type="month" value="${endM||''}" onchange="budgetBdSetMonth('end',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
       </div>
-      <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:2px;margin-left:auto">
+      <div class="bd-toggle-wrap" style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:2px">
         <button onclick="setBudgetViewMode('per')" style="border:none;background:${perPerson?'var(--gold)':'transparent'};color:${perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">Per Person</button>
         <button onclick="setBudgetViewMode('all')" style="border:none;background:${!perPerson?'var(--gold)':'transparent'};color:${!perPerson?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:12px;font-weight:600;padding:.35rem .9rem;border-radius:18px;cursor:pointer;transition:all .15s">All Travelers</button>
       </div>
