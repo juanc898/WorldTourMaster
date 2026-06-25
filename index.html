@@ -191,11 +191,15 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="punk"] .nav-tab{color:#bbb;font-weight:700;font-size:14px;letter-spacing:.04em}
 [data-theme="punk"] .nav-tab:hover{color:#fff}
 [data-theme="punk"] .nav-tab.active{color:#fff;border-bottom-color:var(--gold);background:rgba(224,16,43,.18)}
+[data-theme="punk"] .icon-btn{color:#fff;border-color:rgba(255,255,255,.4)}
+[data-theme="punk"] .menu-btn{color:#fff}
 [data-theme="punk"] .sidebar{background:var(--ink);border-right:4px solid var(--bd2)}
 [data-theme="punk"] .act-nm{color:#fff}
 [data-theme="punk"] .act-sub,[data-theme="punk"] .dest-meta,[data-theme="punk"] .dest-city{color:#9A9A9A}
 [data-theme="punk"] .theme-opt-name{color:#fff}
 [data-theme="punk"] .theme-opt-mood{color:#bbb}
+[data-theme="punk"] .fmi{color:#ddd}
+[data-theme="punk"] .fmi:hover{color:#fff}
 [data-theme="punk"] .rt-dest-name{font-size:16px!important}
 [data-theme="punk"] .re-dest-name{font-size:15px!important}
 [data-theme="punk"] .tourovr-act-name{font-size:13px!important}
@@ -203,10 +207,13 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="classic"] .act-nm{font-size:13px}
 [data-theme="classic"] .act-sub{font-size:12px}
 [data-theme="classic"] .tour-quote{font-size:14px}
-[data-theme="classic"] .sb-planned,[data-theme="modern"] .sb-planned{background:rgba(27,111,160,.14);color:#1B6FA0}
-[data-theme="classic"] .sb-partial,[data-theme="modern"] .sb-partial{background:rgba(150,125,20,.16);color:#7A6314}
-[data-theme="classic"] .sb-wishlist,[data-theme="modern"] .sb-wishlist{background:rgba(160,50,170,.14);color:#8C3A93}
-[data-theme="classic"] .sb-completed,[data-theme="modern"] .sb-completed{background:rgba(90,90,100,.16);color:#5A5A64}
+[data-theme="classic"] .sb-planned,[data-theme="modern"] .sb-planned{background:rgba(0,108,128,.14);color:#006C80}
+[data-theme="punk"] .sb-planned{background:rgba(115,0,198,.16);color:#7300C6}
+[data-theme="classic"] .sb-partial,[data-theme="modern"] .sb-partial,[data-theme="punk"] .sb-partial{background:rgba(122,99,20,.18);color:#7A6314}
+[data-theme="classic"] .sb-wishlist,[data-theme="modern"] .sb-wishlist,[data-theme="punk"] .sb-wishlist{background:rgba(140,58,147,.16);color:#8C3A93}
+[data-theme="classic"] .sb-completed,[data-theme="modern"] .sb-completed,[data-theme="punk"] .sb-completed{background:rgba(0,120,20,.16);color:#007814}
+[data-theme="classic"] .sb-confirmed,[data-theme="modern"] .sb-confirmed,[data-theme="punk"] .sb-confirmed{background:rgba(0,120,20,.16);color:#007814}
+[data-theme="classic"] .sb-cancelled,[data-theme="modern"] .sb-cancelled,[data-theme="punk"] .sb-cancelled{background:rgba(140,59,59,.18);color:#8C3B3B}
 [data-theme="futurist"] .tourovr-act-name{font-size:13px!important}
 [data-theme="punk"] .tour-sel{background:#1A1A1A;color:#fff;border-color:#333}
 [data-theme="punk"] .scard,[data-theme="punk"] .pblk,[data-theme="punk"] .pblk-f,[data-theme="punk"] .modal,[data-theme="punk"] .ev-item,[data-theme="punk"] .bkt,[data-theme="punk"] .bcat{
@@ -220,12 +227,6 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="punk"] .add-btn:hover,[data-theme="punk"] .btnp:hover{background:#0A0A0A;filter:none}
 [data-theme="punk"] .btng{border:2px solid var(--bd2);border-radius:1px;font-weight:700}
 [data-theme="punk"] .sbadge{border-radius:1px;font-weight:700;letter-spacing:.02em}
-[data-theme="punk"] .sb-confirmed{background:#0A0A0A;color:#fff}
-[data-theme="punk"] .sb-planned{background:var(--purple);color:#fff}
-[data-theme="punk"] .sb-cancelled{background:var(--red);color:#fff}
-[data-theme="punk"] .sb-completed{background:var(--blue);color:#fff}
-[data-theme="punk"] .sb-wishlist{background:#fff;color:#0A0A0B;border:2px solid #0A0A0A}
-[data-theme="punk"] .sb-partial{background:var(--gold);color:#0A0A0A}
 [data-theme="punk"] .fi{border:2px solid var(--bd2);border-radius:1px;font-weight:500}
 [data-theme="punk"] .fi:focus{border-color:var(--gold)}
 [data-theme="punk"] .mhdr{border-bottom:3px solid var(--bd2)}
@@ -341,11 +342,11 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .abtn.del:hover{border-color:var(--red);color:var(--red)}
 /* STATUS BADGES */
 .sbadge{font-size:11px;padding:2px 7px;border-radius:var(--radius);font-family:var(--font-ui);white-space:nowrap;text-transform:capitalize}
-.sb-planned{background:rgba(46,159,224,.18);color:#2E9FE0}
-.sb-confirmed{background:rgba(61,171,130,.18);color:#3DAB82}
-.sb-cancelled{background:rgba(200,75,75,.15);color:#C84B4B}
-.sb-wishlist{background:rgba(216,140,230,.18);color:#E08CE6}
-.sb-completed{background:rgba(190,190,196,.18);color:#C4C4CC}
+.sb-planned{background:rgba(0,233,255,.18);color:#00E9FF}
+.sb-confirmed{background:rgba(0,154,29,.2);color:#009A1D}
+.sb-cancelled{background:rgba(168,80,80,.2);color:#A85050}
+.sb-wishlist{background:rgba(224,140,230,.18);color:#E08CE6}
+.sb-completed{background:rgba(0,154,29,.2);color:#009A1D}
 .sb-partial{background:rgba(216,200,75,.2);color:#D8C84B}
 /* ROUTE TABLE */
 .rtbl{width:100%;border-collapse:collapse;font-family:var(--font-ui);font-size:14px}
@@ -1015,7 +1016,7 @@ function renderSettingsMenu(){
   document.getElementById('settingsPop').innerHTML=`
     <div class="fmi" onclick="openAccountModal()"><i class="ti ti-user-circle" style="width:16px;flex-shrink:0"></i> Account Management</div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:.45rem .7rem;gap:8px">
-      <span style="font-size:13px;color:var(--t2);font-family:var(--font-ui);display:flex;align-items:center;gap:8px"><i class="ti ti-arrow-back-up" style="width:16px;flex-shrink:0"></i> Undo / Redo</span>
+      <span class="fmi" style="font-size:13px;padding:0;cursor:default;display:flex;align-items:center;gap:8px"><i class="ti ti-arrow-back-up" style="width:16px;flex-shrink:0"></i> Undo / Redo</span>
       <div style="display:flex;gap:4px">
         <button class="abtn" onclick="event.stopPropagation();performUndo()" style="${canUndo?'':'opacity:.35;cursor:default'}" title="Undo"><i class="ti ti-corner-up-left"></i></button>
         <button class="abtn" onclick="event.stopPropagation();performRedo()" style="${canRedo?'':'opacity:.35;cursor:default'}" title="Redo"><i class="ti ti-corner-up-right"></i></button>
@@ -3222,11 +3223,13 @@ function project(lat,lng){
 // calendar library is loaded in this single-file app, so this is a from-scratch implementation
 // in the same spirit as FullCalendar/Notion Timeline: multi-day bars, drag-to-move, drag-edges-
 // to-resize, conflict detection, and a draft/Save/Cancel flow mirroring Edit Route).
-const CAL_STATUS_COLOR={planned:'#2E9FE0',partial:'#D8C84B',confirmed:'#3DAB82',wishlist:'#E08CE6',completed:'#C4C4CC',cancelled:'#A85050'};
-const CAL_STATUS_COLOR_LIGHT={planned:'#1B6FA0',partial:'#7A6314',confirmed:'#2F8F66',wishlist:'#8C3A93',completed:'#5A5A64',cancelled:'#9C3B3B'};
+const CAL_STATUS_COLOR={planned:'#00E9FF',partial:'#D8C84B',confirmed:'#009A1D',wishlist:'#E08CE6',completed:'#009A1D',cancelled:'#A85050'};
+const CAL_STATUS_COLOR_LIGHT={planned:'#006C80',partial:'#7A6314',confirmed:'#007814',wishlist:'#8C3A93',completed:'#007814',cancelled:'#8C3B3B'};
+const CAL_STATUS_COLOR_PUNK={planned:'#7300C6',partial:'#7A6314',confirmed:'#007814',wishlist:'#8C3A93',completed:'#007814',cancelled:'#8C3B3B'};
 function calStatusColor(status){
   if(customStatusColors[status])return customStatusColors[status];
   const theme=document.body.getAttribute('data-theme');
+  if(theme==='punk')return CAL_STATUS_COLOR_PUNK[status]||CAL_STATUS_COLOR_PUNK.planned;
   const map=(theme==='classic'||theme==='modern')?CAL_STATUS_COLOR_LIGHT:CAL_STATUS_COLOR;
   return map[status]||map.planned;
 }
