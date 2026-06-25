@@ -200,6 +200,11 @@ body{font-size:15px;transition:background .3s,color .3s}
 [data-theme="punk"] .theme-opt-mood{color:#bbb}
 [data-theme="punk"] .fmi{color:#ddd}
 [data-theme="punk"] .fmi:hover{color:#fff}
+[data-theme="punk"] .status-color-label{color:#fff!important}
+[data-theme="punk"] .status-color-hint,[data-theme="punk"] .status-color-chevron{color:#bbb!important}
+[data-theme="punk"] .modal .flbl{color:#999}
+[data-theme="punk"] .modal .dlbl{color:#999}
+[data-theme="punk"] .modal .dval{color:#ddd}
 [data-theme="punk"] .rt-dest-name{font-size:16px!important}
 [data-theme="punk"] .re-dest-name{font-size:15px!important}
 [data-theme="punk"] .tourovr-act-name{font-size:13px!important}
@@ -3226,6 +3231,12 @@ function project(lat,lng){
 const CAL_STATUS_COLOR={planned:'#00E9FF',partial:'#D8C84B',confirmed:'#009A1D',wishlist:'#E08CE6',completed:'#009A1D',cancelled:'#A85050'};
 const CAL_STATUS_COLOR_LIGHT={planned:'#006C80',partial:'#7A6314',confirmed:'#007814',wishlist:'#8C3A93',completed:'#007814',cancelled:'#8C3B3B'};
 const CAL_STATUS_COLOR_PUNK={planned:'#7300C6',partial:'#7A6314',confirmed:'#007814',wishlist:'#8C3A93',completed:'#007814',cancelled:'#8C3B3B'};
+function isLightColor(hex){
+  hex=(hex||'#888888').replace('#','');
+  if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
+  return(0.299*r+0.587*g+0.114*b)>150;
+}
 function calStatusColor(status){
   if(customStatusColors[status])return customStatusColors[status];
   const theme=document.body.getAttribute('data-theme');
@@ -3381,16 +3392,16 @@ function openStatusColorsModal(){
   document.getElementById('settingsPop').classList.remove('open');
   const rows=STATUS_LIST.map(s=>{
     const color=calStatusColor(s);
-    return`<div style="display:flex;align-items:center;gap:10px;padding:.6rem .2rem;border-bottom:1px solid rgba(128,128,128,.1);cursor:pointer" onclick="openColorPicker('${s}')">
+    return`<div class="status-color-row" style="display:flex;align-items:center;gap:10px;padding:.6rem .2rem;border-bottom:1px solid rgba(128,128,128,.1);cursor:pointer" onclick="openColorPicker('${s}')">
       <div style="width:22px;height:22px;border-radius:50%;background:${color};border:1px solid rgba(255,255,255,.25);flex-shrink:0"></div>
-      <span style="flex:1;font-size:14px;color:var(--t1);font-family:var(--font-ui)">${statusLabel(s)}</span>
+      <span class="status-color-label" style="flex:1;font-size:14px;color:var(--t1);font-family:var(--font-ui)">${statusLabel(s)}</span>
       ${customStatusColors[s]?`<button class="abtn" onclick="event.stopPropagation();resetCustomStatusColor('${s}');openStatusColorsModal()" title="Reset to default" style="font-size:11px"><i class="ti ti-restore"></i></button>`:''}
-      <i class="ti ti-chevron-right" style="color:var(--t3);font-size:14px"></i>
+      <i class="ti ti-chevron-right status-color-chevron" style="color:var(--t3);font-size:14px"></i>
     </div>`;
   }).join('');
   document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Status Colors</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
-    <div class="mbody">
-      <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-bottom:.5rem">Click a status to choose its color. Changes apply everywhere across the app immediately.</div>
+    <div class="mbody status-colors-body">
+      <div class="status-color-hint" style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-bottom:.5rem">Click a status to choose its color. Changes apply everywhere across the app immediately.</div>
       ${rows}
     </div>`;
   document.getElementById('calPopModal').style.display='flex';
@@ -3526,6 +3537,7 @@ function calRenderMonth(){
     const barsHTML=visibleSegs.map(s=>{
       const d=s.d,am=aM(d.act);
       const color=calStatusColor(d.status);
+      const textColor=isLightColor(color)?'#1A1A1A':'#fff';
       const isCompleted=d.departure<todayIso&&d.status!=='cancelled';
       const isCurrent=d.arrival<=todayIso&&d.departure>=todayIso;
       const isSoon=!isCurrent&&!isCompleted&&d.arrival>=todayIso&&d.arrival<=soonIso;
@@ -3534,10 +3546,10 @@ function calRenderMonth(){
       const span=s.endIdx-s.startIdx;
       const label=span>=2?`${flagHtml(d.flag)} ${esc(d.city)}${nights>0?' · '+nights+'n':''}`:span===1?`${flagHtml(d.flag)} ${esc(d.city)}`:`${flagHtml(d.flag)}`;
       return`<div class="cal-chip ${isCompleted?'completed':''} ${isSoon?'upcoming-soon':''} ${isCurrent?'is-current':''} ${s.startsHere?'':'cont-l'} ${s.endsHere?'':'cont-r'}"
-        style="grid-column:${s.startIdx+1}/${s.endIdx+2};grid-row:${s.slot+1};background:${color};color:${color}"
+        style="grid-column:${s.startIdx+1}/${s.endIdx+2};grid-row:${s.slot+1};background:${color}BF;color:${color}"
         draggable="true" ondragstart="calDragStart(event,'${d.id}')" ondragend="calDragEnd(event)"
         onclick="event.stopPropagation();calOpenPopup('${d.id}')" title="${esc(d.city)}, ${esc(d.country)} · ${fD(d.arrival)} – ${fD(d.departure)}">
-        <span style="color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">${isCompleted?'✓ ':''}${label}</span>
+        <span style="color:${textColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">${isCompleted?'✓ ':''}${label}</span>
         ${span>=1?`<span class="cal-chip-dots"><span class="cal-dot ${accomOn?'on':'off'}" title="Accommodation ${accomOn?'booked':'missing'}"></span><span class="cal-dot ${transOn?'on':'off'}" title="Transportation ${transOn?'booked':'missing'}"></span></span>`:''}
         ${s.startsHere?`<div class="cal-resize-handle l" onmousedown="calResizeStart(event,'${d.id}','l')"></div>`:''}
         ${s.endsHere?`<div class="cal-resize-handle r" onmousedown="calResizeStart(event,'${d.id}','r')"></div>`:''}
