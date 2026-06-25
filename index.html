@@ -635,11 +635,6 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   [data-theme="executive"] .rt-mobile-dates{font-size:10px!important}
   [data-theme="modern"] .rt-mobile-dates{font-size:10px!important}
   [data-theme="luxury"] .rt-mobile-dates{font-size:10px!important}
-  .re-act-name{font-size:10px!important}
-  /* EDIT ROUTE grid secondary line (act-name), -1pt for the same three appearances */
-  [data-theme="executive"] .re-act-name{font-size:9px!important}
-  [data-theme="modern"] .re-act-name{font-size:9px!important}
-  [data-theme="luxury"] .re-act-name{font-size:9px!important}
 
   /* World Tour description quote — -1pt for Mythic Odyssey and Dark Executive */
   [data-theme="mythic"] .tour-quote{font-size:12px!important}
@@ -1390,6 +1385,52 @@ let routeEditMode=false; // toggles the Route section between the normal table a
 let routeDraft=null; // working copy of {id,arrival,departure} while inside Edit Route — null means "not editing", live data is untouched until Save Changes
 let routeAutoCalc=localStorage.getItem('ae_route_autocalc')!=='off'; // defaults to on
 let routeSearch=''; // free-text search across the Route table — filters on top of the status checkboxes
+let routeFilterAct=null; // null = all acts, or a specific act id
+let routeDateMode=localStorage.getItem('ae_route_datemode')||'total-tour'; // 'current-end' | 'total-tour' | 'custom' — persisted, defaults to Total Tour
+let routeCustomStart=null,routeCustomEnd=null;
+let routeFilterMonth=null; // 'YYYY-MM' or null
+function routeEffectiveRange(){
+  const bounds=budgetTourBounds();
+  const todayIso=calIso(new Date());
+  if(routeDateMode==='current-end')return{start:todayIso,end:bounds.end};
+  if(routeDateMode==='custom')return{start:routeCustomStart||bounds.start,end:routeCustomEnd||bounds.end};
+  return{start:bounds.start,end:bounds.end}; // 'total-tour' default
+}
+function routeSetDateMode(mode){
+  routeDateMode=mode;localStorage.setItem('ae_route_datemode',mode);
+  if(mode!=='custom'){const r=routeEffectiveRange();routeCustomStart=r.start;routeCustomEnd=r.end;}
+  renderContent();
+}
+function routeSetCustomDate(which,val){
+  routeDateMode='custom';localStorage.setItem('ae_route_datemode','custom');
+  if(which==='start')routeCustomStart=val;else routeCustomEnd=val;
+  renderContent();
+}
+function routeSetFilterAct(id){routeFilterAct=id||null;renderContent();}
+function routeSetFilterMonth(val){routeFilterMonth=val||null;renderContent();}
+// Undated destinations are always included rather than silently excluded by a filter they have
+// no date to test against — same principle used throughout Budget and Tour Overview.
+function routeDestInRange(d,range){
+  if(!d.arrival||!d.departure||!range.start||!range.end)return true;
+  return d.arrival<=range.end&&d.departure>=range.start;
+}
+function routeDestInMonth(d,monthKey){
+  if(!monthKey)return true;
+  if(!d.arrival||!d.departure)return true;
+  const[y,m]=monthKey.split('-').map(Number);
+  const monthStart=`${y}-${String(m).padStart(2,'0')}-01`;
+  const lastDay=new Date(y,m,0).getDate();
+  const monthEnd=`${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+  return d.arrival<=monthEnd&&d.departure>=monthStart;
+}
+function routeFilteredDests(){
+  const range=routeEffectiveRange();
+  return sDests().filter(d=>AF.includes(d.status))
+    .filter(d=>routeMatchesSearch(d,routeSearch))
+    .filter(d=>!routeFilterAct||d.act===routeFilterAct)
+    .filter(d=>routeDestInRange(d,range))
+    .filter(d=>routeDestInMonth(d,routeFilterMonth));
+}
 let editDestId=null,editActId=null,editBktId=null,editBudCatId=null,editTourId=null,editBktCatId=null,editEventCatId=null;
 let aiMsgs=[],selBudCat=null,ctxEvId=null;
 let bdDragSrc=null,bktDragSrc=null;
@@ -1429,7 +1470,7 @@ function renderSB(){
   document.getElementById('actsList').innerHTML=h;
   updateHStats();
 }
-function sco(s){return s==='confirmed'?'#4BC896':s==='completed'?'#5B9BD8':s==='cancelled'?'#666':s==='wishlist'?'#9B5BD8':'#8B6914';}
+function sco(s){return calStatusColor(s);}
 function scls(s){return'sbadge sb-'+(s||'planned');}
 function statusLabel(s){return s==='partial'?'Partially Confirmed':(s||'planned');}
 function selAct(id){curActId=curActId===id?null:id;curDestId=null;renderSB();renderContent();}
@@ -1701,8 +1742,13 @@ function renderRoute(){
   const sts=['planned','partial','confirmed','wishlist','completed','cancelled'];
   const stsLbl=s=>s==='partial'?'Partially Confirmed':s.charAt(0).toUpperCase()+s.slice(1);
   const fitems=sts.map(s=>`<label class="fmi"><input type="checkbox" ${AF.includes(s)?'checked':''} onchange="toggleF('${s}')"/> ${stsLbl(s)}</label>`).join('');
-  const filt=sorted.filter(d=>AF.includes(d.status)).filter(d=>routeMatchesSearch(d,routeSearch));
+  const range=routeEffectiveRange();
+  const filt=routeFilteredDests();
   const rows=routeRowsHtml(filt);
+  const actFilterLabel=routeFilterAct?(aM(routeFilterAct)?.name||'Act'):'All Acts';
+  const actMenuItems=`<div class="fmi" onclick="routeSetFilterAct(null)" style="${!routeFilterAct?'color:var(--gold)':''}"><i class="ti ti-circle${!routeFilterAct?'-check-filled':''}" style="font-size:13px"></i> All Acts</div>`+
+    cActs().map(a=>`<div class="fmi" onclick="routeSetFilterAct('${a.id}')" style="${routeFilterAct===a.id?'color:'+a.color:''}"><div style="width:8px;height:8px;border-radius:50%;background:${a.color};flex-shrink:0"></div> ${esc(a.name)}</div>`).join('');
+  const dateModeBtn=(mode,lbl)=>`<button onclick="routeSetDateMode('${mode}')" style="border:none;background:${routeDateMode===mode?'var(--gold)':'transparent'};color:${routeDateMode===mode?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s;white-space:nowrap">${lbl}</button>`;
   return`<div class="panel">
     <div class="frow">
       <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>
@@ -1711,9 +1757,15 @@ function renderRoute(){
         <input class="fi" id="routeSearchInp" type="text" placeholder="Search city, country, event…" value="${esc(routeSearch)}" oninput="onRouteSearch(this.value)" style="padding:.5rem .6rem .5rem 1.8rem;font-size:13px"/>
       </div>
       <div style="position:relative">
-        <button class="fbtn" onclick="toggleFMenu()"><i class="ti ti-filter"></i> Filter <i class="ti ti-chevron-down"></i></button>
+        <button class="fbtn" onclick="toggleFMenu()"><i class="ti ti-filter"></i> Status <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="fmenu">${fitems}</div>
       </div>
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleIOMenu('routeActMenu')"><i class="ti ti-theater-mask"></i> ${esc(actFilterLabel)} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="routeActMenu">${actMenuItems}</div>
+      </div>
+      <input class="fi" type="month" value="${routeFilterMonth||''}" onchange="routeSetFilterMonth(this.value)" title="Filter by month/year" style="font-size:12px;padding:.5rem .6rem;width:auto"/>
+      ${routeFilterMonth?`<button class="abtn" onclick="routeSetFilterMonth(null)" title="Clear month filter"><i class="ti ti-x"></i></button>`:''}
       <div style="position:relative">
         <button class="fbtn" onclick="toggleIOMenu('routeIOMenu')" title="Template, Import, Export"><i class="ti ti-arrow-up"></i></button>
         <div class="fmenu" id="routeIOMenu">
@@ -1726,6 +1778,16 @@ function renderRoute(){
       <button class="fbtn" onclick="confirmRecalculateDates()" title="Close any gaps or overlaps between destinations, in chronological order, after editing dates or nights"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
       <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:12px">Remove All</button>
       <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)" id="routeCount">${filt.length}/${sorted.length}</span>
+    </div>
+    <div class="frow" style="margin-top:-.4rem">
+      <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
+        ${dateModeBtn('current-end','Current → End')}${dateModeBtn('total-tour','Total Tour')}${dateModeBtn('custom','Custom')}
+      </div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="fi" type="date" value="${range.start||''}" onchange="routeSetCustomDate('start',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+        <span style="color:var(--t3);font-size:12px">→</span>
+        <input class="fi" type="date" value="${range.end||''}" onchange="routeSetCustomDate('end',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+      </div>
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
       <table class="rtbl">
@@ -1774,7 +1836,7 @@ function routeMatchesSearch(d,q){
 function onRouteSearch(val){
   routeSearch=val;
   const sorted=sDests();
-  const filt=sorted.filter(d=>AF.includes(d.status)).filter(d=>routeMatchesSearch(d,routeSearch));
+  const filt=routeFilteredDests();
   const body=document.getElementById('routeTblBody');
   if(body)body.innerHTML=routeRowsHtml(filt);
   const count=document.getElementById('routeCount');
@@ -1813,10 +1875,9 @@ function renderRouteEdit(){
   const rows=routeDraft.map((r,i)=>{
     const d=dBy(r.id);if(!d)return'';
     const n=dBtw(r.arrival,r.departure);
-    const am=aM(d.act);
     return`<tr data-id="${r.id}">
       <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:11px">${i+1}</td>
-      <td style="padding:.4rem .6rem"><span style="font-size:15px;margin-right:4px">${flagHtml(d.flag)}</span><span class="re-dest-name" style="font-size:14px;color:var(--t1)">${esc(d.city)}</span><div class="re-act-name" style="font-size:11px;color:${am.color}">${esc(am.name)}</div></td>
+      <td style="padding:.4rem .6rem"><span style="font-size:15px;margin-right:4px">${flagHtml(d.flag)}</span><span class="re-dest-name" style="font-size:14px;color:var(--t1)">${esc(d.city)}</span></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_a_${r.id}">${wS(r.arrival)}</span></div></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_d_${r.id}">${wS(r.departure)}</span></div></td>
       <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:12px;padding:.3rem .4rem;width:56px"/></td>
@@ -4345,6 +4406,11 @@ function renderBudgetBreakdown(){
   const{startM,endM}=budgetBdMonthRange();
   const months=budgetMonthsBetween(startM,endM);
   const data=budgetAllItemsByCategory();
+  const fmtM=n=>n.toLocaleString(undefined,{maximumFractionDigits:0});
+  const oweHTML=(planned,paid)=>{
+    const owe=planned-paid;
+    return`Planned $${fmtM(planned)} · <span style="color:${paid>=0?'var(--green)':'var(--red)'}">Paid $${fmtM(paid)}</span> · <span style="color:${owe>0?'var(--red)':'var(--green)'}">Still Owe $${fmtM(owe)}</span>`;
+  };
   const catRowsFor=(mKeyMatch)=>{
     let planned=0,actual=0;
     const rows=data.map(({cat,plannedItems,actualItems})=>{
@@ -4352,7 +4418,7 @@ function renderBudgetBreakdown(){
       const a=actualItems.filter(i=>mKeyMatch(i.date)).reduce((s,i)=>s+i.amt,0);
       if(p===0&&a===0)return'';
       planned+=p;actual+=a;
-      return`<div class="drow"><span class="dlbl" style="color:${cat.color}">${esc(cat.name)}</span><span class="dval">Planned $${p.toLocaleString(undefined,{maximumFractionDigits:0})} · Actual $${a.toLocaleString(undefined,{maximumFractionDigits:0})}</span></div>`;
+      return`<div class="drow"><span class="dlbl" style="color:${cat.color}">${esc(cat.name)}</span><span class="dval">${oweHTML(p,a)}</span></div>`;
     }).join('');
     return{rows,planned,actual};
   };
@@ -4364,7 +4430,7 @@ function renderBudgetBreakdown(){
     return`<div style="margin-bottom:.75rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
       <div style="padding:.5rem .75rem;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
         <div style="font-size:13px;color:var(--t1);font-family:var(--font-display);font-weight:600">${label}</div>
-        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui)">Planned $${planned.toLocaleString(undefined,{maximumFractionDigits:0})} · Actual $${actual.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui)">${oweHTML(planned,actual)}</div>
       </div>
       <div style="padding:.3rem .75rem">${rows}</div>
     </div>`;
@@ -4373,7 +4439,7 @@ function renderBudgetBreakdown(){
   const noDateHTML=noDate.rows?`<div style="margin-bottom:.75rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
       <div style="padding:.5rem .75rem;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
         <div style="font-size:13px;color:var(--t1);font-family:var(--font-ui);font-weight:600">No Date Defined</div>
-        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui)">Planned $${noDate.planned.toLocaleString(undefined,{maximumFractionDigits:0})} · Actual $${noDate.actual.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui)">${oweHTML(noDate.planned,noDate.actual)}</div>
       </div>
       <div style="padding:.3rem .75rem">${noDate.rows}</div>
     </div>`:'';
