@@ -4,6 +4,15 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>NOMAD — World Tour Planner</title>
+<!-- PWA: lets phones install NOMAD as a standalone app with its own icon -->
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0A0A0F"/>
+<link rel="icon" type="image/png" href="icon-192.png"/>
+<link rel="apple-touch-icon" href="icon-180.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="NOMAD"/>
+<meta name="mobile-web-app-capable" content="yes"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@300;400;500;600;700;800&family=Cormorant:wght@400;500;600&family=Permanent+Marker&family=Archivo+Black&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -748,9 +757,9 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
    AUTH OVERLAY + SYNC STATUS — cloud account login screen
    ══════════════════════════════════════════════════════ */
 .auth-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-box{width:100%;max-width:340px;background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:2rem 1.6rem;text-align:center}
-.auth-logo{font-family:var(--font-disp,inherit);font-size:28px;font-weight:700;color:var(--gold);letter-spacing:.05em}
-.auth-sub{font-size:12px;color:var(--t3);margin-top:.1rem;margin-bottom:1.4rem;letter-spacing:.08em;text-transform:uppercase}
+.auth-wrap{width:100%;max-width:340px}
+.auth-logo-img{width:100%;max-width:230px;height:auto;display:block;margin:0 auto 1.2rem auto}
+.auth-box{width:100%;background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:1.6rem 1.6rem 1.8rem;text-align:center}
 .auth-input{width:100%;padding:.65rem .8rem;margin-bottom:.6rem;border-radius:8px;border:1px solid var(--bd);background:var(--ink);color:var(--t1);font-size:14px}
 .auth-input:focus{outline:none;border-color:var(--gold)}
 .auth-toggle{margin-top:1rem;font-size:12.5px;color:var(--t2);cursor:pointer;text-decoration:underline}
@@ -771,16 +780,17 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 <!-- AUTH OVERLAY — blocks the app until the person signs in. Sits on top of
      everything (z-index in CSS) and is simply hidden once Firebase confirms a user. -->
 <div id="authOverlay" class="auth-overlay">
-  <div class="auth-box">
-    <div class="auth-logo">NOMAD</div>
-    <div class="auth-sub">World Tour Planner</div>
-    <div id="authError" class="auth-error" style="display:none"></div>
-    <input id="authEmail" class="auth-input" type="email" placeholder="Email" autocomplete="username"/>
-    <input id="authPass" class="auth-input" type="password" placeholder="Password" autocomplete="current-password"/>
-    <button class="btnp" id="authSubmitBtn" style="width:100%;justify-content:center;margin-top:.4rem" onclick="authSubmit()">Sign In</button>
-    <div class="auth-toggle" id="authToggleText" onclick="authToggleMode()">Don't have an account? Sign up</div>
-    <div class="auth-forgot" id="authForgotText" onclick="authForgotPassword()">Forgot password?</div>
-    <div class="auth-loading" id="authLoading" style="display:none"><i class="ti ti-loader-2"></i> Connecting…</div>
+  <div class="auth-wrap">
+    <img src="logo.png" alt="NOMAD" class="auth-logo-img"/>
+    <div class="auth-box">
+      <div id="authError" class="auth-error" style="display:none"></div>
+      <input id="authEmail" class="auth-input" type="email" placeholder="Email" autocomplete="username"/>
+      <input id="authPass" class="auth-input" type="password" placeholder="Password" autocomplete="current-password"/>
+      <button class="btnp" id="authSubmitBtn" style="width:100%;justify-content:center;margin-top:.4rem" onclick="authSubmit()">Sign In</button>
+      <div class="auth-toggle" id="authToggleText" onclick="authToggleMode()">Don't have an account? Sign up</div>
+      <div class="auth-forgot" id="authForgotText" onclick="authForgotPassword()">Forgot password?</div>
+      <div class="auth-loading" id="authLoading" style="display:none"><i class="ti ti-loader-2"></i> Connecting…</div>
+    </div>
   </div>
 </div>
 <div class="app">
@@ -1091,7 +1101,8 @@ function authSubmit(){
   const action=authMode==='signin'
     ?fbAuth.signInWithEmailAndPassword(email,pass)
     :fbAuth.createUserWithEmailAndPassword(email,pass);
-  action.catch(err=>{authSetLoading(false);authShowError(authFriendlyError(err));});
+  withTimeout(action,15000,'Sign-in timed out. Check your internet connection and try again.')
+    .catch(err=>{authSetLoading(false);authShowError(authFriendlyError(err));});
   // on success, onAuthStateChanged (below) takes over — no need to handle the resolved value here
 }
 function authForgotPassword(){
@@ -6135,6 +6146,15 @@ applyCustomStatusColors();
 // renderSB()/renderContent() are no longer called directly here — they now run
 // from the fbAuth.onAuthStateChanged callback above, once a user is signed in
 // and their cloud data (or a fresh blank state) has finished loading.
+
+// PWA: register the service worker so the app becomes installable on phones.
+// Wrapped defensively — an unsupported browser or a blocked script must never
+// stop the rest of the app from working.
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(err=>console.warn('Service worker registration failed:',err));
+  });
+}
 </script>
 </body>
 </html>
