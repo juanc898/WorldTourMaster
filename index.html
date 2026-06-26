@@ -768,6 +768,11 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .auth-forgot:hover{color:var(--t2)}
 .auth-error{background:rgba(200,75,75,.12);color:#E07A7A;border:1px solid rgba(200,75,75,.3);border-radius:6px;padding:.5rem .65rem;font-size:12px;margin-bottom:.7rem;text-align:left}
 .auth-loading{margin-top:.8rem;font-size:12px;color:var(--t3)}
+.auth-download-row{margin-top:1.4rem;text-align:center}
+.auth-download-label{font-size:11px;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem}
+.auth-download-icons{display:flex;gap:14px;justify-content:center}
+.auth-download-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--bd);background:transparent;color:var(--t2);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color .2s,border-color .2s,background .2s}
+.auth-download-btn:hover{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,255,255,.03)}
 .sync-status{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:17px;color:var(--t3);transition:color .2s}
 .sync-status:hover{background:var(--sf2)}
 .sync-status.saving{color:var(--gold);animation:syncPulse 1s ease-in-out infinite}
@@ -776,7 +781,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 @keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
-<body data-theme="mythic">
+<body data-theme="luxury">
 <!-- AUTH OVERLAY — blocks the app until the person signs in. Sits on top of
      everything (z-index in CSS) and is simply hidden once Firebase confirms a user. -->
 <div id="authOverlay" class="auth-overlay">
@@ -790,6 +795,13 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
       <div class="auth-toggle" id="authToggleText" onclick="authToggleMode()">Don't have an account? Sign up</div>
       <div class="auth-forgot" id="authForgotText" onclick="authForgotPassword()">Forgot password?</div>
       <div class="auth-loading" id="authLoading" style="display:none"><i class="ti ti-loader-2"></i> Connecting…</div>
+    </div>
+    <div class="auth-download-row">
+      <div class="auth-download-label">Download for:</div>
+      <div class="auth-download-icons">
+        <button class="auth-download-btn" id="installAndroidBtn" onclick="handleInstallAndroid()" title="Install on Android" aria-label="Install on Android"><i class="ti ti-brand-android"></i></button>
+        <button class="auth-download-btn" onclick="handleInstallApple()" title="Install on iPhone / iPad" aria-label="Install on iPhone / iPad"><i class="ti ti-brand-apple"></i></button>
+      </div>
     </div>
   </div>
 </div>
@@ -1221,6 +1233,7 @@ if(firebaseReady){
       currentUser=u;
       loadFromCloud(u).then(()=>{
         authSetLoading(false);
+        applyTheme(); // swap from the login screen's forced "Ultra Luxury" to this user's actual saved theme
         document.getElementById('authOverlay').style.display='none';
         curDestId=null;
         renderSB();renderContent();
@@ -1232,6 +1245,7 @@ if(firebaseReady){
       undoStack=[];redoStack=[];
       lastCloudSaveAt=null;
       authSetLoading(false);
+      document.body.setAttribute('data-theme','luxury'); // back to the login screen's fixed theme
       document.getElementById('authOverlay').style.display='flex';
     }
   });
@@ -1365,7 +1379,10 @@ function openCloseSessionModal(){
     </div>`;
   document.getElementById('calPopModal').style.display='flex';
 }
-applyTheme();
+// The login screen always shows in the "Ultra Luxury" theme, regardless of what
+// the signed-in user last picked — applyTheme() (which restores their real
+// preference) only runs once they're actually authenticated, in onAuthStateChanged.
+document.body.setAttribute('data-theme','luxury');
 
 // ── FILTER PERSISTENCE ────────────────────────────────────────────────────────
 let AF=JSON.parse(localStorage.getItem('ae_filters')||'["planned","partial","confirmed","wishlist","completed","cancelled"]');
@@ -6154,6 +6171,61 @@ if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').catch(err=>console.warn('Service worker registration failed:',err));
   });
+}
+
+// ── "Download for: Android / Apple" buttons on the login screen ────────────
+// Chrome on Android fires this event when the page qualifies as installable;
+// capturing it lets us trigger the real native install dialog with one tap,
+// instead of sending the person hunting through a browser menu.
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+});
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+}
+function handleInstallAndroid(){
+  if(isStandalone()){showInstallHelp('already');return;}
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.finally(()=>{deferredInstallPrompt=null;});
+  }else{
+    // Criteria not met yet, already installed, or a browser that doesn't support
+    // the programmatic prompt (e.g. Samsung Internet, Firefox) — fall back to instructions.
+    showInstallHelp('android-manual');
+  }
+}
+function handleInstallApple(){
+  // iOS/Safari has no install API at all — Apple only allows this via the Share
+  // sheet, done by the person themselves. This is the closest a website can get.
+  showInstallHelp(isStandalone()?'already':'ios');
+}
+function showInstallHelp(kind){
+  const content={
+    'ios':`<div class="mhdr"><div class="mttl">Install on iPhone / iPad</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+      <div class="mbody">
+        <div style="font-size:13px;color:var(--t2);line-height:1.6;text-align:left">
+          Apple doesn't allow any website to trigger installation automatically — it has to be done from Safari's Share menu:<br><br>
+          <b>1.</b> Open this page in <b>Safari</b> (not Chrome).<br>
+          <b>2.</b> Tap the <b>Share</b> icon (square with an arrow pointing up).<br>
+          <b>3.</b> Scroll down and tap <b>"Add to Home Screen"</b>, then <b>"Add"</b>.
+        </div>
+      </div>`,
+    'android-manual':`<div class="mhdr"><div class="mttl">Install on Android</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+      <div class="mbody">
+        <div style="font-size:13px;color:var(--t2);line-height:1.6;text-align:left">
+          Your browser didn't offer the one-tap installer. You can still install manually:<br><br>
+          <b>1.</b> Open this page in <b>Chrome</b>.<br>
+          <b>2.</b> Tap the <b>⋮</b> menu (top right).<br>
+          <b>3.</b> Tap <b>"Install app"</b> or <b>"Add to Home screen"</b>.
+        </div>
+      </div>`,
+    'already':`<div class="mhdr"><div class="mttl">Already Installed</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+      <div class="mbody"><div style="font-size:13px;color:var(--t2)">NOMAD is already installed on this device — look for its icon on your home screen.</div></div>`,
+  }[kind];
+  document.getElementById('calPopBody').innerHTML=content;
+  document.getElementById('calPopModal').style.display='flex';
 }
 </script>
 </body>
