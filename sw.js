@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nomad-shell-v1';
+const CACHE_NAME = 'nomad-shell-v2';
 const SHELL_FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -31,8 +31,11 @@ self.addEventListener('fetch', (event) => {
   // Network-first for our own shell files: whenever online, you always get the
   // latest deployed version (no manual cache-busting needed on routine edits).
   // Falls back to the last cached copy only when there's no network at all.
+  // `cache:'no-store'` matters here — without it, fetch() would still consult
+  // the browser's own HTTP cache and could silently return a stale response
+  // even though this code is "going to the network".
   event.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-store' })
       .then((res) => {
         const resClone = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
