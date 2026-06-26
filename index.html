@@ -1141,11 +1141,17 @@ function buildBlankTourState(){
 }
 
 // ── Firestore read/write — one document per user, isolated by uid via security rules ──
+function withTimeout(promise,ms,errMsg){
+  return Promise.race([
+    promise,
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error(errMsg||'Request timed out')),ms))
+  ]);
+}
 function cloudDocRefFor(u){return fbDb.collection('users').doc(u.uid).collection('tours').doc('main');}
 
 function loadFromCloud(u){
   setSyncStatus('saving');
-  return cloudDocRefFor(u).get().then(snap=>{
+  return withTimeout(cloudDocRefFor(u).get(),10000,'Firestore request timed out').then(snap=>{
     if(snap.exists&&snap.data()&&snap.data().state){
       isApplyingRemoteState=true;
       S=JSON.parse(snap.data().state);
@@ -1203,12 +1209,18 @@ if(firebaseReady){
     if(u){
       currentUser=u;
       loadFromCloud(u).then(()=>{
+        authSetLoading(false);
         document.getElementById('authOverlay').style.display='none';
         curDestId=null;
         renderSB();renderContent();
       });
     }else{
       currentUser=null;
+      clearTimeout(cloudSaveTimer);
+      lastStateSnapshot=null; // avoid bleeding undo history / change-detection state across accounts
+      undoStack=[];redoStack=[];
+      lastCloudSaveAt=null;
+      authSetLoading(false);
       document.getElementById('authOverlay').style.display='flex';
     }
   });
