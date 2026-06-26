@@ -294,6 +294,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .hstat-l{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-ui)}
 .add-btn{display:flex;align-items:center;gap:4px;padding:6px 11px;background:var(--accent-grad);border:none;border-radius:var(--radius);color:#0A0A0F;font-family:var(--font-ui);font-size:12px;font-weight:700;letter-spacing:.06em;cursor:pointer;text-transform:uppercase;white-space:nowrap;box-shadow:var(--glow)}
 .add-btn:hover{filter:brightness(1.1)}
+.add-btn-label{display:inline}
 .icon-btn{background:none;border:1px solid var(--bd2);border-radius:var(--radius);color:var(--t2);font-size:17px;cursor:pointer;padding:4px 7px;display:flex;align-items:center}
 .icon-btn:hover{color:var(--t1);border-color:var(--bd)}
 .theme-pop{position:absolute;top:calc(100% + 6px);right:0;background:var(--ink);border:1px solid var(--bd2);border-radius:var(--radius);min-width:230px;z-index:200;display:none;padding:.4rem;box-shadow:0 8px 30px rgba(0,0,0,.5);max-height:70vh;overflow-y:auto}
@@ -324,7 +325,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .content::-webkit-scrollbar-track{background:var(--ink)}
 /* SIDEBAR */
 .tour-bar{padding:.4rem .625rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:4px}
-.tour-sel{flex:1;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--radius);padding:.3rem .5rem;color:var(--gold);font-family:var(--font-ui);font-size:12px;outline:none;cursor:pointer}
+.tour-sel{flex:1;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--radius);padding:.45rem .5rem;color:var(--gold);font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:.02em;outline:none;cursor:pointer}
 .act-row{padding:.4rem .625rem .4rem .875rem;cursor:pointer;border-left:2px solid transparent;display:flex;align-items:center;gap:4px}
 .act-row:hover{background:rgba(255,255,255,.025)}
 .act-row.active{background:rgba(201,168,76,.05)}
@@ -369,6 +370,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .drow:last-child{border-bottom:none}
 .dlbl{font-size:14px;color:var(--t3);flex-shrink:0}
 .dval{font-size:14px;color:var(--t2);text-align:right}
+.dval-bd{font-size:14px;white-space:nowrap}
 .dval.gld{color:var(--gold)}
 .dval.grn{color:var(--green)}
 .dval.red{color:var(--red)}
@@ -609,6 +611,13 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   .pgrid{grid-template-columns:1fr}
   .sgrid{grid-template-columns:repeat(3,1fr)}
   .panel,.prof-wrap{padding:.75rem}
+  .dval-bd{font-size:10.5px;white-space:nowrap}
+  .logo-sub{display:none}
+  .add-btn-label{display:none}
+  header .add-btn{padding:6px 9px}
+  .mobile-filter-toggle{display:flex!important;margin-bottom:.6rem}
+  .panel .filter-row{display:none}
+  .panel.filters-open .filter-row{display:flex}
   .f2,.f3{grid-template-columns:1fr}
   .hm{display:none}
   .rt-mobile-dates{display:block}
@@ -698,7 +707,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   [data-theme="executive"] .theme-opt-mood{font-size:10px}
   [data-theme="executive"] .nav-tab{font-size:12px}
   [data-theme="executive"] .nav-tab i{font-size:15px}
-  [data-theme="executive"] .tour-sel{font-size:11px}
+  [data-theme="executive"] .tour-sel{font-size:14px}
   [data-theme="executive"] .act-nm{font-size:11px}
   [data-theme="executive"] .act-sub{font-size:10px}
   [data-theme="executive"] .act-badge{font-size:9px}
@@ -773,6 +782,22 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .auth-download-icons{display:flex;gap:14px;justify-content:center}
 .auth-download-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--bd);background:transparent;color:var(--t2);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color .2s,border-color .2s,background .2s}
 .auth-download-btn:hover{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,255,255,.03)}
+.faq-item{border-bottom:1px solid var(--bd);padding:.6rem 0}
+.faq-item:last-child{border-bottom:none}
+.faq-q{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;font-size:13.5px;color:var(--t1);font-family:var(--font-ui)}
+.faq-q i{flex-shrink:0;color:var(--t3);transition:transform .2s}
+.faq-a{margin-top:.5rem;font-size:12.5px;color:var(--t2);line-height:1.5}
+.stat-counter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.stat-counter-card{background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:.7rem;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:.5rem}
+.stat-counter-name{font-size:13.5px;color:var(--t1);font-family:var(--font-ui);line-height:1.3;min-height:2.2em}
+.stat-counter-row{display:flex;align-items:center;justify-content:center;gap:10px}
+.stat-counter-btn{width:30px;height:30px;flex-shrink:0;border-radius:50%;border:1px solid var(--bd2);background:var(--sf2);color:var(--t2);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:filter .15s}
+.stat-counter-btn:hover{filter:brightness(1.2);border-color:var(--gold-dim)}
+.stat-counter-value{font-size:26px;font-weight:700;color:var(--gold);font-family:var(--font-display);min-width:2.4em;text-align:center;cursor:pointer;user-select:none}
+.stat-counter-value:hover{filter:brightness(1.15)}
+.mobile-filter-toggle{display:none;align-items:center;gap:5px}
+.mobile-filter-toggle .ti-chevron-down{transition:transform .2s}
+.mobile-filter-toggle.open .ti-chevron-down{transform:rotate(180deg)}
 .sync-status{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:17px;color:var(--t3);transition:color .2s}
 .sync-status:hover{background:var(--sf2)}
 .sync-status.saving{color:var(--gold);animation:syncPulse 1s ease-in-out infinite}
@@ -846,7 +871,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
       <div class="theme-pop" id="settingsPop" style="min-width:230px"></div>
       <div class="theme-pop" id="themePop"></div>
     </div>
-    <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>
+    <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i><span class="add-btn-label"> Add Destination</span></button>
   </div>
 </header>
 <nav class="nav">
@@ -858,6 +883,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <div class="nav-tab" data-tab="budget" onclick="switchTab('budget',this)"><i class="ti ti-chart-pie"></i> Budget</div>
   <div class="nav-tab" data-tab="bucket" onclick="switchTab('bucket',this)"><i class="ti ti-list-check"></i> Bucket List</div>
   <div class="nav-tab" data-tab="visas" onclick="switchTab('visas',this)"><i class="ti ti-e-passport"></i> Visas</div>
+  <div class="nav-tab" data-tab="stats" onclick="switchTab('stats',this)"><i class="ti ti-chart-bar"></i> Tour Statistics</div>
   <div class="nav-tab" data-tab="ai" onclick="switchTab('ai',this)"><i class="ti ti-message-bolt"></i> AI Advisor</div>
 </nav>
 <div class="main">
@@ -1160,7 +1186,7 @@ function buildBlankTourState(){
     {id:uid(),name:'Luxury',color:'#8B4BC8'},
     {id:uid(),name:'Nature',color:'#4BC896'},
   ];
-  return {cur:id,tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
+  return {cur:id,tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
 }
 
 // ── Firestore read/write — one document per user, isolated by uid via security rules ──
@@ -1335,7 +1361,10 @@ function renderSettingsMenu(){
     <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
     <div class="fmi" onclick="openEditFormModal()"><i class="ti ti-forms" style="width:16px;flex-shrink:0"></i> Edit Form</div>
     <div class="fmi" onclick="openStatusColorsModal()"><i class="ti ti-droplet-half-2" style="width:16px;flex-shrink:0"></i> Status Colors</div>
-    <div class="fmi" onclick="toggleThemePop(event)"><i class="ti ti-palette" style="width:16px;flex-shrink:0"></i> Mood</div>
+    <div class="fmi" onclick="toggleThemePop(event)"><i class="ti ti-palette" style="width:16px;flex-shrink:0"></i> Change Mood?</div>
+    <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
+    <div class="fmi" onclick="openFaqModal()"><i class="ti ti-help-circle" style="width:16px;flex-shrink:0"></i> Help / FAQ</div>
+    <div class="fmi" onclick="openReportIssueModal()"><i class="ti ti-message-report" style="width:16px;flex-shrink:0"></i> Report an Issue</div>
     <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
     <div class="fmi" onclick="openCloseSessionModal()" style="color:var(--red)"><i class="ti ti-logout" style="width:16px;flex-shrink:0"></i> Close Session</div>
   `;
@@ -1348,13 +1377,95 @@ function openComingSoonModal(title,desc){
 function openAccountModal(){
   document.getElementById('settingsPop').classList.remove('open');
   const email=currentUser?currentUser.email:'—';
+  const name=currentUser&&currentUser.displayName?currentUser.displayName:'';
   document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Account Management</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
     <div class="mbody">
-      <div style="font-size:12px;color:var(--t3);margin-bottom:.2rem">Signed in as</div>
-      <div style="font-size:15px;color:var(--t1);margin-bottom:1.2rem;word-break:break-all">${esc(email)}</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.2rem;text-align:left">Signed in as</div>
+      <div style="font-size:15px;color:var(--t1);margin-bottom:1rem;word-break:break-all;text-align:left">${esc(email)}</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem;text-align:left">Your name</div>
+      <input id="accountNameInput" class="auth-input" type="text" placeholder="e.g. Juan" value="${esc(name)}" style="margin-bottom:.4rem"/>
+      <div id="accountNameMsg" style="font-size:11.5px;min-height:14px;margin-bottom:.7rem;text-align:left"></div>
+      <button class="btnp" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="saveAccountName()">Save Name</button>
       <button class="btng" style="width:100%;justify-content:center" onclick="authForgotPassword()">Send password reset email</button>
     </div>`;
   document.getElementById('calPopModal').style.display='flex';
+}
+function saveAccountName(){
+  if(!currentUser)return;
+  const name=document.getElementById('accountNameInput').value.trim();
+  const msgEl=document.getElementById('accountNameMsg');
+  currentUser.updateProfile({displayName:name}).then(()=>{
+    msgEl.textContent='Saved.';msgEl.style.color='#4BC896';
+  }).catch(err=>{
+    msgEl.textContent=err.message||'Could not save right now — try again.';msgEl.style.color='#C84B4B';
+  });
+}
+// ── Report an Issue ─────────────────────────────────────────────────────────
+// No backend exists for this app, so this opens a pre-filled email via the
+// device's mail app (mailto:) — works with zero setup, completely free, and
+// needs no third-party account. Swap RECIPIENT below whenever the ownership
+// email changes; everything else stays the same.
+const ISSUE_REPORT_RECIPIENT='juanc898@gmail.com';
+function openReportIssueModal(){
+  document.getElementById('settingsPop').classList.remove('open');
+  const name=currentUser&&currentUser.displayName?currentUser.displayName:'';
+  const email=currentUser?currentUser.email:'';
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Report an Issue</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">
+      <div style="font-size:12.5px;color:var(--t3);margin-bottom:.9rem">Describe what went wrong. This opens your mail app with your name and email attached so the team can follow up with you.</div>
+      <input id="reportName" class="auth-input" type="text" placeholder="Your name" value="${esc(name)}" style="margin-bottom:.5rem"/>
+      <input id="reportEmail" class="auth-input" type="email" placeholder="Your email" value="${esc(email)}" style="margin-bottom:.5rem"/>
+      <textarea id="reportMsg" placeholder="What happened?" style="width:100%;min-height:110px;padding:.65rem .8rem;border-radius:8px;border:1px solid var(--bd);background:var(--ink);color:var(--t1);font-size:14px;font-family:inherit;resize:vertical;margin-bottom:.7rem;box-sizing:border-box"></textarea>
+      <div id="reportIssueError" class="auth-error" style="display:none"></div>
+      <button class="btnp" style="width:100%;justify-content:center" onclick="sendIssueReport()">Send Report</button>
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function sendIssueReport(){
+  const name=document.getElementById('reportName').value.trim();
+  const email=document.getElementById('reportEmail').value.trim();
+  const msg=document.getElementById('reportMsg').value.trim();
+  const errEl=document.getElementById('reportIssueError');
+  if(!msg){errEl.textContent='Please describe the issue before sending.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const subject=`NOMAD issue report — ${name||email||'a user'}`;
+  const body=`Name: ${name||'(not provided)'}\nEmail: ${email||'(not provided)'}\n\nIssue:\n${msg}`;
+  window.location.href=`mailto:${ISSUE_REPORT_RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  calClosePopup();
+}
+// ── Help / FAQ ───────────────────────────────────────────────────────────────
+const NOMAD_FAQS=[
+  {q:'How do I add a new destination?',a:'Go to Route or Tour Overview and tap "+ Add Destination" (or "+ ADD" on mobile) in the top right corner. Fill in the city, country, dates and act, then save.'},
+  {q:'How do I create a new tour?',a:'Open the tour-name dropdown in the left sidebar and choose "+ New Tour". It starts completely empty, ready for you to build out from scratch.'},
+  {q:'How do I switch between tours?',a:'Use that same dropdown at the top of the left sidebar — it lists every tour you\'ve created so you can jump between them.'},
+  {q:'How does a destination get marked as Confirmed?',a:'Fill in both the accommodation and transport details — NOMAD marks it "Confirmed" automatically. Filling in just one of the two marks it "Partially Confirmed". You can also override the status manually.'},
+  {q:'How do I add something to my Bucket List?',a:'Open the Bucket List tab and tap "+ Add". You can sort items into categories and optionally link an item to a specific destination.'},
+  {q:'How do I track my budget?',a:'Open the Budget tab to see spending by category. Tap a category to log an expense, and check Monthly Breakdown for Planned vs Paid vs Still Owe, broken down by month.'},
+  {q:'Can I import my trip from an Excel file?',a:'Yes — use the Excel import option to upload your filled-in template. Each row maps automatically to a destination, event, or expense.'},
+  {q:'Will my data sync between my phone and computer?',a:'Yes. Once you\'re signed in with the same account on both devices, changes sync automatically through the cloud, usually within a couple of seconds.'},
+  {q:'I made a mistake — can I undo it?',a:'Yes. Open Settings → Undo / Redo and use the undo/redo buttons there to step back through your recent changes.'},
+  {q:'How do I change the visual theme?',a:'Open Settings → "Change Mood?" to preview and pick from the available visual themes, like Mythic Odyssey or Dark Executive.'},
+];
+function openFaqModal(){
+  document.getElementById('settingsPop').classList.remove('open');
+  const items=NOMAD_FAQS.map((f,i)=>`
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaqItem(${i})">
+        <span>${esc(f.q)}</span>
+        <i class="ti ti-chevron-down" id="faqChevron${i}"></i>
+      </div>
+      <div class="faq-a" id="faqAnswer${i}" style="display:none">${esc(f.a)}</div>
+    </div>`).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Help / FAQ</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">${items}</div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function toggleFaqItem(i){
+  const ans=document.getElementById('faqAnswer'+i);
+  const chev=document.getElementById('faqChevron'+i);
+  const isOpen=ans.style.display==='block';
+  ans.style.display=isOpen?'none':'block';
+  chev.style.transform=isOpen?'rotate(0deg)':'rotate(180deg)';
 }
 function openAppSyncModal(){
   document.getElementById('settingsPop').classList.remove('open');
@@ -1938,14 +2049,39 @@ function renderContent(){
   autoStatus();
   const el=document.getElementById('mainContent');
   if(tab==='dashboard')el.innerHTML=curDestId&&dBy(curDestId)?renderProfile():renderDash();
-  else if(tab==='route')el.innerHTML=renderRoute();
+  else if(tab==='route')el.innerHTML=curDestId&&dBy(curDestId)?renderProfile():renderRoute();
   else if(tab==='calendar')el.innerHTML=renderCalendar();
   else if(tab==='map')el.innerHTML=renderMap();
   else if(tab==='events')el.innerHTML=renderEvents();
   else if(tab==='budget')el.innerHTML=renderBudget();
   else if(tab==='bucket')el.innerHTML=renderBucket();
   else if(tab==='visas')el.innerHTML=renderVisas();
+  else if(tab==='stats')el.innerHTML=renderStats();
   else if(tab==='ai')el.innerHTML=renderAI();
+  setupMobileFilterToggles();
+}
+// On phones, the various filter/toolbar rows (Status, Act, Month/Year, Manage
+// Categories, etc.) take up a lot of vertical space stacked on top of each
+// other. This collapses them behind a single "Filters" button, re-applied
+// after every render since renderContent() rebuilds the panel's HTML from
+// scratch each time. Desktop is untouched — the CSS only hides .filter-row
+// under the existing max-width:599px breakpoint.
+let mobileFiltersOpen=false;
+function setupMobileFilterToggles(){
+  document.querySelectorAll('#mainContent .panel').forEach(panel=>{
+    const rows=panel.querySelectorAll(':scope > .filter-row');
+    if(!rows.length)return;
+    panel.classList.toggle('filters-open',mobileFiltersOpen);
+    const btn=document.createElement('button');
+    btn.className='fbtn mobile-filter-toggle'+(mobileFiltersOpen?' open':'');
+    btn.innerHTML='<i class="ti ti-filter"></i> Filters <i class="ti ti-chevron-down"></i>';
+    btn.onclick=()=>{
+      mobileFiltersOpen=!mobileFiltersOpen;
+      panel.classList.toggle('filters-open',mobileFiltersOpen);
+      btn.classList.toggle('open',mobileFiltersOpen);
+    };
+    rows[0].parentElement.insertBefore(btn,rows[0]);
+  });
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
@@ -2069,6 +2205,14 @@ function renderDash(){
   </div>`;
 }
 function selDest(id){curDestId=id;curActId=dBy(id)?.act||curActId;renderSB();renderContent();}
+// Opens a destination's profile from within the Route tab WITHOUT jumping to Tour
+// Overview — keeps `tab` as 'route' so the back button returns to the Route table.
+function viewDestFromRoute(id){curDestId=id;curActId=dBy(id)?.act||curActId;renderSB();renderContent();}
+// Generic close for the profile view — just clears curDestId. renderContent()'s
+// dispatcher then falls back to whichever list view matches the current tab
+// (Route table if tab==='route', Tour Overview otherwise), so this one function
+// works correctly no matter where the profile was opened from.
+function closeProfileView(){curDestId=null;renderSB();renderContent();}
 
 // ── PROFILE ───────────────────────────────────────────────────────────────────
 function renderProfile(){
@@ -2104,7 +2248,9 @@ function renderProfile(){
       +`</div>`;
   }
   const todoItems=d.todo?d.todo.split('\n').filter(t=>t.trim()).map(t=>`<li class="todo-item">${esc(t)}</li>`).join(''):'';
+  const backLabel=tab==='route'?'Back to Route':'Back to Tour Overview';
   return`<div class="prof-wrap">
+    <button class="btng" onclick="closeProfileView()" style="margin-bottom:.6rem;font-size:12px;padding:.35rem .7rem"><i class="ti ti-arrow-left"></i> ${backLabel}</button>
     <div class="prof-top">
       <div style="text-align:center;flex-shrink:0"><div class="prof-flag">${flagHtml(d.flag)}</div><div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.country)}</div></div>
       <div class="prof-meta"><div class="prof-city">${esc(d.city)}</div><div class="prof-cntry">${esc(d.country)}</div><div class="ptags"><span class="tag gld">${esc(am.name)}</span><span class="${scls(d.status)}">${statusLabel(d.status)}</span>${d.priority?`<span class="tag">${'★'.repeat(parseInt(d.priority))}</span>`:''}</div></div>
@@ -2175,7 +2321,7 @@ function renderRoute(){
     cActs().map(a=>`<div class="fmi" onclick="routeSetFilterAct('${a.id}')" style="${routeFilterAct===a.id?'color:'+a.color:''}"><div style="width:8px;height:8px;border-radius:50%;background:${a.color};flex-shrink:0"></div> ${esc(a.name)}</div>`).join('');
   const dateModeBtn=(mode,lbl)=>`<button onclick="routeSetDateMode('${mode}')" style="border:none;background:${routeDateMode===mode?'var(--gold)':'transparent'};color:${routeDateMode===mode?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s;white-space:nowrap">${lbl}</button>`;
   return`<div class="panel">
-    <div class="frow">
+    <div class="frow filter-row">
       <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>
       <div style="position:relative;flex:1;min-width:160px;max-width:280px">
         <i class="ti ti-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:13px;pointer-events:none"></i>
@@ -2189,7 +2335,11 @@ function renderRoute(){
         <button class="fbtn" onclick="toggleIOMenu('routeActMenu')"><i class="ti ti-theater-mask"></i> ${esc(actFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="routeActMenu">${actMenuItems}</div>
       </div>
-      <input class="fi" type="month" value="${routeFilterMonth||''}" onchange="routeSetFilterMonth(this.value)" title="Filter by month/year" style="font-size:12px;padding:.5rem .6rem;width:auto"/>
+      <div style="display:flex;align-items:center;gap:5px;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:.2rem .5rem">
+        <i class="ti ti-calendar" style="font-size:13px;color:var(--t3);flex-shrink:0"></i>
+        <span style="font-size:10.5px;color:var(--t3);font-family:var(--font-ui);white-space:nowrap;letter-spacing:.02em">Month/Year</span>
+        <input class="fi" type="month" value="${routeFilterMonth||''}" onchange="routeSetFilterMonth(this.value)" title="Filter by month/year" style="font-size:12px;padding:.3rem 0;width:auto;border:none;background:transparent"/>
+      </div>
       ${routeFilterMonth?`<button class="abtn" onclick="routeSetFilterMonth(null)" title="Clear month filter"><i class="ti ti-x"></i></button>`:''}
       <div style="position:relative">
         <button class="fbtn" onclick="toggleIOMenu('routeIOMenu')" title="Template, Import, Export"><i class="ti ti-arrow-up"></i></button>
@@ -2204,7 +2354,7 @@ function renderRoute(){
       <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:12px">Remove All</button>
       <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)" id="routeCount">${filt.length}/${sorted.length}</span>
     </div>
-    <div class="frow" style="margin-top:-.4rem">
+    <div class="frow filter-row" style="margin-top:-.4rem">
       <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
         ${dateModeBtn('current-end','Current → End')}${dateModeBtn('total-tour','Total Tour')}${dateModeBtn('custom','Custom')}
       </div>
@@ -2230,7 +2380,7 @@ function routeRowsHtml(filt){
     const am=aM(d.act);
     const n=dBtw(d.arrival,d.departure);
     const isPast=d.departure&&d.departure<today;
-    return`<tr class="${d.status==='cancelled'?'cancelled':''}${isPast?' past':''}" onclick="viewDest('${d.id}')">
+    return`<tr class="${d.status==='cancelled'?'cancelled':''}${isPast?' past':''}" onclick="viewDestFromRoute('${d.id}')">
       <td style="padding:.4rem .4rem .4rem .6rem"><span style="font-size:16px">${flagHtml(d.flag)}</span></td>
       <td><div class="rt-dest-name" style="font-size:15px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">${esc(d.city)}</div><div class="rt-dest-country" style="font-size:12px;color:var(--t3)">${esc(d.country)}</div>
         <div class="rt-mobile-dates">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'—'} <i class="ti ti-arrow-right" style="font-size:11px;vertical-align:middle"></i> ${d.departure?fD(d.departure)+' '+wS(d.departure):'—'}${n>0?' · '+n+'n':''}</div>
@@ -4722,7 +4872,7 @@ function renderEvents(){
     </div>`;
   }).join('');
   return`<div class="panel">
-    <div class="frow">
+    <div class="frow filter-row">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Events &amp; Festivals · ${evDests.length}${evTypeFilter?'/'+allEvDests.length:''}</div>
       <div style="position:relative">
         <button class="fbtn" onclick="toggleEvTypeMenu()"><i class="ti ti-filter"></i> ${esc(typeFilterLabel)} <i class="ti ti-chevron-down"></i></button>
@@ -5031,7 +5181,7 @@ function renderBudget(){
   }
   const dateModeBtn=(mode,lbl)=>`<button onclick="budgetSetDateMode('${mode}')" style="border:none;background:${budgetDateMode===mode?'var(--gold)':'transparent'};color:${budgetDateMode===mode?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s;white-space:nowrap">${lbl}</button>`;
   return`<div class="panel">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;flex-wrap:wrap;gap:.6rem">
+    <div class="filter-row" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;flex-wrap:wrap;gap:.6rem">
       <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
         <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
           ${dateModeBtn('current-end','Current → End')}${dateModeBtn('total-tour','Total Tour')}${dateModeBtn('custom','Custom')}
@@ -5130,7 +5280,7 @@ function renderBudgetBreakdown(){
   const fmtM=n=>n.toLocaleString(undefined,{maximumFractionDigits:0});
   const oweHTML=(planned,paid)=>{
     const owe=planned-paid;
-    return`Planned $${fmtM(planned)} · Paid $<span style="color:${paid>=0?'var(--green)':'var(--red)'}">${fmtM(paid)}</span> · Still Owe $<span style="color:${owe>0?'var(--red)':'var(--green)'}">${fmtM(owe)}</span>`;
+    return`<span class="dval-bd">Planned $${fmtM(planned)} · Paid $<span style="color:${paid>=0?'var(--green)':'var(--red)'}">${fmtM(paid)}</span> · Still Owe $<span style="color:${owe>0?'var(--red)':'var(--green)'}">${fmtM(owe)}</span></span>`;
   };
   const catRowsFor=(mKeyMatch)=>{
     let planned=0,actual=0;
@@ -5344,7 +5494,7 @@ function renderBucket(){
       <div class="scard"><div class="sval">${allBkt.length-done}</div><div class="slbl">Pending</div></div>
       <div class="scard"><div class="sval">${Math.round(done/(allBkt.length||1)*100)}%</div><div class="slbl">Life Score</div></div>
     </div>
-    <div class="frow">
+    <div class="frow filter-row">
       <div style="position:relative">
         <button class="fbtn" onclick="toggleBFMenu()"><i class="ti ti-filter"></i> Status <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="bfmenu">${statusItems}</div>
@@ -5932,6 +6082,156 @@ function removeEventCat(id){
   renderContent();
 }
 
+// ── TOUR STATISTICS ─────────────────────────────────────────────────────────
+// Freeform tally counters for anything the person wants to track on the trip —
+// "Hot dogs eaten", "Times I got sick", whatever. Mirrors the Bucket List's
+// category pattern (cBktCats/bktCatM) so the UX feels consistent across the app.
+let statsCatFilter=null; // null = all categories, or a specific category id
+let statsCatMgmtMode=false; // toggles between the main grid and "Manage Categories"
+function toggleStatsCatMgmtMode(){statsCatMgmtMode=!statsCatMgmtMode;renderContent();}
+const cStats=()=>cur().stats||(cur().stats=[]);
+const cStatsCats=()=>cur().statsCategories||(cur().statsCategories=[]);
+const statsCatM=id=>cStatsCats().find(c=>c.id===id)||{name:'Uncategorized',color:'#888'};
+
+function renderStats(){
+  if(statsCatMgmtMode)return renderStatsCatMgmt();
+  const all=cStats();
+  let list=all;
+  if(statsCatFilter)list=list.filter(s=>(s.category||'')===statsCatFilter);
+  const cats=cStatsCats();
+  const catFilterLabel=statsCatFilter?statsCatM(statsCatFilter).name:'All Categories';
+  const catMenuItems=`<div class="fmi" onclick="setStatsCatFilter(null)" style="${!statsCatFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!statsCatFilter?'-check-filled':''}" style="font-size:13px"></i> All Categories</div>`+
+    cats.map(c=>`<div class="fmi" onclick="setStatsCatFilter('${c.id}')" style="${statsCatFilter===c.id?'color:'+c.color:''}"><div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div> ${esc(c.name)}</div>`).join('');
+  const totalTally=all.reduce((s,x)=>s+(x.count||0),0);
+
+  const cards=list.map(s=>{
+    const cat=statsCatM(s.category);
+    return`<div class="stat-counter-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <span style="font-size:11px;padding:1px 7px;border-radius:var(--radius);background:${cat.color}22;color:${cat.color};font-family:var(--font-ui);text-transform:uppercase">${esc(cat.name)}</span>
+        <div style="display:flex;gap:3px">
+          <button class="abtn" onclick="openStatModal('${s.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button>
+          <button class="abtn del" onclick="removeStatItem('${s.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+      <div class="stat-counter-name">${esc(s.name)}</div>
+      <div class="stat-counter-row">
+        <button class="stat-counter-btn" onclick="bumpStat('${s.id}',-1)"><i class="ti ti-minus"></i></button>
+        <div class="stat-counter-value" onclick="bumpStat('${s.id}',1)" title="Tap to add one">${s.count||0}</div>
+        <button class="stat-counter-btn" onclick="bumpStat('${s.id}',1)"><i class="ti ti-plus"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return`<div class="panel">
+    <div class="sgrid" style="margin-bottom:1rem">
+      <div class="scard"><div class="sval">${all.length}</div><div class="slbl">Tracked Stats</div></div>
+      <div class="scard"><div class="sval">${totalTally}</div><div class="slbl">Total Tally</div></div>
+      <div class="scard"><div class="sval">${cats.length}</div><div class="slbl">Categories</div></div>
+    </div>
+    <div class="frow filter-row">
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleSCMenu()"><i class="ti ti-filter"></i> ${esc(catFilterLabel)} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="scmenu">${catMenuItems}</div>
+      </div>
+      <button class="fbtn" onclick="toggleStatsCatMgmtMode()" title="Create, rename, or remove statistic categories"><i class="ti ti-tag"></i> Manage Categories</button>
+      <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${list.length}/${all.length} shown</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+      <div class="sec-ttl" style="margin-bottom:0;flex:1">Tour Statistics</div>
+      <button class="abtn" onclick="openStatModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
+    </div>
+    <div class="stat-counter-grid">${cards||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px;grid-column:1/-1">No statistics tracked yet — add one to start tallying anything you want, like "Hot dogs eaten" or "Times I got sick".</div>'}</div>
+  </div>`;
+}
+function renderStatsCatMgmt(){
+  const cats=cStatsCats();
+  const rows=cats.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:.5rem .6rem;border-bottom:1px solid rgba(128,128,128,.1)">
+    <div style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+    <span style="flex:1;font-size:13px;color:var(--t2);font-family:var(--font-ui)">${esc(c.name)}</span>
+    <button class="abtn" onclick="openStatsCatModal('${c.id}')" style="font-size:11px;padding:2px 6px"><i class="ti ti-edit"></i></button>
+    <button class="abtn del" onclick="removeStatsCat('${c.id}')" style="font-size:11px;padding:2px 6px"><i class="ti ti-trash"></i></button>
+  </div>`).join('');
+  return`<div class="panel">
+    <div class="frow">
+      <button class="fbtn" onclick="toggleStatsCatMgmtMode()"><i class="ti ti-arrow-left"></i> Back to Tour Statistics</button>
+      <button class="add-btn" onclick="openStatsCatModal()"><i class="ti ti-plus"></i> New Category</button>
+    </div>
+    <div class="sec-ttl">Manage Categories</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${rows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No categories yet — add one, like "Food" or "Health".</div>'}</div>
+  </div>`;
+}
+function toggleSCMenu(){document.getElementById('scmenu')?.classList.toggle('open');}
+function setStatsCatFilter(id){statsCatFilter=id;document.getElementById('scmenu')?.classList.remove('open');renderContent();}
+document.addEventListener('click',e=>{const sm=document.getElementById('scmenu');if(sm&&!sm.parentElement?.contains(e.target))sm.classList.remove('open');});
+
+// The core "one click" interaction — clicking the +, the -, or the number itself bumps the tally.
+function bumpStat(id,delta){
+  const s=cStats().find(x=>x.id===id);
+  if(s){s.count=Math.max(0,(s.count||0)+delta);renderContent();}
+}
+function removeStatItem(id){if(!confirm('Remove this statistic?'))return;cur().stats=cStats().filter(s=>s.id!==id);renderContent();}
+function openStatModal(editId){
+  const s=editId?cStats().find(x=>x.id===editId):null;
+  const cats=cStatsCats();
+  const catOpts=cats.map(c=>`<option value="${c.id}" ${s&&s.category===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">${s?'Edit Statistic':'New Statistic'}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">What are you counting?</div>
+      <input id="statNameInp" class="auth-input" type="text" placeholder="e.g. Hot dogs eaten" value="${s?esc(s.name):''}" style="margin-bottom:.6rem"/>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Category</div>
+      <select id="statCatInp" class="auth-input" style="margin-bottom:.6rem">${catOpts||'<option value="">No categories yet — add one first</option>'}</select>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Starting count</div>
+      <input id="statCountInp" class="auth-input" type="number" min="0" value="${s?(s.count||0):0}" style="margin-bottom:.8rem"/>
+      <button class="btnp" style="width:100%;justify-content:center" onclick="saveStatItem(${s?`'${s.id}'`:'null'})">${s?'Save Changes':'Add Statistic'}</button>
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function saveStatItem(editId){
+  const name=document.getElementById('statNameInp').value.trim();
+  if(!name)return;
+  const category=document.getElementById('statCatInp').value;
+  const count=Math.max(0,parseInt(document.getElementById('statCountInp').value)||0);
+  if(editId){
+    const s=cStats().find(x=>x.id===editId);
+    if(s){s.name=name;s.category=category;s.count=count;}
+  }else{
+    cStats().push({id:uid(),name,category,count});
+  }
+  calClosePopup();renderContent();
+}
+function openStatsCatModal(editId){
+  const c=editId?cStatsCats().find(x=>x.id===editId):null;
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">${c?'Edit Category':'New Category'}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Category name</div>
+      <input id="statCatNameInp" class="auth-input" type="text" placeholder="e.g. Food" value="${c?esc(c.name):''}" style="margin-bottom:.6rem"/>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Color</div>
+      <input id="statCatColorInp" type="color" value="${c?c.color:'#C9A84C'}" style="width:100%;height:38px;border-radius:8px;border:1px solid var(--bd);margin-bottom:.8rem;cursor:pointer;background:var(--ink)"/>
+      <button class="btnp" style="width:100%;justify-content:center" onclick="saveStatsCat(${c?`'${c.id}'`:'null'})">${c?'Save Changes':'Add Category'}</button>
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function saveStatsCat(editId){
+  const name=document.getElementById('statCatNameInp').value.trim();
+  if(!name)return;
+  const color=document.getElementById('statCatColorInp').value;
+  if(editId){
+    const c=cStatsCats().find(x=>x.id===editId);
+    if(c){c.name=name;c.color=color;}
+  }else{
+    cStatsCats().push({id:uid(),name,color});
+  }
+  calClosePopup();renderContent();
+}
+function removeStatsCat(id){
+  if(!confirm('Remove this category? Statistics using it will become Uncategorized — they will not be deleted.'))return;
+  cur().statsCategories=cStatsCats().filter(c=>c.id!==id);
+  cStats().forEach(s=>{if(s.category===id)s.category='';});
+  if(statsCatFilter===id)statsCatFilter=null;
+  renderContent();
+}
+
 // ── AI ────────────────────────────────────────────────────────────────────────
 const AI={
   "Can I stay 10 more days in Spain?":"Based on your Schengen entry Jan 22, 2027, your Spanish itinerary already uses ~63 zone-days. Adding 10 risks the 90/180-day rule. Bridge with Morocco between Barcelona legs — your Cap d'Agde stretch already helps stretch your Schengen window.",
@@ -6138,7 +6438,7 @@ function createTour(){
     {id:uid(),name:'Luxury',color:'#8B4BC8'},
     {id:uid(),name:'Nature',color:'#4BC896'},
   ];
-  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
+  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
   S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
