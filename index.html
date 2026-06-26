@@ -781,7 +781,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 @keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
-<body data-theme="mythic">
+<body data-theme="luxury">
 <!-- AUTH OVERLAY — blocks the app until the person signs in. Sits on top of
      everything (z-index in CSS) and is simply hidden once Firebase confirms a user. -->
 <div id="authOverlay" class="auth-overlay">
@@ -1233,6 +1233,7 @@ if(firebaseReady){
       currentUser=u;
       loadFromCloud(u).then(()=>{
         authSetLoading(false);
+        applyTheme(); // swap from the login screen's forced "Ultra Luxury" to this user's actual saved theme
         document.getElementById('authOverlay').style.display='none';
         curDestId=null;
         renderSB();renderContent();
@@ -1244,6 +1245,7 @@ if(firebaseReady){
       undoStack=[];redoStack=[];
       lastCloudSaveAt=null;
       authSetLoading(false);
+      document.body.setAttribute('data-theme','luxury'); // back to the login screen's fixed theme
       document.getElementById('authOverlay').style.display='flex';
     }
   });
@@ -1377,7 +1379,10 @@ function openCloseSessionModal(){
     </div>`;
   document.getElementById('calPopModal').style.display='flex';
 }
-applyTheme();
+// The login screen always shows in the "Ultra Luxury" theme, regardless of what
+// the signed-in user last picked — applyTheme() (which restores their real
+// preference) only runs once they're actually authenticated, in onAuthStateChanged.
+document.body.setAttribute('data-theme','luxury');
 
 // ── FILTER PERSISTENCE ────────────────────────────────────────────────────────
 let AF=JSON.parse(localStorage.getItem('ae_filters')||'["planned","partial","confirmed","wishlist","completed","cancelled"]');
