@@ -744,9 +744,45 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   [data-theme="luxury"] .btxt{font-size:13px}
 }
 @media(max-width:380px){.sgrid{grid-template-columns:repeat(2,1fr)}}
+/* ══════════════════════════════════════════════════════
+   AUTH OVERLAY + SYNC STATUS — cloud account login screen
+   ══════════════════════════════════════════════════════ */
+.auth-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-box{width:100%;max-width:340px;background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:2rem 1.6rem;text-align:center}
+.auth-logo{font-family:var(--font-disp,inherit);font-size:28px;font-weight:700;color:var(--gold);letter-spacing:.05em}
+.auth-sub{font-size:12px;color:var(--t3);margin-top:.1rem;margin-bottom:1.4rem;letter-spacing:.08em;text-transform:uppercase}
+.auth-input{width:100%;padding:.65rem .8rem;margin-bottom:.6rem;border-radius:8px;border:1px solid var(--bd);background:var(--ink);color:var(--t1);font-size:14px}
+.auth-input:focus{outline:none;border-color:var(--gold)}
+.auth-toggle{margin-top:1rem;font-size:12.5px;color:var(--t2);cursor:pointer;text-decoration:underline}
+.auth-toggle:hover{color:var(--gold)}
+.auth-forgot{margin-top:.5rem;font-size:11.5px;color:var(--t3);cursor:pointer}
+.auth-forgot:hover{color:var(--t2)}
+.auth-error{background:rgba(200,75,75,.12);color:#E07A7A;border:1px solid rgba(200,75,75,.3);border-radius:6px;padding:.5rem .65rem;font-size:12px;margin-bottom:.7rem;text-align:left}
+.auth-loading{margin-top:.8rem;font-size:12px;color:var(--t3)}
+.sync-status{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:17px;color:var(--t3);transition:color .2s}
+.sync-status:hover{background:var(--sf2)}
+.sync-status.saving{color:var(--gold);animation:syncPulse 1s ease-in-out infinite}
+.sync-status.saved{color:#4BC896}
+.sync-status.error{color:#C84B4B}
+@keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body data-theme="mythic">
+<!-- AUTH OVERLAY — blocks the app until the person signs in. Sits on top of
+     everything (z-index in CSS) and is simply hidden once Firebase confirms a user. -->
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">NOMAD</div>
+    <div class="auth-sub">World Tour Planner</div>
+    <div id="authError" class="auth-error" style="display:none"></div>
+    <input id="authEmail" class="auth-input" type="email" placeholder="Email" autocomplete="username"/>
+    <input id="authPass" class="auth-input" type="password" placeholder="Password" autocomplete="current-password"/>
+    <button class="btnp" id="authSubmitBtn" style="width:100%;justify-content:center;margin-top:.4rem" onclick="authSubmit()">Sign In</button>
+    <div class="auth-toggle" id="authToggleText" onclick="authToggleMode()">Don't have an account? Sign up</div>
+    <div class="auth-forgot" id="authForgotText" onclick="authForgotPassword()">Forgot password?</div>
+    <div class="auth-loading" id="authLoading" style="display:none"><i class="ti ti-loader-2"></i> Connecting…</div>
+  </div>
+</div>
 <div class="app">
 <header class="hdr">
   <div style="display:flex;align-items:center;gap:6px">
@@ -780,6 +816,9 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     <div class="hstat" onclick="goTab('map')" title="View Map"><div class="hstat-v" id="hCnt">0</div><div class="hstat-l">Countries</div></div>
     <div class="hstat" onclick="goTab('route')" title="View Route"><div class="hstat-v" id="hDst">0</div><div class="hstat-l">Destinations</div></div>
     <div class="hstat" onclick="goTab('events')" title="View Events"><div class="hstat-v" id="hEvt">0</div><div class="hstat-l">Events</div></div>
+    <div class="sync-status" id="syncStatus" onclick="openAppSyncModal()" title="Cloud sync status">
+      <i class="ti ti-cloud-check"></i>
+    </div>
     <div style="position:relative">
       <button class="icon-btn" onclick="toggleSettingsMenu(event)" id="settingsBtn" title="Settings"><i class="ti ti-settings"></i></button>
       <div class="theme-pop" id="settingsPop" style="min-width:230px"></div>
@@ -979,7 +1018,206 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <div class="ctx-item" onclick="ctxEdit()"><i class="ti ti-edit"></i> Edit destination</div>
   <div class="ctx-item" onclick="ctxKnowMore()"><i class="ti ti-message-bolt"></i> Know more (AI)</div>
 </div>
+<!-- Firebase compat SDK: global namespace (firebase.*), not ES modules — keeps every
+     existing onclick="fn()" handler in this file working unchanged, since module scripts
+     would otherwise scope all top-level declarations away from window. -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script>
+// ── FIREBASE / CLOUD SYNC ───────────────────────────────────────────────────
+// Public web config — safe to expose (it's not a secret); access is actually
+// controlled by Firestore security rules, not by hiding these values.
+const firebaseConfig={
+  apiKey:"AIzaSyABqzuca6HgrNre7kQTbkwnRLJBGV_0liA",
+  authDomain:"nomad-world-tour-planner.firebaseapp.com",
+  projectId:"nomad-world-tour-planner",
+  storageBucket:"nomad-world-tour-planner.firebasestorage.app",
+  messagingSenderId:"994902566612",
+  appId:"1:994902566612:web:50b7b25adc140c10627d41"
+};
+let fbAuth=null,fbDb=null,firebaseReady=false;
+try{
+  if(typeof firebase==='undefined')throw new Error('Firebase SDK did not load (blocked script, offline, or sandboxed preview).');
+  firebase.initializeApp(firebaseConfig);
+  fbAuth=firebase.auth();
+  fbDb=firebase.firestore();
+  firebaseReady=true;
+}catch(e){
+  console.error('Firebase failed to initialize:',e);
+}
+
+let currentUser=null;
+let authMode='signin'; // 'signin' | 'signup'
+let cloudSaveTimer=null;
+let isApplyingRemoteState=false; // true while S is being overwritten from a cloud load — prevents that load from re-triggering a save
+let lastCloudSaveAt=null;
+let syncState='idle'; // 'idle' | 'saving' | 'saved' | 'error'
+
+function authToggleMode(){
+  authMode=authMode==='signin'?'signup':'signin';
+  document.getElementById('authSubmitBtn').textContent=authMode==='signin'?'Sign In':'Create Account';
+  document.getElementById('authToggleText').textContent=authMode==='signin'?"Don't have an account? Sign up":'Already have an account? Sign in';
+  document.getElementById('authError').style.display='none';
+}
+function authSetLoading(on){
+  document.getElementById('authLoading').style.display=on?'block':'none';
+  const b=document.getElementById('authSubmitBtn');
+  b.disabled=on;b.style.opacity=on?'.5':'1';
+}
+function authShowError(msg){
+  const el=document.getElementById('authError');
+  el.textContent=msg;el.style.display='block';
+}
+function authFriendlyError(err){
+  const map={
+    'auth/invalid-email':'That email address looks invalid.',
+    'auth/user-not-found':'No account with that email. Try signing up instead.',
+    'auth/wrong-password':'Incorrect password.',
+    'auth/email-already-in-use':'An account with that email already exists. Try signing in instead.',
+    'auth/weak-password':'Password should be at least 6 characters.',
+    'auth/invalid-credential':'Incorrect email or password.',
+    'auth/network-request-failed':'Network error — check your connection.',
+  };
+  return map[err.code]||err.message||'Something went wrong.';
+}
+function authSubmit(){
+  if(!firebaseReady){authShowError('Login service unavailable — Firebase failed to load. Check your internet connection, or if you\'re inside a preview/sandbox tool, open this file in a regular browser tab instead.');return;}
+  const email=document.getElementById('authEmail').value.trim();
+  const pass=document.getElementById('authPass').value;
+  if(!email||!pass){authShowError('Please enter an email and password.');return;}
+  document.getElementById('authError').style.display='none';
+  authSetLoading(true);
+  const action=authMode==='signin'
+    ?fbAuth.signInWithEmailAndPassword(email,pass)
+    :fbAuth.createUserWithEmailAndPassword(email,pass);
+  action.catch(err=>{authSetLoading(false);authShowError(authFriendlyError(err));});
+  // on success, onAuthStateChanged (below) takes over — no need to handle the resolved value here
+}
+function authForgotPassword(){
+  if(!firebaseReady){authShowError('Login service unavailable — Firebase failed to load.');return;}
+  const email=document.getElementById('authEmail')?document.getElementById('authEmail').value.trim():(currentUser?currentUser.email:'');
+  if(!email){authShowError('Type your email above first, then tap "Forgot password?" again.');return;}
+  fbAuth.sendPasswordResetEmail(email)
+    .then(()=>alert('Password reset email sent to '+email))
+    .catch(err=>alert(authFriendlyError(err)));
+}
+function confirmSignOut(){
+  calClosePopup();
+  if(!firebaseReady)return;
+  fbAuth.signOut();
+}
+
+// ── Blank seed for brand-new accounts ───────────────────────────────────────
+// Every new user starts with zero destinations/bucket items — mirrors the same
+// default categories/budget shape that createTour() already uses elsewhere in
+// the app, so a freshly-seeded account looks and behaves like any other tour.
+function buildBlankTourState(){
+  const id=uid();
+  const defaultBudget=[
+    {id:uid(),name:'Accommodation',budget:0,color:'#C9A84C',expenses:[],linked:'hotels'},
+    {id:uid(),name:'Flights & Transport',budget:0,color:'#4B8BC8',expenses:[],linked:'transport'},
+    {id:uid(),name:'Food & Drink',budget:0,color:'#4BC896',expenses:[]},
+    {id:uid(),name:'Events & Tickets',budget:0,color:'#C84B6B',expenses:[],linked:'events'},
+    {id:uid(),name:'Entertainment',budget:0,color:'#C8734B',expenses:[]},
+    {id:uid(),name:'Visas & Docs',budget:0,color:'#C8C84B',expenses:[],linked:'visas'},
+    {id:uid(),name:'Insurance',budget:0,color:'#6B8080',expenses:[]},
+  ];
+  const defaultBktCats=[
+    {id:uid(),name:'Spiritual & Sacred',color:'#8B4BC8'},
+    {id:uid(),name:'Adrenaline & Adventure',color:'#C84B6B'},
+    {id:uid(),name:'Culture & Festivals',color:'#C9A84C'},
+    {id:uid(),name:'Nature & Wildlife',color:'#4BC896'},
+    {id:uid(),name:'Food & Indulgence',color:'#C8734B'},
+    {id:uid(),name:'Hedonism & Sex',color:'#D8527A'},
+  ];
+  const defaultEventCats=[
+    {id:uid(),name:'Party',color:'#D8527A'},
+    {id:uid(),name:'Cultural',color:'#C9A84C'},
+    {id:uid(),name:'Luxury',color:'#8B4BC8'},
+    {id:uid(),name:'Nature',color:'#4BC896'},
+  ];
+  return {cur:id,tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
+}
+
+// ── Firestore read/write — one document per user, isolated by uid via security rules ──
+function cloudDocRefFor(u){return fbDb.collection('users').doc(u.uid).collection('tours').doc('main');}
+
+function loadFromCloud(u){
+  setSyncStatus('saving');
+  return cloudDocRefFor(u).get().then(snap=>{
+    if(snap.exists&&snap.data()&&snap.data().state){
+      isApplyingRemoteState=true;
+      S=JSON.parse(snap.data().state);
+      isApplyingRemoteState=false;
+      setSyncStatus('saved');
+    }else{
+      // brand-new account: seed blank, then immediately write that blank state to Firestore
+      isApplyingRemoteState=true;
+      S=buildBlankTourState();
+      isApplyingRemoteState=false;
+      return saveToCloudNow();
+    }
+  }).catch(err=>{
+    console.error('loadFromCloud failed',err);
+    setSyncStatus('error');
+    isApplyingRemoteState=true;
+    if(!S||!S.tours)S=buildBlankTourState(); // last-resort fallback so the app is at least usable
+    isApplyingRemoteState=false;
+  });
+}
+function saveToCloudNow(manual){
+  if(!currentUser)return Promise.resolve();
+  setSyncStatus('saving');
+  return cloudDocRefFor(currentUser).set({state:JSON.stringify(S),updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
+    .then(()=>{lastCloudSaveAt=Date.now();setSyncStatus('saved');if(manual)refreshSyncModalIfOpen();})
+    .catch(err=>{console.error('saveToCloudNow failed',err);setSyncStatus('error');});
+}
+function scheduleCloudSave(){
+  if(!currentUser||isApplyingRemoteState)return; // don't echo a just-loaded remote state back up as a "save"
+  setSyncStatus('saving');
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer=setTimeout(()=>saveToCloudNow(),2500); // debounced — waits for a pause in edits before writing
+}
+function setSyncStatus(state){
+  syncState=state;
+  const el=document.getElementById('syncStatus');
+  if(!el)return;
+  el.classList.remove('saving','saved','error');
+  if(state==='saving'){el.classList.add('saving');el.innerHTML='<i class="ti ti-cloud-upload"></i>';}
+  else if(state==='saved'){el.classList.add('saved');el.innerHTML='<i class="ti ti-cloud-check"></i>';}
+  else if(state==='error'){el.classList.add('error');el.innerHTML='<i class="ti ti-cloud-off"></i>';}
+  refreshSyncModalIfOpen();
+}
+function syncStatusLabel(){
+  return {saving:'Saving…',saved:'Saved to cloud',error:'Sync error — will retry on your next change',idle:'Idle'}[syncState]||'Idle';
+}
+function refreshSyncModalIfOpen(){
+  const t=document.getElementById('syncModalStatusTxt');
+  if(t)t.textContent=syncStatusLabel();
+}
+
+// ── The single entry point that boots the app, once Firebase confirms who's signed in ──
+if(firebaseReady){
+  fbAuth.onAuthStateChanged(function(u){
+    if(u){
+      currentUser=u;
+      loadFromCloud(u).then(()=>{
+        document.getElementById('authOverlay').style.display='none';
+        curDestId=null;
+        renderSB();renderContent();
+      });
+    }else{
+      currentUser=null;
+      document.getElementById('authOverlay').style.display='flex';
+    }
+  });
+}else{
+  // Firebase never loaded — surface this clearly instead of leaving a silent blank screen.
+  document.getElementById('authLoading').style.display='none';
+  authShowError('Could not connect to the login service (Firebase failed to load). Check your internet connection, disable content/ad blockers, or — if you\'re testing inside a preview/sandbox tool — open this file in a real browser tab. The rest of the app cannot start without this.');
+}
+
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const fD=s=>{if(!s)return'';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});};
@@ -1070,9 +1308,40 @@ function openComingSoonModal(title,desc){
   document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">${esc(title)}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div><div class="mbody"><div style="text-align:center;padding:1.5rem 0"><i class="ti ti-clock-hour-4" style="font-size:40px;color:var(--t3)"></i><div style="margin-top:.75rem;font-family:var(--font-ui);font-size:14px;color:var(--t2)">${esc(desc)}</div><div style="margin-top:.4rem;font-family:var(--font-ui);font-size:12px;color:var(--t3)">This isn\'t wired up yet — coming in a future update.</div></div></div>`;
   document.getElementById('calPopModal').style.display='flex';
 }
-function openAccountModal(){openComingSoonModal('Account Management','Manage your name, email, password, and other account details here.');}
-function openAppSyncModal(){openComingSoonModal('App Sync','Connect Nomad with other apps and services.');}
-function openCloseSessionModal(){openComingSoonModal('Close Session','Sign out of your account.');}
+function openAccountModal(){
+  document.getElementById('settingsPop').classList.remove('open');
+  const email=currentUser?currentUser.email:'—';
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Account Management</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody">
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.2rem">Signed in as</div>
+      <div style="font-size:15px;color:var(--t1);margin-bottom:1.2rem;word-break:break-all">${esc(email)}</div>
+      <button class="btng" style="width:100%;justify-content:center" onclick="authForgotPassword()">Send password reset email</button>
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function openAppSyncModal(){
+  document.getElementById('settingsPop').classList.remove('open');
+  const lastTxt=lastCloudSaveAt?new Date(lastCloudSaveAt).toLocaleString():'Never yet this session';
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">App Sync</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody">
+      <div style="font-size:13px;color:var(--t2);margin-bottom:.3rem">Status: <span id="syncModalStatusTxt">${syncStatusLabel()}</span></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:1.2rem">Last saved to cloud: ${esc(lastTxt)}</div>
+      <button class="btnp" style="width:100%;justify-content:center" onclick="saveToCloudNow(true)">Sync Now</button>
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function openCloseSessionModal(){
+  document.getElementById('settingsPop').classList.remove('open');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Close Session</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody">
+      <div style="font-size:14px;color:var(--t2);margin-bottom:1.2rem">Sign out of NOMAD on this device?</div>
+      <div style="display:flex;gap:8px">
+        <button class="btng" style="flex:1;justify-content:center" onclick="calClosePopup()">Cancel</button>
+        <button class="btnp" style="flex:1;justify-content:center;background:var(--red)" onclick="confirmSignOut()">Sign Out</button>
+      </div>
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
 applyTheme();
 
 // ── FILTER PERSISTENCE ────────────────────────────────────────────────────────
@@ -1598,6 +1867,7 @@ function captureUndoIfChanged(){
     undoStack.push(lastStateSnapshot);
     if(undoStack.length>MAX_UNDO)undoStack.shift();
     redoStack=[];
+    scheduleCloudSave(); // a real change happened — sync it to the cloud (debounced)
   }
   lastStateSnapshot=snap;
 }
@@ -1610,6 +1880,7 @@ function performUndo(){
   if(!S.tours[S.cur])S.cur=Object.keys(S.tours)[0]; // guard in case the current tour itself was undone away
   curDestId=null;
   renderSB();renderContent();
+  scheduleCloudSave();
 }
 function performRedo(){
   if(!redoStack.length)return;
@@ -1620,6 +1891,7 @@ function performRedo(){
   if(!S.tours[S.cur])S.cur=Object.keys(S.tours)[0];
   curDestId=null;
   renderSB();renderContent();
+  scheduleCloudSave();
 }
 function renderContent(){
   captureUndoIfChanged();
@@ -5848,8 +6120,9 @@ function saveTourEdit(){
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 applyCustomStatusColors();
-renderSB();
-renderContent();
+// renderSB()/renderContent() are no longer called directly here — they now run
+// from the fbAuth.onAuthStateChanged callback above, once a user is signed in
+// and their cloud data (or a fresh blank state) has finished loading.
 </script>
 </body>
 </html>
