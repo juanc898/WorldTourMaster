@@ -612,7 +612,6 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   .sgrid{grid-template-columns:repeat(3,1fr)}
   .panel,.prof-wrap{padding:.75rem}
   .dval-bd{font-size:10.5px;white-space:nowrap}
-  .logo-sub{display:none}
   .add-btn-label{display:none}
   header .add-btn{padding:6px 9px}
   .mobile-filter-toggle{display:flex!important;margin-bottom:.6rem}
@@ -2171,8 +2170,7 @@ function renderDash(){
         <div style="font-size:19px;color:var(--t1);letter-spacing:.03em;font-family:var(--font-display);font-weight:600">${esc(cur().name)}</div>
         <button class="abtn" onclick="openTourEditModal()" style="flex-shrink:0;font-size:11px;margin-top:2px"><i class="ti ti-edit"></i> Edit</button>
       </div>
-      <div style="font-size:10px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem">World Tour Planner</div>
-      <div class="tour-quote" style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
+      <div class="tour-quote" style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;font-family:var(--font-body);margin-top:.5rem">${esc(cur().desc||'Add a description for this tour…')}</div>
     </div>
     <div class="filter-row" style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem">
       <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
