@@ -616,8 +616,8 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   .add-btn-label{display:none}
   header .add-btn{padding:6px 9px}
   .mobile-filter-toggle{display:flex!important;margin-bottom:.6rem}
-  .panel .filter-row{display:none}
-  .panel.filters-open .filter-row{display:flex}
+  .panel .filter-row{display:none!important}
+  .panel.filters-open .filter-row{display:flex!important}
   .f2,.f3{grid-template-columns:1fr}
   .hm{display:none}
   .rt-mobile-dates{display:block}
@@ -2174,7 +2174,7 @@ function renderDash(){
       <div style="font-size:10px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:.75rem">World Tour Planner</div>
       <div class="tour-quote" style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;font-family:var(--font-body)">${esc(cur().desc||'Add a description for this tour…')}</div>
     </div>
-    <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem">
+    <div class="filter-row" style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem">
       <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
         ${dateModeBtn('current-end','Current → End')}${dateModeBtn('total-tour','Total Tour')}${dateModeBtn('custom','Custom')}
       </div>
