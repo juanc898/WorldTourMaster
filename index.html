@@ -2337,7 +2337,7 @@ function renderRoute(){
       </div>
       <div style="display:flex;align-items:center;gap:5px;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:.2rem .5rem">
         <i class="ti ti-calendar" style="font-size:13px;color:var(--t3);flex-shrink:0"></i>
-        <span style="font-size:10.5px;color:var(--t3);font-family:var(--font-ui);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em">Month/Year</span>
+        <span style="font-size:10.5px;color:var(--t3);font-family:var(--font-ui);white-space:nowrap;letter-spacing:.02em">Month/Year</span>
         <input class="fi" type="month" value="${routeFilterMonth||''}" onchange="routeSetFilterMonth(this.value)" title="Filter by month/year" style="font-size:12px;padding:.3rem 0;width:auto;border:none;background:transparent"/>
       </div>
       ${routeFilterMonth?`<button class="abtn" onclick="routeSetFilterMonth(null)" title="Clear month filter"><i class="ti ti-x"></i></button>`:''}
