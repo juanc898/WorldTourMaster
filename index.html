@@ -794,6 +794,14 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .stat-counter-btn:hover{filter:brightness(1.2);border-color:var(--gold-dim)}
 .stat-counter-value{font-size:26px;font-weight:700;color:var(--gold);font-family:var(--font-display);min-width:2.4em;text-align:center;cursor:pointer;user-select:none}
 .stat-counter-value:hover{filter:brightness(1.15)}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.home-card{background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:1.2rem;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s,border-color .15s}
+.home-card:hover{transform:translateY(-2px);border-color:var(--gold-dim)}
+.home-card.disabled{cursor:not-allowed;opacity:.5}
+.home-card.disabled:hover{transform:none;border-color:var(--bd)}
+.home-card-icon{font-size:26px;color:var(--gold);margin-bottom:.6rem}
+.home-card-title{font-size:15px;color:var(--t1);font-family:var(--font-display);font-weight:600;margin-bottom:.3rem}
+.home-card-desc{font-size:12.5px;color:var(--t3);font-family:var(--font-ui);line-height:1.4}
 .mobile-filter-toggle{display:none;align-items:center;gap:5px}
 .mobile-filter-toggle .ti-chevron-down{transition:transform .2s}
 .mobile-filter-toggle.open .ti-chevron-down{transform:rotate(180deg)}
@@ -874,7 +882,8 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   </div>
 </header>
 <nav class="nav">
-  <div class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Tour Overview</div>
+  <div class="nav-tab active" data-tab="home" onclick="switchTab('home',this)"><i class="ti ti-home"></i> Home</div>
+  <div class="nav-tab" data-tab="dashboard" onclick="switchTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Tour Overview</div>
   <div class="nav-tab" data-tab="route" onclick="switchTab('route',this)"><i class="ti ti-map-2"></i> Route</div>
   <div class="nav-tab" data-tab="calendar" onclick="switchTab('calendar',this)"><i class="ti ti-calendar"></i> Calendar</div>
   <div class="nav-tab" data-tab="map" onclick="switchTab('map',this)"><i class="ti ti-world"></i> Map</div>
@@ -1203,6 +1212,10 @@ function loadFromCloud(u){
     if(snap.exists&&snap.data()&&snap.data().state){
       isApplyingRemoteState=true;
       S=JSON.parse(snap.data().state);
+      // "My Tour Life" must never be the tour someone lands on automatically —
+      // it's a deliberate look-up, never a default. If that's what got saved
+      // (e.g. the tab was closed while viewing it), fall back to a real tour.
+      if(S.cur===MY_TOUR_LIFE_ID||!S.tours[S.cur])S.cur=Object.keys(S.tours)[0];
       isApplyingRemoteState=false;
       setSyncStatus('saved');
     }else{
@@ -1837,7 +1850,45 @@ let S={
 };
 
 // ── ACCESSORS ─────────────────────────────────────────────────────────────────
-const cur=()=>S.tours[S.cur];
+const MY_TOUR_LIFE_ID='__mytourlife__';
+let myTourLifeCache=null;
+// Builds a read-only aggregate of every real tour. Acts are replaced with one
+// synthetic act per source tour (per Juan's spec: "the journey act names are
+// each tour that has been done") so every destination groups under the name
+// of the tour it came from, everywhere Acts are used (Route, Map, sidebar).
+function buildMyTourLife(){
+  const palette=['#C9A84C','#4B8BC8','#4BC896','#C84B6B','#8B4BC8','#C8734B','#D8527A','#6B8080'];
+  const acts=[],destinations=[],bktCategories=[],eventCategories=[],bucket=[],statsCategories=[],stats=[],budget=[],budgetOrder=[];
+  Object.keys(S.tours).forEach((tid,i)=>{
+    const t=S.tours[tid];
+    const actId='life_'+tid;
+    acts.push({id:actId,name:t.name,subtitle:'',color:palette[i%palette.length]});
+    (t.destinations||[]).forEach(d=>destinations.push({...d,act:actId}));
+    (t.bktCategories||[]).forEach(c=>bktCategories.push({...c}));
+    (t.eventCategories||[]).forEach(c=>eventCategories.push({...c}));
+    (t.bucket||[]).forEach(b=>bucket.push({...b}));
+    (t.statsCategories||[]).forEach(c=>statsCategories.push({...c}));
+    (t.stats||[]).forEach(s=>stats.push({...s}));
+    (t.budget||[]).forEach(c=>budget.push({...c,expenses:[...(c.expenses||[])]}));
+    (t.budgetOrder||[]).forEach(id=>budgetOrder.push(id));
+  });
+  return{name:'My Tour Life',desc:'A lifetime compilation of every tour you have taken.',acts,destinations,bktCategories,eventCategories,bucket,statsCategories,stats,budget,budgetOrder,readOnly:true};
+}
+// Rebuilt fresh whenever (re)entered so it always reflects the latest data —
+// see switchTour(), which sets myTourLifeCache=null right before switching in.
+function getMyTourLife(){
+  if(!myTourLifeCache)myTourLifeCache=buildMyTourLife();
+  return myTourLifeCache;
+}
+const cur=()=>S.cur===MY_TOUR_LIFE_ID?getMyTourLife():S.tours[S.cur];
+function isReadOnlyTour(){return!!(cur()&&cur().readOnly);}
+function blockIfReadOnly(){
+  if(isReadOnlyTour()){
+    alert('"My Tour Life" is a read-only summary of all your tours. Switch to one of your real tours to make changes.');
+    return true;
+  }
+  return false;
+}
 const cActs=()=>cur().acts;
 const cDests=()=>cur().destinations;
 const cBktCats=()=>cur().bktCategories||(cur().bktCategories=[]);
@@ -1872,7 +1923,7 @@ function autoStatus(){
 }
 
 // ── UI STATE ──────────────────────────────────────────────────────────────────
-let tab='dashboard',curActId=null,curDestId=null;
+let tab='home',curActId=null,curDestId=null;
 let routeEditMode=false; // toggles the Route section between the normal table and the inline-editable "Edit Route" grid
 let routeDraft=null; // working copy of {id,arrival,departure} while inside Edit Route — null means "not editing", live data is untouched until Save Changes
 let routeAutoCalc=localStorage.getItem('ae_route_autocalc')!=='off'; // defaults to on
@@ -1935,7 +1986,8 @@ function closeSB(){document.getElementById('sidebar').classList.remove('open');d
 function renderSB(){
   autoStatus();
   const ts=document.getElementById('tourSel');
-  ts.innerHTML=Object.entries(S.tours).map(([id,t])=>`<option value="${id}"${id===S.cur?' selected':''}>${esc(t.name)}</option>`).join('');
+  ts.innerHTML=`<option value="${MY_TOUR_LIFE_ID}"${S.cur===MY_TOUR_LIFE_ID?' selected':''}>★ My Tour Life</option>`+
+    Object.entries(S.tours).map(([id,t])=>`<option value="${id}"${id===S.cur?' selected':''}>${esc(t.name)}</option>`).join('');
   // Header now shows the static "NOMAD" brand identity rather than the per-tour name;
   // the tour name itself is shown prominently on the Tour Overview page body.
   let h='';
@@ -1945,8 +1997,8 @@ function renderSB(){
     const td=dd.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
     h+=`<div class="act-row${isA?' active':''}" onclick="selAct('${act.id}')" style="border-left-color:${isA?act.color:'transparent'}">
       <div style="flex:1;min-width:0"><div class="act-nm" style="${isA?'color:'+act.color:''}">${esc(act.name)}</div><div class="act-sub">${esc(act.subtitle)}</div></div>
-      <button class="abtn" onclick="event.stopPropagation();openActModal('${act.id}')" style="font-size:11px;padding:1px 4px"><i class="ti ti-edit"></i></button>
-      <button class="abtn del" onclick="event.stopPropagation();removeAct('${act.id}')" style="font-size:11px;padding:1px 4px"><i class="ti ti-trash"></i></button>
+      ${cur().readOnly?'':`<button class="abtn" onclick="event.stopPropagation();openActModal('${act.id}')" style="font-size:11px;padding:1px 4px"><i class="ti ti-edit"></i></button>
+      <button class="abtn del" onclick="event.stopPropagation();removeAct('${act.id}')" style="font-size:11px;padding:1px 4px"><i class="ti ti-trash"></i></button>`}
       <span class="act-badge">${td}d</span>
     </div>`;
     if(isA)dd.forEach(d=>{
@@ -1980,8 +2032,45 @@ function selActFromCommand(id){
   renderContent();
 }
 
-function switchTour(id){S.cur=id;curActId=null;curDestId=null;selBudCat=null;renderSB();renderContent();}
-function viewDestSB(id){if(tab==='map'&&typeof teardownGlobe==='function')teardownGlobe();curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));closeSB();renderSB();renderContent();}
+let savedFiltersBeforeLife=null;
+function restoreFiltersIfLeavingLife(){
+  if(S.cur===MY_TOUR_LIFE_ID&&savedFiltersBeforeLife){
+    const f=savedFiltersBeforeLife;
+    AF=f.AF;BF=f.BF;
+    dashDateMode=f.dashDateMode;dashCustomStart=f.dashCustomStart;dashCustomEnd=f.dashCustomEnd;
+    evDateMode=f.evDateMode;evCustomStart=f.evCustomStart;evCustomEnd=f.evCustomEnd;
+    budgetDateMode=f.budgetDateMode;budgetCustomStart=f.budgetCustomStart;budgetCustomEnd=f.budgetCustomEnd;
+    savedFiltersBeforeLife=null;
+  }
+}
+function switchTour(id){
+  const wasLife=S.cur===MY_TOUR_LIFE_ID;
+  const enteringLife=id===MY_TOUR_LIFE_ID&&!wasLife;
+
+  if(enteringLife){
+    savedFiltersBeforeLife={
+      AF:[...AF],BF:[...BF],
+      dashDateMode,dashCustomStart,dashCustomEnd,
+      evDateMode,evCustomStart,evCustomEnd,
+      budgetDateMode,budgetCustomStart,budgetCustomEnd,
+    };
+    myTourLifeCache=null; // rebuild fresh from whatever the real tours currently contain
+    S.cur=id;
+    const bounds=budgetTourBounds(); // now reads from the aggregate, since cur() resolves to it
+    const start=bounds.start||today;
+    dashDateMode='custom';dashCustomStart=start;dashCustomEnd=today;
+    evDateMode='custom';evCustomStart=start;evCustomEnd=today;
+    budgetDateMode='custom';budgetCustomStart=start;budgetCustomEnd=today;
+    AF=['completed'];
+    BF=['achieved'];
+  }else{
+    restoreFiltersIfLeavingLife();
+    S.cur=id;
+  }
+  curActId=null;curDestId=null;selBudCat=null;routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
+  renderSB();renderContent();
+}
+function viewDestSB(id){if(tab==='map'&&typeof teardownGlobe==='function')teardownGlobe();curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t)=>t.classList.toggle('active',t.dataset.tab==='dashboard'));closeSB();renderSB();renderContent();}
 
 function goTab(t){if(tab==='map'&&t!=='map'&&typeof teardownGlobe==='function')teardownGlobe();tab=t;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));curDestId=null;renderContent();}
 function goToCountryList(){
@@ -2047,7 +2136,8 @@ function renderContent(){
   captureUndoIfChanged();
   autoStatus();
   const el=document.getElementById('mainContent');
-  if(tab==='dashboard')el.innerHTML=curDestId&&dBy(curDestId)?renderProfile():renderDash();
+  if(tab==='home')el.innerHTML=renderHome();
+  else if(tab==='dashboard')el.innerHTML=curDestId&&dBy(curDestId)?renderProfile():renderDash();
   else if(tab==='route')el.innerHTML=curDestId&&dBy(curDestId)?renderProfile():renderRoute();
   else if(tab==='calendar')el.innerHTML=renderCalendar();
   else if(tab==='map')el.innerHTML=renderMap();
@@ -2168,7 +2258,7 @@ function renderDash(){
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(201,168,76,.05) 0%,transparent 60%);pointer-events:none"></div>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;margin-bottom:3px">
         <div style="font-size:19px;color:var(--t1);letter-spacing:.03em;font-family:var(--font-display);font-weight:600">${esc(cur().name)}</div>
-        <button class="abtn" onclick="openTourEditModal()" style="flex-shrink:0;font-size:11px;margin-top:2px"><i class="ti ti-edit"></i> Edit</button>
+        ${cur().readOnly?'':'<button class="abtn" onclick="openTourEditModal()" style="flex-shrink:0;font-size:11px;margin-top:2px"><i class="ti ti-edit"></i> Edit</button>'}
       </div>
       <div class="tour-quote" style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;font-family:var(--font-body);margin-top:.5rem">${esc(cur().desc||'Add a description for this tour…')}</div>
     </div>
@@ -2318,9 +2408,10 @@ function renderRoute(){
   const actMenuItems=`<div class="fmi" onclick="routeSetFilterAct(null)" style="${!routeFilterAct?'color:var(--gold)':''}"><i class="ti ti-circle${!routeFilterAct?'-check-filled':''}" style="font-size:13px"></i> All Acts</div>`+
     cActs().map(a=>`<div class="fmi" onclick="routeSetFilterAct('${a.id}')" style="${routeFilterAct===a.id?'color:'+a.color:''}"><div style="width:8px;height:8px;border-radius:50%;background:${a.color};flex-shrink:0"></div> ${esc(a.name)}</div>`).join('');
   const dateModeBtn=(mode,lbl)=>`<button onclick="routeSetDateMode('${mode}')" style="border:none;background:${routeDateMode===mode?'var(--gold)':'transparent'};color:${routeDateMode===mode?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s;white-space:nowrap">${lbl}</button>`;
+  const ro=cur().readOnly;
   return`<div class="panel">
     <div class="frow filter-row">
-      <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>
+      ${ro?'':'<button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>'}
       <div style="position:relative;flex:1;min-width:160px;max-width:280px">
         <i class="ti ti-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:13px;pointer-events:none"></i>
         <input class="fi" id="routeSearchInp" type="text" placeholder="Search city, country, event…" value="${esc(routeSearch)}" oninput="onRouteSearch(this.value)" style="padding:.5rem .6rem .5rem 1.8rem;font-size:13px"/>
@@ -2339,7 +2430,7 @@ function renderRoute(){
         <input class="fi" type="month" value="${routeFilterMonth||''}" onchange="routeSetFilterMonth(this.value)" title="Filter by month/year" style="font-size:12px;padding:.3rem 0;width:auto;border:none;background:transparent"/>
       </div>
       ${routeFilterMonth?`<button class="abtn" onclick="routeSetFilterMonth(null)" title="Clear month filter"><i class="ti ti-x"></i></button>`:''}
-      <div style="position:relative">
+      ${ro?'':`<div style="position:relative">
         <button class="fbtn" onclick="toggleIOMenu('routeIOMenu')" title="Template, Import, Export"><i class="ti ti-arrow-up"></i></button>
         <div class="fmenu" id="routeIOMenu">
           <div class="fmi" onclick="exportTemplate();toggleIOMenu('routeIOMenu')"><i class="ti ti-file-spreadsheet"></i> Download Template</div>
@@ -2349,7 +2440,7 @@ function renderRoute(){
       </div>
       <button class="fbtn" onclick="toggleRouteEditMode()" title="Quickly edit dates and nights for every destination in one grid"><i class="ti ti-calendar-time"></i> Edit Route</button>
       <button class="fbtn" onclick="confirmRecalculateDates()" title="Close any gaps or overlaps between destinations, in chronological order, after editing dates or nights"><i class="ti ti-refresh"></i> Fix Dates Gaps</button>
-      <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:12px">Remove All</button>
+      <button class="abtn del" onclick="removeAllDests()" style="padding:5px 10px;font-size:12px">Remove All</button>`}
       <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)" id="routeCount">${filt.length}/${sorted.length}</span>
     </div>
     <div class="frow filter-row" style="margin-top:-.4rem">
@@ -2417,6 +2508,7 @@ function onRouteSearch(val){
 }
 function toggleRouteEditMode(){
   if(!routeEditMode){
+    if(blockIfReadOnly())return;
     // Entering Edit Route — snapshot just the date-relevant fields into a draft. Nothing here
     // touches the real destinations until Save Changes is clicked.
     routeDraft=sDests().map(d=>({id:d.id,arrival:d.arrival,departure:d.departure}));
@@ -2609,8 +2701,8 @@ function recalculateDates(){
 function toggleFMenu(){document.getElementById('fmenu')?.classList.toggle('open');}
 function toggleIOMenu(id){document.getElementById(id)?.classList.toggle('open');}
 function toggleF(s){if(AF.includes(s))AF=AF.filter(x=>x!==s);else AF.push(s);saveF();renderContent();}
-function removeAllDests(){if(confirm('Remove ALL destinations from this tour?\nThis cannot be undone.')){{cDests().splice(0);curDestId=null;renderSB();renderContent();}}}
-function viewDest(id){if(tab==='map'&&typeof teardownGlobe==='function')teardownGlobe();curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));renderSB();renderContent();}
+function removeAllDests(){if(blockIfReadOnly())return;if(confirm('Remove ALL destinations from this tour?\nThis cannot be undone.')){{cDests().splice(0);curDestId=null;renderSB();renderContent();}}}
+function viewDest(id){if(tab==='map'&&typeof teardownGlobe==='function')teardownGlobe();curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t)=>t.classList.toggle('active',t.dataset.tab==='dashboard'));renderSB();renderContent();}
 
 // ── CSV IMPORT / EXPORT ───────────────────────────────────────────────────────
 function exportTemplate(){
@@ -3053,7 +3145,7 @@ function colIndexToLetters(idx){
 
 
 
-function importCSV(input){
+function importCSV(input){if(blockIfReadOnly()){input.value='';return;}
   const file=input.files[0];if(!file)return;
   const isXlsx=/\.xlsx$/i.test(file.name);
   if(isXlsx){
@@ -4286,8 +4378,7 @@ function renderCalendar(){
         <button class="fbtn" onclick="calToggleFilterMenu()"><i class="ti ti-filter"></i> Filters${activeFilterCount?' ('+activeFilterCount+')':''} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="calFilterMenu" style="max-height:340px;overflow-y:auto">${filterMenuHTML}</div>
       </div>
-      <button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>
-      ${calClipboard?`<span style="font-size:11px;color:var(--gold);font-family:var(--font-ui)"><i class="ti ti-clipboard"></i> "${esc(calClipboard.city)}" copied — click a day's + to paste it there <button class="abtn" onclick="calClearClipboard()" style="padding:0 4px;font-size:10px">✕</button></span>`:''}
+      ${cur().readOnly?'':'<button class="add-btn" onclick="openDestModal()"><i class="ti ti-plus"></i> Add</button>'}
     </div>
     ${calView==='month'?calRenderMonth():calRenderYear()}
     ${conflictHTML}
@@ -4840,15 +4931,37 @@ function toggleStoryMode(){
 
 // ── EVENTS ────────────────────────────────────────────────────────────────────
 let evTypeFilter=null; // null = all types, or a specific event_type string
+let evDateMode=localStorage.getItem('ae_ev_datemode')||'total-tour'; // 'current-end' | 'total-tour' | 'custom'
+let evCustomStart=null,evCustomEnd=null;
+function evEffectiveRange(){
+  const bounds=budgetTourBounds();
+  const todayIso=calIso(new Date());
+  if(evDateMode==='current-end')return{start:todayIso,end:bounds.end};
+  if(evDateMode==='custom')return{start:evCustomStart||bounds.start,end:evCustomEnd||bounds.end};
+  return{start:bounds.start,end:bounds.end}; // 'total-tour' default
+}
+function evSetDateMode(mode){
+  evDateMode=mode;localStorage.setItem('ae_ev_datemode',mode);
+  if(mode!=='custom'){const r=evEffectiveRange();evCustomStart=r.start;evCustomEnd=r.end;}
+  renderContent();
+}
+function evSetCustomDate(which,val){
+  evDateMode='custom';localStorage.setItem('ae_ev_datemode','custom');
+  if(which==='start')evCustomStart=val;else evCustomEnd=val;
+  renderContent();
+}
 let eventCatMgmtMode=false; // toggles Events between the main list and the "Manage Categories" sub-section
 function toggleEventCatMgmtMode(){eventCatMgmtMode=!eventCatMgmtMode;renderContent();}
 
 function renderEvents(){
   if(eventCatMgmtMode)return renderEventCatMgmt();
-  const allEvDests=sDests().filter(d=>d.event).sort((a,b)=>(a.arrival||'').localeCompare(b.arrival||''));
+  const evRange=evEffectiveRange();
+  const inEvRange=d=>!d.arrival||!d.departure||(d.arrival<=evRange.end&&d.departure>=evRange.start);
+  const allEvDests=sDests().filter(d=>d.event).filter(inEvRange).sort((a,b)=>(a.arrival||'').localeCompare(b.arrival||''));
   const types=[...new Set(allEvDests.map(d=>d.event_type).filter(Boolean))].sort();
   const evDests=evTypeFilter?allEvDests.filter(d=>d.event_type===evTypeFilter):allEvDests;
   const typeFilterLabel=evTypeFilter||'All Types';
+  const evDateModeBtn=(mode,lbl)=>`<button onclick="evSetDateMode('${mode}')" style="border:none;background:${evDateMode===mode?'var(--gold)':'transparent'};color:${evDateMode===mode?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s;white-space:nowrap">${lbl}</button>`;
   const typeMenuItems=`<div class="fmi" onclick="setEvTypeFilter(null)" style="${!evTypeFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!evTypeFilter?'-check-filled':''}" style="font-size:13px"></i> All Types</div>`+
     types.map(t=>`<div class="fmi" onclick="setEvTypeFilter('${esc(t).replace(/'/g,"\\'")}')" style="${evTypeFilter===t?'color:var(--gold)':''}">${esc(t)}</div>`).join('');
   const items=evDests.map(d=>{
@@ -4876,7 +4989,17 @@ function renderEvents(){
         <button class="fbtn" onclick="toggleEvTypeMenu()"><i class="ti ti-filter"></i> ${esc(typeFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="evTypeMenu">${typeMenuItems}</div>
       </div>
-      <button class="fbtn" onclick="toggleEventCatMgmtMode()" title="Create, rename, or remove Event categories"><i class="ti ti-tag"></i> Manage Categories</button>
+      ${cur().readOnly?'':'<button class="fbtn" onclick="toggleEventCatMgmtMode()" title="Create, rename, or remove Event categories"><i class="ti ti-tag"></i> Manage Categories</button>'}
+    </div>
+    <div class="filter-row" style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem">
+      <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
+        ${evDateModeBtn('current-end','Current → End')}${evDateModeBtn('total-tour','Total Tour')}${evDateModeBtn('custom','Custom')}
+      </div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="fi" type="date" value="${evRange.start||''}" onchange="evSetCustomDate('start',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+        <span style="color:var(--t3);font-size:12px">→</span>
+        <input class="fi" type="date" value="${evRange.end||''}" onchange="evSetCustomDate('end',this.value)" style="font-size:12px;padding:.3rem .5rem;width:auto"/>
+      </div>
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No events match the current filter.</div>'}</div>
     <div style="margin-top:.5rem;font-family:var(--font-ui);font-size:11px;color:var(--t3)">Click any event to edit or get AI insights</div>
@@ -5224,7 +5347,7 @@ function renderBudget(){
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Categories</div>
-      <button class="abtn" onclick="openBudgetModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
+      ${cur().readOnly?'':'<button class="abtn" onclick="openBudgetModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>'}
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No categories yet</div>'}</div>
     ${detHTML}
@@ -5349,7 +5472,7 @@ function bdDrop(e,tid){
   cur().budgetOrder=order;bdDragSrc=null;renderContent();
 }
 let budExpCatId=null,budExpEditId=null;
-function openBudExpModal(catId,expId){
+function openBudExpModal(catId,expId){if(blockIfReadOnly())return;
   budExpCatId=catId;budExpEditId=expId||null;
   document.getElementById('budExpModalTitle').textContent=expId?'Edit Expense':'Add Expense';
   const cat=cur().budget.find(c=>c.id===catId);
@@ -5376,7 +5499,7 @@ function toggleBexpRecur(){
     note.textContent=bounds.end?`Will repeat monthly through ${fD(bounds.end)} (the end of the tour).`:'Will repeat monthly until the end of the tour — add destinations with dates first so there\'s an end date to repeat through.';
   }else note.style.display='none';
 }
-function saveBudExp(){
+function saveBudExp(){if(blockIfReadOnly())return;
   const label=document.getElementById('bexp_label').value.trim();
   if(!label){alert('Please enter a description.');return;}
   const planned=parseFloat(document.getElementById('bexp_planned').value)||0;
@@ -5410,9 +5533,9 @@ function saveBudExp(){
   }
   closeBudExpModal();renderContent();
 }
-function removeBudExp(catId,expId){const cat=cur().budget.find(c=>c.id===catId);if(cat){cat.expenses=cat.expenses.filter(e=>e.id!==expId);renderContent();}}
-function removeBudCat(id){if(!confirm('Remove this budget category?'))return;cur().budget=cur().budget.filter(c=>c.id!==id);if(selBudCat===id)selBudCat=null;renderContent();}
-function openBudgetModal(editId){
+function removeBudExp(catId,expId){if(blockIfReadOnly())return;const cat=cur().budget.find(c=>c.id===catId);if(cat){cat.expenses=cat.expenses.filter(e=>e.id!==expId);renderContent();}}
+function removeBudCat(id){if(blockIfReadOnly())return;if(!confirm('Remove this budget category?'))return;cur().budget=cur().budget.filter(c=>c.id!==id);if(selBudCat===id)selBudCat=null;renderContent();}
+function openBudgetModal(editId){if(blockIfReadOnly())return;
   editBudCatId=editId||null;
   document.getElementById('budgetModalTitle').textContent=editId?'Edit Category':'Add Category';
   if(editId){const c=cur().budget.find(x=>x.id===editId);if(c){document.getElementById('bcat_name').value=c.name;document.getElementById('bcat_budget').value=c.budget;document.getElementById('bcat_color').value=c.color;}}
@@ -5420,7 +5543,7 @@ function openBudgetModal(editId){
   document.getElementById('budgetModal').style.display='flex';
 }
 function closeBudgetModal(){document.getElementById('budgetModal').style.display='none';}
-function saveBudgetCat(){
+function saveBudgetCat(){if(blockIfReadOnly())return;
   const nm=document.getElementById('bcat_name').value.trim();
   const budg=parseFloat(document.getElementById('bcat_budget').value)||0;
   const col=document.getElementById('bcat_color').value;
@@ -5501,7 +5624,7 @@ function renderBucket(){
         <button class="fbtn" onclick="toggleBCMenu()"><i class="ti ti-tag"></i> ${esc(catFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="bcmenu">${catMenuItems}</div>
       </div>
-      <button class="fbtn" onclick="toggleBktCatMgmtMode()" title="Create, rename, or remove Bucket List categories"><i class="ti ti-tag"></i> Manage Categories</button>
+      ${cur().readOnly?'':'<button class="fbtn" onclick="toggleBktCatMgmtMode()" title="Create, rename, or remove Bucket List categories"><i class="ti ti-tag"></i> Manage Categories</button>'}
       <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
         <button onclick="setBktSortMode('category')" style="border:none;background:${bktSortMode==='category'?'var(--gold)':'transparent'};color:${bktSortMode==='category'?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s">By Category</button>
         <button onclick="setBktSortMode('custom')" style="border:none;background:${bktSortMode==='custom'?'var(--gold)':'transparent'};color:${bktSortMode==='custom'?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s" title="Drag-and-drop order">Custom Order</button>
@@ -5518,7 +5641,7 @@ function renderBucket(){
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Life Experiences</div>
-      <button class="abtn" onclick="openBktModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
+      ${cur().readOnly?'':'<button class="abtn" onclick="openBktModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>'}
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No experiences match the current filters.</div>'}</div>
     <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:11px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate</div>
@@ -5551,11 +5674,11 @@ function toggleBF(s){if(BF.includes(s))BF=BF.filter(x=>x!==s);else BF.push(s);sa
 function setBktCatFilter(id){bktCatFilter=id;document.getElementById('bcmenu')?.classList.remove('open');renderContent();}
 document.addEventListener('click',e=>{const bm=document.getElementById('bfmenu');if(bm&&!bm.parentElement?.contains(e.target))bm.classList.remove('open');const cm=document.getElementById('bcmenu');if(cm&&!cm.parentElement?.contains(e.target))cm.classList.remove('open');});
 
-function toggleBkt(id){const b=cur().bucket.find(x=>x.id===id);if(b){b.done=!b.done;renderContent();updateHStats();}}
-function setBktR(id,r){const b=cur().bucket.find(x=>x.id===id);if(b){b.rating=b.rating===r?0:r;renderContent();}}
+function toggleBkt(id){if(blockIfReadOnly())return;const b=cur().bucket.find(x=>x.id===id);if(b){b.done=!b.done;renderContent();updateHStats();}}
+function setBktR(id,r){if(blockIfReadOnly())return;const b=cur().bucket.find(x=>x.id===id);if(b){b.rating=b.rating===r?0:r;renderContent();}}
 function bktDS(e,id){bktDragSrc=id;e.dataTransfer.effectAllowed='move';}
 function bktDO(e,id){e.preventDefault();document.querySelectorAll('.bkt').forEach(el=>el.classList.remove('drag-over'));if(id!==bktDragSrc)e.currentTarget.classList.add('drag-over');}
-function bktDrop(e,tid){
+function bktDrop(e,tid){if(blockIfReadOnly())return;
   e.preventDefault();document.querySelectorAll('.bkt').forEach(el=>el.classList.remove('drag-over'));
   if(!bktDragSrc||bktDragSrc===tid)return;
   const bkt=cur().bucket;
@@ -5729,7 +5852,7 @@ function renderVisas(){
   </div>`;
 }
 
-function openBktModal(editId){
+function openBktModal(editId){if(blockIfReadOnly())return;
   editBktId=editId||null;
   document.getElementById('bktModalTitle').textContent=editId?'Edit Experience':'Add Experience';
   const as=document.getElementById('bkt_act');
@@ -5741,7 +5864,7 @@ function openBktModal(editId){
   document.getElementById('bucketModal').style.display='flex';
 }
 function closeBktModal(){document.getElementById('bucketModal').style.display='none';}
-function saveBktItem(){
+function saveBktItem(){if(blockIfReadOnly())return;
   const txt=document.getElementById('bkt_text').value.trim();
   const cntry=document.getElementById('bkt_country').value.trim();
   const act=document.getElementById('bkt_act').value;
@@ -5753,7 +5876,7 @@ function saveBktItem(){
   else{const bkt=cur().bucket;bkt.push({id:uid(),text:txt,country:cntry,act,category,rating,done,order:bkt.length});}
   closeBktModal();renderContent();
 }
-function removeBktItem(id){if(!confirm('Remove this experience?'))return;cur().bucket=cur().bucket.filter(b=>b.id!==id);renderContent();}
+function removeBktItem(id){if(blockIfReadOnly())return;if(!confirm('Remove this experience?'))return;cur().bucket=cur().bucket.filter(b=>b.id!==id);renderContent();}
 
 // ── BUCKET LIST EXCEL TEMPLATE / IMPORT / EXPORT ───────────────────────────────
 // Independent of the Add/Edit Experience form — this is its own small field schema, not tied
@@ -5815,7 +5938,7 @@ function exportBudgetCSV(scope){ // scope: 'manual' | 'all'
   });
   buildXlsxFromRows([header,...rows],'Budget').then(blob=>downloadBlob(blob,scope==='all'?'budget_export_all.xlsx':'budget_export_manual.xlsx'));
 }
-function importBudgetCSV(input){
+function importBudgetCSV(input){if(blockIfReadOnly()){input.value='';return;}
   const file=input.files[0];if(!file)return;
   const isXlsx=/\.xlsx$/i.test(file.name);
   if(isXlsx){
@@ -5924,7 +6047,7 @@ function exportBktCSV(){
   }));
   buildXlsxFromRows([header,...rows],'Bucket List').then(blob=>downloadBlob(blob,'bucket_list_export.xlsx'));
 }
-function importBktCSV(input){
+function importBktCSV(input){if(blockIfReadOnly()){input.value='';return;}
   const file=input.files[0];if(!file)return;
   const isXlsx=/\.xlsx$/i.test(file.name);
   if(isXlsx){
@@ -6022,7 +6145,7 @@ function processImportedBktRows(rows,input){
 }
 
 // Bucket categories CRUD
-function openBktCatModal(editId){
+function openBktCatModal(editId){if(blockIfReadOnly())return;
   editBktCatId=editId||null;
   document.getElementById('bktCatModalTitle').textContent=editId?'Edit Category':'Add Category';
   if(editId){const c=cBktCats().find(x=>x.id===editId);if(c){document.getElementById('bktcat_name').value=c.name;document.getElementById('bktcat_color').value=c.color;}}
@@ -6030,7 +6153,7 @@ function openBktCatModal(editId){
   document.getElementById('bktCatModal').style.display='flex';
 }
 function closeBktCatModal(){document.getElementById('bktCatModal').style.display='none';}
-function saveBktCat(){
+function saveBktCat(){if(blockIfReadOnly())return;
   const nm=document.getElementById('bktcat_name').value.trim();
   const col=document.getElementById('bktcat_color').value;
   if(!nm){alert('Please enter a category name.');return;}
@@ -6038,7 +6161,7 @@ function saveBktCat(){
   else cBktCats().push({id:uid(),name:nm,color:col});
   closeBktCatModal();renderContent();
 }
-function removeBktCat(id){
+function removeBktCat(id){if(blockIfReadOnly())return;
   if(!confirm('Remove this category? Experiences in it will become uncategorized.'))return;
   cur().bktCategories=cBktCats().filter(c=>c.id!==id);
   cur().bucket.forEach(b=>{if(b.category===id)b.category='';});
@@ -6047,7 +6170,7 @@ function removeBktCat(id){
 }
 
 // Event categories CRUD
-function openEventCatModal(editId){
+function openEventCatModal(editId){if(blockIfReadOnly())return;
   editEventCatId=editId||null;
   document.getElementById('eventCatModalTitle').textContent=editId?'Edit Category':'Add Category';
   if(editId){const c=cEventCats().find(x=>x.id===editId);if(c){document.getElementById('eventcat_name').value=c.name;document.getElementById('eventcat_color').value=c.color;}}
@@ -6055,7 +6178,7 @@ function openEventCatModal(editId){
   document.getElementById('eventCatModal').style.display='flex';
 }
 function closeEventCatModal(){document.getElementById('eventCatModal').style.display='none';}
-function saveEventCat(){
+function saveEventCat(){if(blockIfReadOnly())return;
   const nm=document.getElementById('eventcat_name').value.trim();
   const col=document.getElementById('eventcat_color').value;
   if(!nm){alert('Please enter a category name.');return;}
@@ -6071,7 +6194,7 @@ function saveEventCat(){
   }else cEventCats().push({id:uid(),name:nm,color:col});
   closeEventCatModal();renderContent();
 }
-function removeEventCat(id){
+function removeEventCat(id){if(blockIfReadOnly())return;
   if(!confirm('Remove this category? Events using it will become uncategorized.'))return;
   const c=cEventCats().find(x=>x.id===id);
   if(c)cDests().forEach(d=>{if(d.event_type===c.name)d.event_type='';});
@@ -6132,12 +6255,12 @@ function renderStats(){
         <button class="fbtn" onclick="toggleSCMenu()"><i class="ti ti-filter"></i> ${esc(catFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="scmenu">${catMenuItems}</div>
       </div>
-      <button class="fbtn" onclick="toggleStatsCatMgmtMode()" title="Create, rename, or remove statistic categories"><i class="ti ti-tag"></i> Manage Categories</button>
+      ${cur().readOnly?'':'<button class="fbtn" onclick="toggleStatsCatMgmtMode()" title="Create, rename, or remove statistic categories"><i class="ti ti-tag"></i> Manage Categories</button>'}
       <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${list.length}/${all.length} shown</span>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Tour Statistics</div>
-      <button class="abtn" onclick="openStatModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>
+      ${cur().readOnly?'':'<button class="abtn" onclick="openStatModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>'}
     </div>
     <div class="stat-counter-grid">${cards||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px;grid-column:1/-1">No statistics tracked yet — add one to start tallying anything you want, like "Hot dogs eaten" or "Times I got sick".</div>'}</div>
   </div>`;
@@ -6164,12 +6287,12 @@ function setStatsCatFilter(id){statsCatFilter=id;document.getElementById('scmenu
 document.addEventListener('click',e=>{const sm=document.getElementById('scmenu');if(sm&&!sm.parentElement?.contains(e.target))sm.classList.remove('open');});
 
 // The core "one click" interaction — clicking the +, the -, or the number itself bumps the tally.
-function bumpStat(id,delta){
+function bumpStat(id,delta){if(blockIfReadOnly())return;
   const s=cStats().find(x=>x.id===id);
   if(s){s.count=Math.max(0,(s.count||0)+delta);renderContent();}
 }
-function removeStatItem(id){if(!confirm('Remove this statistic?'))return;cur().stats=cStats().filter(s=>s.id!==id);renderContent();}
-function openStatModal(editId){
+function removeStatItem(id){if(blockIfReadOnly())return;if(!confirm('Remove this statistic?'))return;cur().stats=cStats().filter(s=>s.id!==id);renderContent();}
+function openStatModal(editId){if(blockIfReadOnly())return;
   const s=editId?cStats().find(x=>x.id===editId):null;
   const cats=cStatsCats();
   const catOpts=cats.map(c=>`<option value="${c.id}" ${s&&s.category===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
@@ -6185,7 +6308,7 @@ function openStatModal(editId){
     </div>`;
   document.getElementById('calPopModal').style.display='flex';
 }
-function saveStatItem(editId){
+function saveStatItem(editId){if(blockIfReadOnly())return;
   const name=document.getElementById('statNameInp').value.trim();
   if(!name)return;
   const category=document.getElementById('statCatInp').value;
@@ -6198,7 +6321,7 @@ function saveStatItem(editId){
   }
   calClosePopup();renderContent();
 }
-function openStatsCatModal(editId){
+function openStatsCatModal(editId){if(blockIfReadOnly())return;
   const c=editId?cStatsCats().find(x=>x.id===editId):null;
   document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">${c?'Edit Category':'New Category'}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
     <div class="mbody" style="text-align:left">
@@ -6210,7 +6333,7 @@ function openStatsCatModal(editId){
     </div>`;
   document.getElementById('calPopModal').style.display='flex';
 }
-function saveStatsCat(editId){
+function saveStatsCat(editId){if(blockIfReadOnly())return;
   const name=document.getElementById('statCatNameInp').value.trim();
   if(!name)return;
   const color=document.getElementById('statCatColorInp').value;
@@ -6222,12 +6345,50 @@ function saveStatsCat(editId){
   }
   calClosePopup();renderContent();
 }
-function removeStatsCat(id){
+function removeStatsCat(id){if(blockIfReadOnly())return;
   if(!confirm('Remove this category? Statistics using it will become Uncategorized — they will not be deleted.'))return;
   cur().statsCategories=cStatsCats().filter(c=>c.id!==id);
   cStats().forEach(s=>{if(s.category===id)s.category='';});
   if(statsCatFilter===id)statsCatFilter=null;
   renderContent();
+}
+
+// ── HOME ──────────────────────────────────────────────────────────────────────
+function renderHome(){
+  const tourCount=Object.keys(S.tours).length;
+  const onLife=cur().readOnly;
+  const cards=[
+    {icon:'ti-plus',title:'Create a New Tour',desc:'Start planning a brand-new trip from scratch.',action:'createTour()'},
+    {icon:'ti-list-details',title:'Select an Existing Tour',desc:`Jump into one of your ${tourCount} saved tour${tourCount===1?'':'s'}.`,action:'openHomeSelectTourModal()'},
+    {icon:'ti-settings',title:'Manage Existing Tours',desc:'Rename, edit, or delete any of your tours.',action:'openTourModal()'},
+    {icon:'ti-infinity',title:'View "My Tour Life"',desc:'A lifetime compilation of every tour you\u2019ve taken, all in one place.',action:'goToMyTourLife()'},
+    {icon:'ti-map-pin-plus',title:'Add a New Destination',desc:onLife?'Switch to one of your real tours first — "My Tour Life" is a read-only summary.':`Add a stop to your current tour: ${esc(cur().name)}.`,action:onLife?'':'openDestModal()',disabled:onLife},
+    {icon:'ti-share-3',title:'Share a Tour with Friends',desc:'Invite friends to see your itinerary.',action:'openShareComingSoon()'},
+  ];
+  const cardHTML=cards.map(c=>`
+    <div class="home-card${c.disabled?' disabled':''}" ${c.disabled?'':`onclick="${c.action}"`}>
+      <div class="home-card-icon"><i class="ti ${c.icon}"></i></div>
+      <div class="home-card-title">${esc(c.title)}</div>
+      <div class="home-card-desc">${esc(c.desc)}</div>
+    </div>`).join('');
+  return`<div class="panel">
+    <div class="sec-ttl">Welcome${currentUser&&currentUser.displayName?', '+esc(currentUser.displayName):''}</div>
+    <div style="font-size:13px;color:var(--t3);font-family:var(--font-ui);margin-bottom:1.2rem">Currently viewing: <strong style="color:var(--gold)">${esc(cur().name)}</strong></div>
+    <div class="home-grid">${cardHTML}</div>
+  </div>`;
+}
+function goToMyTourLife(){switchTour(MY_TOUR_LIFE_ID);goTab('dashboard');}
+function openShareComingSoon(){openComingSoonModal('Share a Tour','Sharing tours with friends is coming soon!');}
+function openHomeSelectTourModal(){
+  const rows=Object.entries(S.tours).map(([id,t])=>`<div class="fmi" onclick="selectTourFromHome('${id}')" style="padding:.65rem .5rem">${esc(t.name)}</div>`).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Select a Tour</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left;max-height:50vh;overflow-y:auto">${rows||'<div style="padding:1rem;color:var(--t3);font-size:13px">No tours yet — create one first.</div>'}</div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function selectTourFromHome(id){
+  switchTour(id);
+  calClosePopup();
+  goTab('dashboard');
 }
 
 // ── AI ────────────────────────────────────────────────────────────────────────
@@ -6273,7 +6434,7 @@ function recalcH(){
   document.getElementById('f_cpnpp').textContent=nights>0&&cost>0?'$'+(cost/nights/persons).toFixed(2):'—';
   document.getElementById('f_owed').textContent=cost>0?'$'+(cost-paid).toFixed(2):'—';
 }
-function openDestModal(editId){
+function openDestModal(editId){if(blockIfReadOnly())return;
   editDestId=editId||null;
   if(!editId&&cActs().length===0){
     // A freshly created tour with no acts yet (e.g. before any import or manual "+ Add Act")
@@ -6321,7 +6482,7 @@ function openDestModal(editId){
   document.getElementById('destModal').style.display='flex';
 }
 function closeDestModal(){document.getElementById('destModal').style.display='none';editDestId=null;}
-function saveDest(){
+function saveDest(){if(blockIfReadOnly())return;
   const gv=id=>document.getElementById('f_'+id)?.value?.trim()||'';
   const gn=id=>parseFloat(document.getElementById('f_'+id)?.value)||0;
   const countrySel=document.getElementById('f_country');
@@ -6370,10 +6531,10 @@ function saveDest(){
   else cur().destinations.push(d);
   closeDestModal();curActId=d.act;curDestId=d.id;renderSB();renderContent();
 }
-function removeDest(id){if(!confirm('Remove this destination?'))return;cur().destinations=cDests().filter(d=>d.id!==id);if(curDestId===id)curDestId=null;renderSB();renderContent();}
+function removeDest(id){if(blockIfReadOnly())return;if(!confirm('Remove this destination?'))return;cur().destinations=cDests().filter(d=>d.id!==id);if(curDestId===id)curDestId=null;renderSB();renderContent();}
 
 // ── ACT MODAL ─────────────────────────────────────────────────────────────────
-function openActModal(editId){
+function openActModal(editId){if(blockIfReadOnly())return;
   editActId=editId||null;
   document.getElementById('actModalTitle').textContent=editId?'Edit Act':'Add Act';
   if(editId){const a=cActs().find(x=>x.id===editId);if(a){document.getElementById('act_name').value=a.name;document.getElementById('act_subtitle').value=a.subtitle;document.getElementById('act_color').value=a.color;}}
@@ -6381,7 +6542,7 @@ function openActModal(editId){
   document.getElementById('actModal').style.display='flex';
 }
 function closeActModal(){document.getElementById('actModal').style.display='none';}
-function saveAct(){
+function saveAct(){if(blockIfReadOnly())return;
   const nm=document.getElementById('act_name').value.trim();
   const sub=document.getElementById('act_subtitle').value.trim();
   const col=document.getElementById('act_color').value;
@@ -6390,7 +6551,7 @@ function saveAct(){
   else cActs().push({id:uid(),name:nm,subtitle:sub,color:col});
   closeActModal();renderSB();renderContent();
 }
-function removeAct(id){
+function removeAct(id){if(blockIfReadOnly())return;
   if(!confirm('Remove this act? Destinations will be re-assigned.'))return;
   cur().acts=cActs().filter(a=>a.id!==id);
   cDests().forEach(d=>{if(d.act===id)d.act=cActs()[0]?.id||'';});
@@ -6437,10 +6598,12 @@ function createTour(){
     {id:uid(),name:'Nature',color:'#4BC896'},
   ];
   S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
+  restoreFiltersIfLeavingLife();
   S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
 function openTourEditModal(forId){
+  if(!forId&&isReadOnlyTour()){blockIfReadOnly();return;}
   editTourId=forId||S.cur;
   const t=S.tours[editTourId];
   document.getElementById('te_name').value=t.name;
@@ -6448,7 +6611,7 @@ function openTourEditModal(forId){
   document.getElementById('tourEditModal').style.display='flex';
 }
 function closeTourEditModal(){document.getElementById('tourEditModal').style.display='none';}
-function saveTourEdit(){
+function saveTourEdit(){if(blockIfReadOnly())return;
   const nm=document.getElementById('te_name').value.trim();
   const desc=document.getElementById('te_desc').value.trim();
   if(!nm){alert('Tour name cannot be empty.');return;}
