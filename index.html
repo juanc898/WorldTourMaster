@@ -805,6 +805,26 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 .mobile-filter-toggle{display:none;align-items:center;gap:5px}
 .mobile-filter-toggle .ti-chevron-down{transition:transform .2s}
 .mobile-filter-toggle.open .ti-chevron-down{transform:rotate(180deg)}
+
+/* ══════════════════════════════════════════════════════
+   ONBOARDING — first-login welcome + spotlight walkthrough
+   ══════════════════════════════════════════════════════ */
+.onb-welcome-overlay{position:fixed;inset:0;z-index:10600;background:rgba(5,5,8,.88);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;animation:onbFadeIn .4s ease}
+.onb-welcome-box{width:100%;max-width:380px;background:var(--sf);border:1px solid var(--gold-dim);border-radius:16px;padding:2.2rem 1.8rem;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:onbPopIn .5s cubic-bezier(.2,.9,.3,1.2)}
+.onb-welcome-eyebrow{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.2em;font-family:var(--font-ui)}
+.onb-welcome-title{font-size:34px;color:var(--gold);font-family:var(--font-display);font-weight:700;letter-spacing:.04em;margin:.2rem 0 .5rem}
+.onb-welcome-tagline{font-size:14px;color:var(--t2);font-style:italic;font-family:var(--font-body);margin-bottom:1.2rem}
+.onb-welcome-msg{font-size:13.5px;color:var(--t2);line-height:1.5;margin-bottom:1.4rem;font-family:var(--font-ui)}
+@keyframes onbFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes onbPopIn{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+#onbOverlayRoot{position:fixed;inset:0;z-index:10500}
+.onb-spotlight{position:fixed;display:none;border-radius:12px;box-shadow:0 0 0 9999px rgba(4,4,7,.8);transition:left .45s cubic-bezier(.4,0,.2,1),top .45s cubic-bezier(.4,0,.2,1),width .45s cubic-bezier(.4,0,.2,1),height .45s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:10500}
+.onb-tooltip{position:fixed;z-index:10501;background:var(--sf);border:1px solid var(--gold-dim);border-radius:14px;padding:1.1rem 1.2rem;width:300px;box-shadow:0 16px 50px rgba(0,0,0,.55);transition:left .45s cubic-bezier(.4,0,.2,1),top .45s cubic-bezier(.4,0,.2,1);animation:onbPopIn .35s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes onbConfettiFall{to{top:110vh;transform:rotate(720deg)}}
+@media(max-width:599px){
+  .onb-tooltip{width:min(300px,calc(100vw - 32px))}
+}
 .sync-status{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:17px;color:var(--t3);transition:color .2s}
 .sync-status:hover{background:var(--sf2)}
 .sync-status.saving{color:var(--gold);animation:syncPulse 1s ease-in-out infinite}
@@ -836,6 +856,22 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
       </div>
     </div>
   </div>
+</div>
+<!-- ONBOARDING: first-login welcome modal -->
+<div id="onbWelcomeOverlay" class="onb-welcome-overlay" style="display:none">
+  <div class="onb-welcome-box">
+    <div class="onb-welcome-eyebrow">Welcome to</div>
+    <div class="onb-welcome-title">NOMAD</div>
+    <div class="onb-welcome-tagline">"Your greatest adventure starts here."</div>
+    <div class="onb-welcome-msg">Would you like a quick guided tour to discover the most powerful features of NOMAD?</div>
+    <button class="btnp" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="dismissOnboardingWelcome(true)">Start the Journey</button>
+    <button class="btng" style="width:100%;justify-content:center" onclick="dismissOnboardingWelcome(false)">Maybe Later</button>
+  </div>
+</div>
+<!-- ONBOARDING: spotlight walkthrough overlay -->
+<div id="onbOverlayRoot" style="display:none">
+  <div class="onb-spotlight"></div>
+  <div class="onb-tooltip"></div>
 </div>
 <div class="app">
 <header class="hdr">
@@ -1198,7 +1234,7 @@ function buildBlankTourState(){
     {id:uid(),name:'Luxury',color:'#8B4BC8'},
     {id:uid(),name:'Nature',color:'#4BC896'},
   ];
-  return {cur:id,sharedRefs:[],tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
+  return {cur:id,onboardingDone:false,sharedRefs:[],tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
 }
 
 // ── Firestore read/write — one document per user, isolated by uid via security rules ──
@@ -1236,6 +1272,11 @@ function loadFromCloud(u){
       isApplyingRemoteState=true;
       S=JSON.parse(snap.data().state);
       if(!Array.isArray(S.sharedRefs))S.sharedRefs=[];
+      // Only brand-new accounts (seeded via buildBlankTourState) start with
+      // onboardingDone:false. Any pre-existing account loaded from a save that
+      // predates this feature won't have the field at all — treat that as
+      // "already past onboarding", never auto-show it for a returning user.
+      if(S.onboardingDone===undefined)S.onboardingDone=true;
       // "My Tour Life" must never be the tour someone lands on automatically —
       // it's a deliberate look-up, never a default. If that's what got saved
       // (e.g. the tab was closed while viewing it), fall back to a real tour.
@@ -1310,6 +1351,7 @@ if(firebaseReady){
         curDestId=null;
         renderSB();renderContent();
         checkPendingInvitations();
+        maybeShowOnboardingWelcome();
       });
     }else{
       currentUser=null;
@@ -1413,6 +1455,7 @@ function renderSettingsMenu(){
     <div class="fmi" onclick="toggleThemePop(event)"><i class="ti ti-palette" style="width:16px;flex-shrink:0"></i> Change Mood?</div>
     <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
     <div class="fmi" onclick="openFaqModal()"><i class="ti ti-help-circle" style="width:16px;flex-shrink:0"></i> Help / FAQ</div>
+    <div class="fmi" onclick="document.getElementById('settingsPop').classList.remove('open');startOnboardingTour();"><i class="ti ti-compass" style="width:16px;flex-shrink:0"></i> Quick Walkthrough</div>
     <div class="fmi" onclick="openReportIssueModal()"><i class="ti ti-message-report" style="width:16px;flex-shrink:0"></i> Report an Issue</div>
     <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
     <div class="fmi" onclick="openCloseSessionModal()" style="color:var(--red)"><i class="ti ti-logout" style="width:16px;flex-shrink:0"></i> Close Session</div>
@@ -6593,15 +6636,15 @@ function renderHome(){
   const tourCount=Object.keys(S.tours).length;
   const onLife=cur().readOnly;
   const cards=[
-    {icon:'ti-plus',title:'Create a New Tour',desc:'Start planning a brand-new trip from scratch.',action:'createTour()'},
+    {id:'homeCardCreateTour',icon:'ti-plus',title:'Create a New Tour',desc:'Start planning a brand-new trip from scratch.',action:'createTour()'},
     {icon:'ti-list-details',title:'Select an Existing Tour',desc:`Jump into one of your ${tourCount} saved tour${tourCount===1?'':'s'}.`,action:'openHomeSelectTourModal()'},
     {icon:'ti-settings',title:'Manage Existing Tours',desc:'Rename, edit, or delete any of your tours.',action:'openTourModal()'},
     {icon:'ti-infinity',title:'View "My Tour Life"',desc:'A lifetime compilation of every tour you\u2019ve taken, all in one place.',action:'goToMyTourLife()'},
     {icon:'ti-map-pin-plus',title:'Add a New Destination',desc:onLife?'Switch to a tour you own — this one is read-only.':`Add a stop to your current tour: ${esc(cur().name)}.`,action:onLife?'':'openDestModal()',disabled:onLife},
-    {icon:'ti-share-3',title:'Share a Tour with Friends',desc:'Invite friends to collaborate on or view your itinerary.',action:'openShareModal()'},
+    {id:'homeCardShare',icon:'ti-share-3',title:'Share a Tour with Friends',desc:'Invite friends to collaborate on or view your itinerary.',action:'openShareModal()'},
   ];
   const cardHTML=cards.map(c=>`
-    <div class="home-card${c.disabled?' disabled':''}" ${c.disabled?'':`onclick="${c.action}"`}>
+    <div class="home-card${c.disabled?' disabled':''}" ${c.id?`id="${c.id}"`:''} ${c.disabled?'':`onclick="${c.action}"`}>
       <div class="home-card-icon"><i class="ti ${c.icon}"></i></div>
       <div class="home-card-title">${esc(c.title)}</div>
       <div class="home-card-desc">${esc(c.desc)}</div>
@@ -6754,6 +6797,135 @@ function selectTourFromHome(id){
   switchTour(id);
   calClosePopup();
   goTab('dashboard');
+}
+
+// ── ONBOARDING WALKTHROUGH ───────────────────────────────────────────────────
+// Targets are deliberately limited to always-visible chrome (nav tabs, header,
+// sidebar) rather than deep tab content — renderContent() rebuilds the active
+// tab's DOM from scratch on every interaction, which would yank the spotlight
+// out from under a step if it targeted something inside mainContent. The two
+// exceptions (steps 1 and 7) target Home cards and explicitly switch to the
+// Home tab first, since that's safe to do as a deliberate part of the tour.
+const ONBOARDING_STEPS=[
+  {title:'🚀 Create Your First Tour',text:'Every legendary journey begins with a single destination. Create your first tour and start building your story.',target:'#homeCardCreateTour',tab:'home'},
+  {title:'🌍 Plan Your Route',text:'Add countries, cities, and hidden gems to craft the perfect itinerary across the world.',target:'[data-tab="route"]'},
+  {title:'🎭 Discover Events & Festivals',text:'Never miss unforgettable experiences. Add festivals, concerts, celebrations, and local events directly into your journey.',target:'[data-tab="events"]'},
+  {title:'💰 Keep Your Finances Under Control',text:'Track every dollar spent. Some expenses are calculated automatically, making budget management effortless.',target:'[data-tab="budget"]'},
+  {title:'⭐ Build Your Bucket List',text:'Create a list of life-changing experiences and track them as you travel the world.',target:'[data-tab="bucket"]'},
+  {title:'📈 My Tour Life',text:'Watch your personal travel story unfold — every tour you\u2019ve ever taken, combined into one lifetime view. Look for it at the top of this list.',target:'#tourSel'},
+  {title:'🤝 Travel Together',text:'Share tours with friends, family, or travel partners and plan your adventures together.',target:'#homeCardShare',tab:'home'},
+  {title:'📅 Visualize Your Entire Expedition',text:'See your adventure come alive through a beautiful, interactive calendar.',target:'[data-tab="calendar"]'},
+  {title:'🎨 Change the Mood',text:'Customize themes, colors, and visual styles to make NOMAD truly yours.',target:'#settingsBtn'},
+  {title:'✨ You Are Ready',text:'Your next great story is waiting to be written. The world is yours to explore.',target:null,final:true},
+];
+let onbStepIndex=0;
+
+function maybeShowOnboardingWelcome(){
+  if(!S.onboardingDone)document.getElementById('onbWelcomeOverlay').style.display='flex';
+}
+function dismissOnboardingWelcome(start){
+  document.getElementById('onbWelcomeOverlay').style.display='none';
+  S.onboardingDone=true;scheduleCloudSave();
+  if(start)startOnboardingTour();
+}
+function startOnboardingTour(){
+  document.getElementById('onbWelcomeOverlay').style.display='none';
+  document.getElementById('settingsPop')?.classList.remove('open');
+  showOnbStep(0);
+}
+function endOnboardingTour(){
+  document.getElementById('onbOverlayRoot').style.display='none';
+  if(!S.onboardingDone){S.onboardingDone=true;scheduleCloudSave();}
+}
+function finishOnboardingTour(createTourToo){
+  launchConfetti();
+  endOnboardingTour();
+  if(createTourToo)setTimeout(()=>createTour(),400);
+}
+function showOnbStep(i){
+  if(i<0)return;
+  if(i>=ONBOARDING_STEPS.length){endOnboardingTour();return;}
+  onbStepIndex=i;
+  const step=ONBOARDING_STEPS[i];
+  document.getElementById('onbOverlayRoot').style.display='block';
+  if(step.tab&&tab!==step.tab){
+    goTab(step.tab);
+    setTimeout(()=>positionOnbStep(step,i),140); // let the tab's render settle first
+  }else{
+    positionOnbStep(step,i);
+  }
+}
+function positionOnbStep(step,i){
+  const root=document.getElementById('onbOverlayRoot');
+  const spotlight=root.querySelector('.onb-spotlight');
+  const tooltip=root.querySelector('.onb-tooltip');
+  const total=ONBOARDING_STEPS.length;
+  const targetEl=step.target?document.querySelector(step.target):null;
+
+  const renderTooltip=()=>{
+    tooltip.innerHTML=`
+      <div style="font-size:10.5px;color:var(--t3);font-family:var(--font-ui);margin-bottom:.4rem;letter-spacing:.08em;text-transform:uppercase">Step ${i+1} of ${total}</div>
+      <div style="font-size:16.5px;color:var(--gold);font-family:var(--font-display);font-weight:700;margin-bottom:.45rem;line-height:1.3">${step.title}</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.5;margin-bottom:.9rem;font-family:var(--font-ui)">${esc(step.text)}</div>
+      <div style="display:flex;gap:5px;margin-bottom:.8rem">${ONBOARDING_STEPS.map((_,si)=>`<div style="flex:1;height:3px;border-radius:2px;background:${si<=i?'var(--gold)':'var(--bd)'};transition:background .3s"></div>`).join('')}</div>
+      <div style="display:flex;gap:6px;justify-content:space-between;align-items:center">
+        <button class="btng" style="font-size:11.5px;padding:.35rem .6rem" onclick="endOnboardingTour()">Skip</button>
+        <div style="display:flex;gap:6px">
+          ${i>0?`<button class="btng" style="font-size:11.5px;padding:.35rem .6rem" onclick="showOnbStep(${i-1})">Previous</button>`:''}
+          ${step.final?'':`<button class="btnp" style="font-size:11.5px;padding:.35rem .8rem" onclick="showOnbStep(${i+1})">Next</button>`}
+        </div>
+      </div>
+      ${step.final?`
+        <button class="btnp" style="width:100%;justify-content:center;margin-top:.7rem" onclick="finishOnboardingTour(true)">Create My First Tour</button>
+        <button class="btng" style="width:100%;justify-content:center;margin-top:.5rem" onclick="finishOnboardingTour(false)">Start Exploring</button>
+      `:''}
+    `;
+  };
+
+  if(!targetEl){
+    spotlight.style.display='none';
+    tooltip.style.left='50%';tooltip.style.top='50%';tooltip.style.transform='translate(-50%,-50%)';
+    renderTooltip();
+    return;
+  }
+
+  targetEl.scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>{
+    const rect=targetEl.getBoundingClientRect();
+    const pad=8;
+    spotlight.style.display='block';
+    spotlight.style.left=(rect.left-pad)+'px';
+    spotlight.style.top=(rect.top-pad)+'px';
+    spotlight.style.width=(rect.width+pad*2)+'px';
+    spotlight.style.height=(rect.height+pad*2)+'px';
+
+    const tooltipW=300,tooltipMaxH=240;
+    let top=rect.bottom+16;
+    let left=Math.min(Math.max(rect.left,12),window.innerWidth-tooltipW-12);
+    if(top+tooltipMaxH>window.innerHeight)top=Math.max(12,rect.top-tooltipMaxH-16);
+    tooltip.style.transform='none';
+    tooltip.style.left=left+'px';
+    tooltip.style.top=top+'px';
+    renderTooltip();
+  },280); // wait for the smooth-scroll to mostly finish before measuring position
+}
+
+// Lightweight DOM-based confetti burst — no external library needed.
+function launchConfetti(){
+  const colors=['#C9A84C','#4B8BC8','#4BC896','#C84B6B','#8B4BC8','#D8527A'];
+  const root=document.createElement('div');
+  root.style.cssText='position:fixed;inset:0;z-index:10700;pointer-events:none;overflow:hidden';
+  for(let i=0;i<70;i++){
+    const p=document.createElement('div');
+    const c=colors[Math.floor(Math.random()*colors.length)];
+    const startX=Math.random()*100;
+    const dur=2+Math.random()*1.5;
+    const rot=Math.random()*360;
+    p.style.cssText=`position:absolute;top:-10px;left:${startX}vw;width:7px;height:13px;background:${c};opacity:.9;border-radius:1px;transform:rotate(${rot}deg);animation:onbConfettiFall ${dur}s ease-in forwards;animation-delay:${(Math.random()*.3).toFixed(2)}s`;
+    root.appendChild(p);
+  }
+  document.body.appendChild(root);
+  setTimeout(()=>root.remove(),3800);
 }
 
 // ── AI ────────────────────────────────────────────────────────────────────────
