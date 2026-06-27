@@ -1356,6 +1356,7 @@ if(firebaseReady){
         curDestId=null;
         renderSB();renderContent();
         checkPendingInvitations();
+        cleanupRevokedSharedRefs();
         maybeShowOnboardingWelcome();
       });
     }else{
@@ -1951,9 +1952,12 @@ function buildMyTourLife(){
     if(sharedTourCache[r.tourId])return Promise.resolve();
     return sharedToursRef().doc(r.tourId).get().then(snap=>{
       if(snap.exists){
+        const data=snap.data();
+        const myCollab=data.collaborators&&currentUser&&data.collaborators[currentUser.uid];
+        if(!myCollab||myCollab.status==='revoked')return; // access gone — leave it out of the aggregate
         try{
-          const t=JSON.parse(snap.data().tourData);
-          t.sharedRole='editor';t.sharedOwnerName=snap.data().ownerName||snap.data().ownerEmail||'someone';
+          const t=JSON.parse(data.tourData);
+          t.sharedRole='editor';t.sharedOwnerName=data.ownerName||data.ownerEmail||'someone';
           sharedTourCache[r.tourId]=t;
         }catch(e){}
       }
@@ -2170,17 +2174,17 @@ function restoreFiltersIfLeavingLife(){
 function attachSharedTourListener(tourId){
   if(sharedTourListeners[tourId])return; // already listening
   sharedTourListeners[tourId]=sharedToursRef().doc(tourId).onSnapshot(snap=>{
-    if(!snap.exists)return;
+    if(!snap.exists){handleLostSharedAccess(tourId);return;}
     const data=snap.data();
-    const ref=(S.sharedRefs||[]).find(r=>r.tourId===tourId);
     const myCollab=data.collaborators&&currentUser&&data.collaborators[currentUser.uid];
-    const revoked=!!(myCollab&&myCollab.status==='revoked');
-    const role=myCollab?myCollab.role:(ref?ref.role:'viewer');
+    const revoked=!myCollab||myCollab.status==='revoked';
+    if(revoked){handleLostSharedAccess(tourId);return;}
+    const ref=(S.sharedRefs||[]).find(r=>r.tourId===tourId);
+    const role=myCollab.role||(ref?ref.role:'viewer');
     let tourObj;
     try{tourObj=JSON.parse(data.tourData);}catch(e){return;}
-    tourObj.readOnly=revoked||(role!=='editor');
+    tourObj.readOnly=(role!=='editor');
     tourObj.sharedRole=role;
-    tourObj.sharedRevoked=revoked;
     tourObj.sharedOwnerName=data.ownerName||data.ownerEmail||'someone';
     tourObj.sharedOwnerUid=data.ownerUid;
     sharedTourCache[tourId]=tourObj;
@@ -2192,8 +2196,54 @@ function attachSharedTourListener(tourId){
     }
   },err=>console.error('Shared tour listener failed:',err));
 }
+// Access was revoked (or the share no longer exists) — make it actually
+// disappear, not just go read-only: drop it from the dropdown, and if it's
+// the tour currently open, bounce back to a real tour with a clear explanation.
+function handleLostSharedAccess(tourId){
+  detachSharedTourListener(tourId);
+  delete sharedTourCache[tourId];
+  const hadRef=(S.sharedRefs||[]).some(r=>r.tourId===tourId);
+  if(hadRef){
+    S.sharedRefs=S.sharedRefs.filter(r=>r.tourId!==tourId);
+    scheduleCloudSave();
+  }
+  if(S.cur===SHARED_PREFIX+tourId){
+    S.cur=Object.keys(S.tours)[0];
+    curActId=null;curDestId=null;selBudCat=null;
+    renderSB();renderContent();
+    alert('Access to this tour has been revoked by its owner.');
+  }else if(hadRef){
+    renderSB(); // refresh the dropdown so it's gone even if it wasn't the active tour
+  }
+}
 function detachSharedTourListener(tourId){
   if(sharedTourListeners[tourId]){sharedTourListeners[tourId]();delete sharedTourListeners[tourId];}
+}
+// Runs once right after login. Catches the common case: the owner revoked
+// access while this person was away/offline, so there was never a live
+// listener around to notice — without this, the stale tour would otherwise
+// only disappear once they actually clicked into it.
+function cleanupRevokedSharedRefs(){
+  if(!currentUser||!S.sharedRefs||!S.sharedRefs.length)return;
+  const checks=S.sharedRefs.map(r=>
+    sharedToursRef().doc(r.tourId).get().then(snap=>{
+      if(!snap.exists)return{tourId:r.tourId,remove:true};
+      const data=snap.data();
+      const myCollab=data.collaborators&&data.collaborators[currentUser.uid];
+      return{tourId:r.tourId,remove:!myCollab||myCollab.status==='revoked'};
+    }).catch(()=>({tourId:r.tourId,remove:false}))
+  );
+  Promise.all(checks).then(results=>{
+    const toRemove=results.filter(r=>r.remove).map(r=>r.tourId);
+    if(!toRemove.length)return;
+    S.sharedRefs=S.sharedRefs.filter(r=>!toRemove.includes(r.tourId));
+    scheduleCloudSave();
+    if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX)&&toRemove.includes(S.cur.slice(SHARED_PREFIX.length))){
+      S.cur=Object.keys(S.tours)[0];
+      curActId=null;curDestId=null;selBudCat=null;
+    }
+    renderSB();renderContent();
+  });
 }
 
 // ── Invitations: notification bell, accept/decline ─────────────────────────
