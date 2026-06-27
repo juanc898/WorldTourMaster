@@ -5249,6 +5249,8 @@ function renderEvents(){
     types.map(t=>`<div class="fmi" onclick="setEvTypeFilter('${esc(t).replace(/'/g,"\\'")}')" style="${evTypeFilter===t?'color:var(--gold)':''}">${esc(t)}</div>`).join('');
   const items=evDests.map(d=>{
     const am=aM(d.act);
+    const evCat=d.event_type?eventCatByName(d.event_type):null;
+    const typeColor=evCat?evCat.color:am.color;
     const dots=Array.from({length:5},(_,i)=>`<div class="pdot" style="background:${i<(d.priority||3)?am.color:'var(--bd2)'}"></div>`).join('');
     return`<div class="ev-item" onclick="showEvCtx(event,'${d.id}')">
       <div style="width:12px;height:12px;border-radius:50%;background:${am.color};flex-shrink:0;margin-top:2px"></div>
@@ -5260,8 +5262,8 @@ function renderEvents(){
         <div class="pdots">${dots}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
-        ${d.event_type?`<span class="ev-type" style="background:${am.color}22;color:${am.color}">${esc(d.event_type)}</span>`:''}
-        <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:4px">${esc(am.name)}</div>
+        ${d.event_type?`<span class="ev-type" style="background:${typeColor}22;color:${typeColor}">${esc(d.event_type)}</span>`:''}
+        <div style="font-size:11px;color:${am.color};font-family:var(--font-ui);margin-top:4px">${esc(am.name)}</div>
       </div>
     </div>`;
   }).join('');
