@@ -873,6 +873,10 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     <div class="sync-status" id="syncStatus" onclick="openAppSyncModal()" title="Cloud sync status">
       <i class="ti ti-cloud-check"></i>
     </div>
+    <div class="sync-status" id="notifBell" onclick="openNotificationsModal()" title="Invitations" style="position:relative">
+      <i class="ti ti-bell"></i>
+      <span id="notifBadge" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:#C84B6B"></span>
+    </div>
     <div style="position:relative">
       <button class="icon-btn" onclick="toggleSettingsMenu(event)" id="settingsBtn" title="Settings"><i class="ti ti-settings"></i></button>
       <div class="theme-pop" id="settingsPop" style="min-width:230px"></div>
@@ -1194,7 +1198,7 @@ function buildBlankTourState(){
     {id:uid(),name:'Luxury',color:'#8B4BC8'},
     {id:uid(),name:'Nature',color:'#4BC896'},
   ];
-  return {cur:id,tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
+  return {cur:id,sharedRefs:[],tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
 }
 
 // ── Firestore read/write — one document per user, isolated by uid via security rules ──
@@ -1206,16 +1210,37 @@ function withTimeout(promise,ms,errMsg){
 }
 function cloudDocRefFor(u){return fbDb.collection('users').doc(u.uid).collection('tours').doc('main');}
 
+// ── TOUR SHARING & COLLABORATION ────────────────────────────────────────────
+// Two top-level Firestore collections (separate from the per-user isolated
+// data): `sharedTours` holds the actual tour content + the live collaborators
+// map (keyed by uid once accepted); `invitations` holds the invite/accept/
+// decline workflow (keyed by recipient email, since we don't know their uid
+// until they accept). See the security-rules note further down in chat for
+// the trade-off made here: these two collections are reachable by any signed-in
+// user (not strictly isolated like personal data), because a tourId is an
+// unguessable random string — similar in spirit to "anyone with the link"
+// sharing. Real gatekeeping (who can actually edit) is enforced both by the
+// app's own role checks and is intended to be backed by matching security
+// rules (see the rules block).
+const sharedToursRef=()=>fbDb.collection('sharedTours');
+const invitationsRef=()=>fbDb.collection('invitations');
+const SHARED_PREFIX='shared_';
+let sharedTourCache={}; // tourId -> live tour object (kept fresh via onSnapshot while relevant)
+let sharedTourListeners={}; // tourId -> unsubscribe function
+let pendingInvitations=[]; // invitations addressed to the current user, status==='pending'
+
 function loadFromCloud(u){
   setSyncStatus('saving');
   return withTimeout(cloudDocRefFor(u).get(),10000,'Firestore request timed out').then(snap=>{
     if(snap.exists&&snap.data()&&snap.data().state){
       isApplyingRemoteState=true;
       S=JSON.parse(snap.data().state);
+      if(!Array.isArray(S.sharedRefs))S.sharedRefs=[];
       // "My Tour Life" must never be the tour someone lands on automatically —
       // it's a deliberate look-up, never a default. If that's what got saved
       // (e.g. the tab was closed while viewing it), fall back to a real tour.
-      if(S.cur===MY_TOUR_LIFE_ID||!S.tours[S.cur])S.cur=Object.keys(S.tours)[0];
+      // Same caution for a shared tour: access may have changed while away.
+      if(S.cur===MY_TOUR_LIFE_ID||(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX))||!S.tours[S.cur])S.cur=Object.keys(S.tours)[0];
       isApplyingRemoteState=false;
       setSyncStatus('saved');
     }else{
@@ -1236,6 +1261,15 @@ function loadFromCloud(u){
 function saveToCloudNow(manual){
   if(!currentUser)return Promise.resolve();
   setSyncStatus('saving');
+  if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX)){
+    const tourId=S.cur.slice(SHARED_PREFIX.length);
+    const tourObj=sharedTourCache[tourId];
+    if(!tourObj||tourObj.readOnly){setSyncStatus('saved');return Promise.resolve();} // viewer role or not loaded — nothing to save
+    return sharedToursRef().doc(tourId).set({tourData:JSON.stringify(tourObj),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})
+      .then(()=>{lastCloudSaveAt=Date.now();setSyncStatus('saved');if(manual)refreshSyncModalIfOpen();})
+      .catch(err=>{console.error('saveToCloudNow (shared) failed',err);setSyncStatus('error');});
+  }
+  if(S.cur===MY_TOUR_LIFE_ID){setSyncStatus('saved');return Promise.resolve();} // computed view, never persisted directly
   return cloudDocRefFor(currentUser).set({state:JSON.stringify(S),updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
     .then(()=>{lastCloudSaveAt=Date.now();setSyncStatus('saved');if(manual)refreshSyncModalIfOpen();})
     .catch(err=>{console.error('saveToCloudNow failed',err);setSyncStatus('error');});
@@ -1275,9 +1309,12 @@ if(firebaseReady){
         document.getElementById('authOverlay').style.display='none';
         curDestId=null;
         renderSB();renderContent();
+        checkPendingInvitations();
       });
     }else{
       currentUser=null;
+      Object.keys(sharedTourListeners).forEach(detachSharedTourListener);
+      sharedTourCache={};pendingInvitations=[];
       clearTimeout(cloudSaveTimer);
       lastStateSnapshot=null; // avoid bleeding undo history / change-detection state across accounts
       undoStack=[];redoStack=[];
@@ -1858,33 +1895,65 @@ let myTourLifeCache=null;
 // of the tour it came from, everywhere Acts are used (Route, Map, sidebar).
 function buildMyTourLife(){
   const palette=['#C9A84C','#4B8BC8','#4BC896','#C84B6B','#8B4BC8','#C8734B','#D8527A','#6B8080'];
-  const acts=[],destinations=[],bktCategories=[],eventCategories=[],bucket=[],statsCategories=[],stats=[],budget=[],budgetOrder=[];
-  Object.keys(S.tours).forEach((tid,i)=>{
-    const t=S.tours[tid];
-    const actId='life_'+tid;
-    acts.push({id:actId,name:t.name,subtitle:'',color:palette[i%palette.length]});
-    (t.destinations||[]).forEach(d=>destinations.push({...d,act:actId}));
-    (t.bktCategories||[]).forEach(c=>bktCategories.push({...c}));
-    (t.eventCategories||[]).forEach(c=>eventCategories.push({...c}));
-    (t.bucket||[]).forEach(b=>bucket.push({...b}));
-    (t.statsCategories||[]).forEach(c=>statsCategories.push({...c}));
-    (t.stats||[]).forEach(s=>stats.push({...s}));
-    (t.budget||[]).forEach(c=>budget.push({...c,expenses:[...(c.expenses||[])]}));
-    (t.budgetOrder||[]).forEach(id=>budgetOrder.push(id));
+  // Per spec: owned tours always count; tours shared with me as Editor count too
+  // (I'm actively participating); tours shared with me as Viewer do NOT count
+  // (I'm only looking at someone else's trip).
+  const editorRefs=(S.sharedRefs||[]).filter(r=>r.role==='editor');
+  const fetches=editorRefs.map(r=>{
+    if(sharedTourCache[r.tourId])return Promise.resolve();
+    return sharedToursRef().doc(r.tourId).get().then(snap=>{
+      if(snap.exists){
+        try{
+          const t=JSON.parse(snap.data().tourData);
+          t.sharedRole='editor';t.sharedOwnerName=snap.data().ownerName||snap.data().ownerEmail||'someone';
+          sharedTourCache[r.tourId]=t;
+        }catch(e){}
+      }
+    }).catch(()=>{});
   });
-  return{name:'My Tour Life',desc:'A lifetime compilation of every tour you have taken.',acts,destinations,bktCategories,eventCategories,bucket,statsCategories,stats,budget,budgetOrder,readOnly:true};
+  return Promise.all(fetches).then(()=>{
+    const acts=[],destinations=[],bktCategories=[],eventCategories=[],bucket=[],statsCategories=[],stats=[],budget=[],budgetOrder=[];
+    let i=0;
+    const foldIn=(t,actId,actName)=>{
+      acts.push({id:actId,name:actName,subtitle:'',color:palette[i%palette.length]});i++;
+      (t.destinations||[]).forEach(d=>destinations.push({...d,act:actId}));
+      (t.bktCategories||[]).forEach(c=>bktCategories.push({...c}));
+      (t.eventCategories||[]).forEach(c=>eventCategories.push({...c}));
+      (t.bucket||[]).forEach(b=>bucket.push({...b}));
+      (t.statsCategories||[]).forEach(c=>statsCategories.push({...c}));
+      (t.stats||[]).forEach(s=>stats.push({...s}));
+      (t.budget||[]).forEach(c=>budget.push({...c,expenses:[...(c.expenses||[])]}));
+      (t.budgetOrder||[]).forEach(id=>budgetOrder.push(id));
+    };
+    Object.keys(S.tours).forEach(tid=>foldIn(S.tours[tid],'life_'+tid,S.tours[tid].name));
+    editorRefs.forEach(r=>{
+      const t=sharedTourCache[r.tourId];
+      if(t)foldIn(t,'life_shared_'+r.tourId,t.name+' (Shared)');
+    });
+    return{name:'My Tour Life',desc:'A lifetime compilation of every tour you have taken — including tours you collaborate on.',acts,destinations,bktCategories,eventCategories,bucket,statsCategories,stats,budget,budgetOrder,readOnly:true};
+  });
 }
-// Rebuilt fresh whenever (re)entered so it always reflects the latest data —
-// see switchTour(), which sets myTourLifeCache=null right before switching in.
+// Pure synchronous accessor — cur() can never await a promise, so the actual
+// (async) build happens in switchTour() before myTourLifeCache is populated;
+// this just serves whatever's currently cached, or a brief loading placeholder.
 function getMyTourLife(){
-  if(!myTourLifeCache)myTourLifeCache=buildMyTourLife();
-  return myTourLifeCache;
+  return myTourLifeCache||{name:'Loading…',desc:'',acts:[],destinations:[],bktCategories:[],eventCategories:[],bucket:[],statsCategories:[],stats:[],budget:[],budgetOrder:[],readOnly:true};
 }
-const cur=()=>S.cur===MY_TOUR_LIFE_ID?getMyTourLife():S.tours[S.cur];
+const cur=()=>{
+  if(S.cur===MY_TOUR_LIFE_ID)return getMyTourLife();
+  if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX)){
+    const tourId=S.cur.slice(SHARED_PREFIX.length);
+    return sharedTourCache[tourId]||{name:'Loading…',desc:'',acts:[],destinations:[],bktCategories:[],eventCategories:[],bucket:[],statsCategories:[],stats:[],budget:[],budgetOrder:[],readOnly:true};
+  }
+  return S.tours[S.cur];
+};
 function isReadOnlyTour(){return!!(cur()&&cur().readOnly);}
 function blockIfReadOnly(){
   if(isReadOnlyTour()){
-    alert('"My Tour Life" is a read-only summary of all your tours. Switch to one of your real tours to make changes.');
+    const msg=cur().sharedOwnerName
+      ?`This tour was shared with you as Read Only by ${cur().sharedOwnerName} — you can\u2019t make changes to it.`
+      :'"My Tour Life" is a read-only summary of all your tours. Switch to one of your real tours to make changes.';
+    alert(msg);
     return true;
   }
   return false;
@@ -1986,8 +2055,15 @@ function closeSB(){document.getElementById('sidebar').classList.remove('open');d
 function renderSB(){
   autoStatus();
   const ts=document.getElementById('tourSel');
+  const ownedOptions=Object.entries(S.tours).map(([id,t])=>`<option value="${id}"${id===S.cur?' selected':''}>${esc(t.name)}${t.hasCollaborators?' *':''}</option>`).join('');
+  const sharedOptions=(S.sharedRefs||[]).map(r=>{
+    const optId=SHARED_PREFIX+r.tourId;
+    const roleBadge=r.role==='editor'?'Can Edit':'Read Only';
+    return `<option value="${optId}"${optId===S.cur?' selected':''}>${esc(r.tourName||'Shared tour')} (${roleBadge}) — ${esc(r.ownerName||'')}</option>`;
+  }).join('');
   ts.innerHTML=`<option value="${MY_TOUR_LIFE_ID}"${S.cur===MY_TOUR_LIFE_ID?' selected':''}>★ My Tour Life</option>`+
-    Object.entries(S.tours).map(([id,t])=>`<option value="${id}"${id===S.cur?' selected':''}>${esc(t.name)}</option>`).join('');
+    (ownedOptions?`<optgroup label="My Tours">${ownedOptions}</optgroup>`:'')+
+    (sharedOptions?`<optgroup label="Shared With Me">${sharedOptions}</optgroup>`:'');
   // Header now shows the static "NOMAD" brand identity rather than the per-tour name;
   // the tour name itself is shown prominently on the Tour Overview page body.
   let h='';
@@ -2043,9 +2119,144 @@ function restoreFiltersIfLeavingLife(){
     savedFiltersBeforeLife=null;
   }
 }
+function attachSharedTourListener(tourId){
+  if(sharedTourListeners[tourId])return; // already listening
+  sharedTourListeners[tourId]=sharedToursRef().doc(tourId).onSnapshot(snap=>{
+    if(!snap.exists)return;
+    const data=snap.data();
+    const ref=(S.sharedRefs||[]).find(r=>r.tourId===tourId);
+    const myCollab=data.collaborators&&currentUser&&data.collaborators[currentUser.uid];
+    const revoked=!!(myCollab&&myCollab.status==='revoked');
+    const role=myCollab?myCollab.role:(ref?ref.role:'viewer');
+    let tourObj;
+    try{tourObj=JSON.parse(data.tourData);}catch(e){return;}
+    tourObj.readOnly=revoked||(role!=='editor');
+    tourObj.sharedRole=role;
+    tourObj.sharedRevoked=revoked;
+    tourObj.sharedOwnerName=data.ownerName||data.ownerEmail||'someone';
+    tourObj.sharedOwnerUid=data.ownerUid;
+    sharedTourCache[tourId]=tourObj;
+    // This is what makes collaboration feel "live" — whenever the owner or another
+    // editor saves a change, this fires and the screen updates without a reload.
+    if(S.cur===SHARED_PREFIX+tourId){
+      lastSharedTourSnapshot=JSON.stringify(tourObj); // pre-sync so this remote update isn't immediately re-saved as if it were a local edit
+      renderSB();renderContent();
+    }
+  },err=>console.error('Shared tour listener failed:',err));
+}
+function detachSharedTourListener(tourId){
+  if(sharedTourListeners[tourId]){sharedTourListeners[tourId]();delete sharedTourListeners[tourId];}
+}
+
+// ── Invitations: notification bell, accept/decline ─────────────────────────
+function checkPendingInvitations(){
+  if(!currentUser)return;
+  invitationsRef().where('toEmail','==',currentUser.email).where('status','==','pending').get().then(snap=>{
+    pendingInvitations=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const badge=document.getElementById('notifBadge');
+    if(badge)badge.style.display=pendingInvitations.length?'block':'none';
+  }).catch(err=>console.error('checkPendingInvitations failed',err));
+}
+function openNotificationsModal(){
+  const rows=pendingInvitations.map(inv=>{
+    const fromLabel=inv.fromName||inv.fromEmail;
+    const roleLabel=inv.role==='editor'?'Can Edit':'Read Only';
+    return`<div style="border:1px solid var(--bd);border-radius:10px;padding:.8rem;margin-bottom:.7rem">
+      <div style="font-size:13.5px;color:var(--t1);margin-bottom:.3rem"><strong style="color:var(--gold)">${esc(fromLabel)}</strong> invited you to collaborate on <strong>${esc(inv.tourName)}</strong></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.5rem">Permission: ${roleLabel}${inv.message?` · "${esc(inv.message)}"`:''}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btnp" style="flex:1;justify-content:center;padding:.4rem" onclick="acceptInvitation('${inv.id}')">Accept</button>
+        <button class="btng" style="flex:1;justify-content:center;padding:.4rem" onclick="declineInvitation('${inv.id}')">Decline</button>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Invitations</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left;max-height:60vh;overflow-y:auto">${rows||'<div style="padding:1rem;color:var(--t3);font-size:13px;text-align:center">No pending invitations.</div>'}</div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function acceptInvitation(inviteId){
+  const inv=pendingInvitations.find(i=>i.id===inviteId);
+  if(!inv)return;
+  invitationsRef().doc(inviteId).update({status:'accepted',respondedAt:firebase.firestore.FieldValue.serverTimestamp(),acceptedUid:currentUser.uid})
+    .then(()=>sharedToursRef().doc(inv.tourId).set({
+      collaborators:{[currentUser.uid]:{email:currentUser.email,role:inv.role,status:'accepted',respondedAt:firebase.firestore.FieldValue.serverTimestamp()}}
+    },{merge:true}))
+    .then(()=>{
+      if(!S.sharedRefs)S.sharedRefs=[];
+      if(!S.sharedRefs.some(r=>r.tourId===inv.tourId)){
+        S.sharedRefs.push({tourId:inv.tourId,role:inv.role,tourName:inv.tourName,ownerName:inv.fromName||inv.fromEmail,ownerUid:inv.fromUid});
+        scheduleCloudSave();
+      }
+      pendingInvitations=pendingInvitations.filter(i=>i.id!==inviteId);
+      const badge=document.getElementById('notifBadge');if(badge)badge.style.display=pendingInvitations.length?'block':'none';
+      calClosePopup();
+      renderSB();renderContent();
+      alert(`You're now collaborating on "${inv.tourName}"! It's been added to your tour list, under "Shared With Me".`);
+    }).catch(err=>{console.error('acceptInvitation failed',err);alert('Could not accept the invitation right now — please try again.');});
+}
+function declineInvitation(inviteId){
+  invitationsRef().doc(inviteId).update({status:'declined',respondedAt:firebase.firestore.FieldValue.serverTimestamp()})
+    .then(()=>{
+      pendingInvitations=pendingInvitations.filter(i=>i.id!==inviteId);
+      const badge=document.getElementById('notifBadge');if(badge)badge.style.display=pendingInvitations.length?'block':'none';
+      openNotificationsModal(); // refresh the list in place
+    }).catch(err=>console.error('declineInvitation failed',err));
+}
+
+// ── Collaborator management (owner side) ────────────────────────────────────
+function openCollaboratorsModal(tourId){
+  const tour=S.tours[tourId];
+  if(!tour)return;
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Collaborators</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div><div class="mbody" style="text-align:left"><div style="padding:1rem;text-align:center;color:var(--t3);font-size:13px">Loading…</div></div>`;
+  document.getElementById('calPopModal').style.display='flex';
+  invitationsRef().where('tourId','==',tourId).where('fromUid','==',currentUser.uid).get().then(snap=>{
+    const invites=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const statusColor={pending:'#C9A84C',accepted:'#4BC896',declined:'#C84B6B',revoked:'#888'};
+    const rows=invites.map(inv=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:.6rem 0;border-bottom:1px solid rgba(128,128,128,.12)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;color:var(--t1)">${esc(inv.toEmail)}</div>
+          <div style="font-size:11px;color:${statusColor[inv.status]||'#888'};text-transform:uppercase;letter-spacing:.04em">${esc(inv.status)} · ${inv.role==='editor'?'Can Edit':'Read Only'}</div>
+        </div>
+        ${inv.status==='accepted'?`<button class="abtn" onclick="changeCollaboratorRole('${tourId}','${inv.id}','${inv.role==='editor'?'viewer':'editor'}')" style="font-size:11px">${inv.role==='editor'?'Make Read Only':'Make Editor'}</button>`:''}
+        ${inv.status==='pending'?`<button class="abtn" onclick="resendInvitation('${inv.id}')" style="font-size:11px">Resend</button>`:''}
+        ${inv.status!=='revoked'?`<button class="abtn del" onclick="revokeCollaborator('${tourId}','${inv.id}')" style="font-size:11px" title="Revoke access"><i class="ti ti-trash"></i></button>`:''}
+      </div>`).join('');
+    document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Collaborators — ${esc(tour.name)}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+      <div class="mbody" style="text-align:left">${rows||'<div style="padding:1rem;color:var(--t3);font-size:13px">Not shared with anyone yet — use "Share a Tour with Friends" from Home.</div>'}</div>`;
+  }).catch(err=>console.error('openCollaboratorsModal failed',err));
+}
+function changeCollaboratorRole(tourId,inviteId,newRole){
+  invitationsRef().doc(inviteId).get().then(doc=>{
+    const inv=doc.data();
+    if(!inv||!inv.acceptedUid)return;
+    return Promise.all([
+      invitationsRef().doc(inviteId).update({role:newRole}),
+      sharedToursRef().doc(tourId).set({collaborators:{[inv.acceptedUid]:{role:newRole}}},{merge:true}),
+    ]);
+  }).then(()=>openCollaboratorsModal(tourId)).catch(err=>console.error('changeCollaboratorRole failed',err));
+}
+function revokeCollaborator(tourId,inviteId){
+  if(!confirm("Revoke this person's access to the tour?"))return;
+  invitationsRef().doc(inviteId).get().then(doc=>{
+    const inv=doc.data();
+    const tasks=[invitationsRef().doc(inviteId).update({status:'revoked'})];
+    if(inv&&inv.acceptedUid)tasks.push(sharedToursRef().doc(tourId).update({[`collaborators.${inv.acceptedUid}.status`]:'revoked'}));
+    return Promise.all(tasks);
+  }).then(()=>openCollaboratorsModal(tourId)).catch(err=>console.error('revokeCollaborator failed',err));
+}
+function resendInvitation(inviteId){
+  invitationsRef().doc(inviteId).update({status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()})
+    .then(()=>alert("Invitation refreshed — they'll see it next time they sign in."))
+    .catch(err=>console.error('resendInvitation failed',err));
+}
 function switchTour(id){
   const wasLife=S.cur===MY_TOUR_LIFE_ID;
+  const wasShared=typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX);
   const enteringLife=id===MY_TOUR_LIFE_ID&&!wasLife;
+  const enteringShared=typeof id==='string'&&id.startsWith(SHARED_PREFIX);
+
+  if(wasShared)detachSharedTourListener(S.cur.slice(SHARED_PREFIX.length));
 
   if(enteringLife){
     savedFiltersBeforeLife={
@@ -2056,16 +2267,23 @@ function switchTour(id){
     };
     myTourLifeCache=null; // rebuild fresh from whatever the real tours currently contain
     S.cur=id;
-    const bounds=budgetTourBounds(); // now reads from the aggregate, since cur() resolves to it
-    const start=bounds.start||today;
-    dashDateMode='custom';dashCustomStart=start;dashCustomEnd=today;
-    evDateMode='custom';evCustomStart=start;evCustomEnd=today;
-    budgetDateMode='custom';budgetCustomStart=start;budgetCustomEnd=today;
-    AF=['completed'];
-    BF=['achieved'];
+    buildMyTourLife().then(builtLife=>{
+      myTourLifeCache=builtLife;
+      const bounds=budgetTourBounds(); // now reads from the aggregate, since cur() resolves to it
+      const start=bounds.start||today;
+      dashDateMode='custom';dashCustomStart=start;dashCustomEnd=today;
+      evDateMode='custom';evCustomStart=start;evCustomEnd=today;
+      budgetDateMode='custom';budgetCustomStart=start;budgetCustomEnd=today;
+      AF=['completed'];
+      BF=['achieved'];
+      curActId=null;curDestId=null;selBudCat=null;routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
+      renderSB();renderContent();
+    });
+    return;
   }else{
     restoreFiltersIfLeavingLife();
     S.cur=id;
+    if(enteringShared)attachSharedTourListener(id.slice(SHARED_PREFIX.length));
   }
   curActId=null;curDestId=null;selBudCat=null;routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
   renderSB();renderContent();
@@ -2100,6 +2318,7 @@ function updateHStats(){
 let undoStack=[],redoStack=[];
 let lastStateSnapshot=null;
 const MAX_UNDO=25;
+let lastSharedTourSnapshot=null; // tracks the active shared tour's content separately from S, since edits to it never touch S
 function captureUndoIfChanged(){
   const snap=JSON.stringify(S);
   if(lastStateSnapshot!==null&&snap!==lastStateSnapshot){
@@ -2109,6 +2328,21 @@ function captureUndoIfChanged(){
     scheduleCloudSave(); // a real change happened — sync it to the cloud (debounced)
   }
   lastStateSnapshot=snap;
+
+  // Shared tours live outside S entirely, so edits to one (when you have Editor
+  // access) would never trip the check above. No undo history for these yet —
+  // just make sure they actually get saved.
+  if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX)){
+    const tourId=S.cur.slice(SHARED_PREFIX.length);
+    const tourObj=sharedTourCache[tourId];
+    const sharedSnap=tourObj?JSON.stringify(tourObj):null;
+    if(lastSharedTourSnapshot!==null&&sharedSnap!==null&&sharedSnap!==lastSharedTourSnapshot){
+      scheduleCloudSave();
+    }
+    lastSharedTourSnapshot=sharedSnap;
+  }else{
+    lastSharedTourSnapshot=null;
+  }
 }
 function performUndo(){
   if(!undoStack.length)return;
@@ -2261,6 +2495,7 @@ function renderDash(){
         ${cur().readOnly?'':'<button class="abtn" onclick="openTourEditModal()" style="flex-shrink:0;font-size:11px;margin-top:2px"><i class="ti ti-edit"></i> Edit</button>'}
       </div>
       <div class="tour-quote" style="font-size:13px;color:var(--t2);font-style:italic;line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:.75rem;font-family:var(--font-body);margin-top:.5rem">${esc(cur().desc||'Add a description for this tour…')}</div>
+      ${cur().sharedOwnerName?`<div style="margin-top:.7rem;font-size:11.5px;font-family:var(--font-ui);color:var(--gold);display:flex;align-items:center;gap:5px"><i class="ti ti-users"></i> Shared by ${esc(cur().sharedOwnerName)} · ${cur().readOnly?'Read Only':'Can Edit'}</div>`:''}
     </div>
     <div class="filter-row" style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem">
       <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
@@ -6362,8 +6597,8 @@ function renderHome(){
     {icon:'ti-list-details',title:'Select an Existing Tour',desc:`Jump into one of your ${tourCount} saved tour${tourCount===1?'':'s'}.`,action:'openHomeSelectTourModal()'},
     {icon:'ti-settings',title:'Manage Existing Tours',desc:'Rename, edit, or delete any of your tours.',action:'openTourModal()'},
     {icon:'ti-infinity',title:'View "My Tour Life"',desc:'A lifetime compilation of every tour you\u2019ve taken, all in one place.',action:'goToMyTourLife()'},
-    {icon:'ti-map-pin-plus',title:'Add a New Destination',desc:onLife?'Switch to one of your real tours first — "My Tour Life" is a read-only summary.':`Add a stop to your current tour: ${esc(cur().name)}.`,action:onLife?'':'openDestModal()',disabled:onLife},
-    {icon:'ti-share-3',title:'Share a Tour with Friends',desc:'Invite friends to see your itinerary.',action:'openShareComingSoon()'},
+    {icon:'ti-map-pin-plus',title:'Add a New Destination',desc:onLife?'Switch to a tour you own — this one is read-only.':`Add a stop to your current tour: ${esc(cur().name)}.`,action:onLife?'':'openDestModal()',disabled:onLife},
+    {icon:'ti-share-3',title:'Share a Tour with Friends',desc:'Invite friends to collaborate on or view your itinerary.',action:'openShareModal()'},
   ];
   const cardHTML=cards.map(c=>`
     <div class="home-card${c.disabled?' disabled':''}" ${c.disabled?'':`onclick="${c.action}"`}>
@@ -6378,11 +6613,141 @@ function renderHome(){
   </div>`;
 }
 function goToMyTourLife(){switchTour(MY_TOUR_LIFE_ID);goTab('dashboard');}
-function openShareComingSoon(){openComingSoonModal('Share a Tour','Sharing tours with friends is coming soon!');}
+// ── SHARE A TOUR ─────────────────────────────────────────────────────────────
+// Optional, opt-in email notification — degrades silently to "in-app only" if
+// EmailJS isn't configured (no account needed to get the core feature working;
+// the recipient still sees the invite via the bell icon next time they sign in).
+const EMAILJS_SERVICE_ID='';
+const EMAILJS_TEMPLATE_ID='';
+const EMAILJS_PUBLIC_KEY='';
+function maybeSendInviteEmail(toEmail,tourName,role,message){
+  if(!EMAILJS_SERVICE_ID||!EMAILJS_TEMPLATE_ID||!EMAILJS_PUBLIC_KEY||typeof emailjs==='undefined'){
+    console.log('Email notifications not configured — relying on the in-app notification only.');
+    return;
+  }
+  emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
+    to_email:toEmail,
+    from_name:currentUser.displayName||currentUser.email,
+    tour_name:tourName,
+    role:role==='editor'?'Can Edit':'Read Only',
+    message:message||'',
+  },EMAILJS_PUBLIC_KEY).catch(err=>console.warn('EmailJS send failed:',err));
+}
+
+let shareModalState=null;
+function openShareModal(){
+  shareModalState={selectedTourIds:[],recipients:[{email:'',role:'viewer'}]};
+  renderShareModalBody();
+  document.getElementById('calPopModal').style.display='flex';
+}
+function renderShareModalBody(){
+  const st=shareModalState;
+  const tourCheckboxes=Object.entries(S.tours).map(([id,t])=>`
+    <label class="fmi" style="padding:.5rem .4rem">
+      <input type="checkbox" ${st.selectedTourIds.includes(id)?'checked':''} onchange="shareToggleTour('${id}')"/> ${esc(t.name)}
+    </label>`).join('');
+  const recipientRows=st.recipients.map((r,i)=>`
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:.5rem">
+      <input class="auth-input" type="email" placeholder="friend@email.com" value="${esc(r.email)}" oninput="shareSetRecipientEmail(${i},this.value)" style="margin-bottom:0;flex:1"/>
+      <select class="auth-input" style="margin-bottom:0;width:auto;flex-shrink:0" onchange="shareSetRecipientRole(${i},this.value)">
+        <option value="viewer" ${r.role==='viewer'?'selected':''}>Read Only</option>
+        <option value="editor" ${r.role==='editor'?'selected':''}>Can Edit</option>
+      </select>
+      ${st.recipients.length>1?`<button class="abtn del" onclick="shareRemoveRecipient(${i})"><i class="ti ti-x"></i></button>`:''}
+    </div>`).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Share a Tour</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.4rem">Select tour(s) to share</div>
+      <div style="max-height:140px;overflow-y:auto;border:1px solid var(--bd);border-radius:8px;margin-bottom:1rem">${tourCheckboxes||'<div style="padding:.6rem;color:var(--t3);font-size:13px">No tours to share yet.</div>'}</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.4rem">Invite by email</div>
+      <div id="shareRecipientRows">${recipientRows}</div>
+      <button class="abtn" onclick="shareAddRecipient()" style="margin-bottom:.8rem"><i class="ti ti-plus"></i> Add recipient</button>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Personal message (optional)</div>
+      <textarea id="shareMessageInp" placeholder="Hey! Come check out our trip…" style="width:100%;min-height:70px;padding:.6rem .7rem;border-radius:8px;border:1px solid var(--bd);background:var(--ink);color:var(--t1);font-size:13px;font-family:inherit;resize:vertical;margin-bottom:.6rem;box-sizing:border-box" oninput="refreshShareSummary()"></textarea>
+      <div id="shareSummaryBox"></div>
+      <div id="shareModalError" class="auth-error" style="display:none;margin-top:.8rem"></div>
+      <button class="btnp" style="width:100%;justify-content:center;margin-top:.9rem" onclick="sendShareInvitations()">Send Invitation</button>
+    </div>`;
+  refreshShareSummary();
+}
+function shareToggleTour(id){
+  const st=shareModalState;
+  if(st.selectedTourIds.includes(id))st.selectedTourIds=st.selectedTourIds.filter(x=>x!==id);
+  else st.selectedTourIds.push(id);
+  renderShareModalBody();
+}
+function shareAddRecipient(){shareModalState.recipients.push({email:'',role:'viewer'});renderShareModalBody();}
+function shareRemoveRecipient(i){shareModalState.recipients.splice(i,1);renderShareModalBody();}
+function shareSetRecipientEmail(i,val){shareModalState.recipients[i].email=val;refreshShareSummary();}
+function shareSetRecipientRole(i,val){shareModalState.recipients[i].role=val;refreshShareSummary();}
+// Only updates the summary box, never the whole modal — re-rendering the whole
+// thing on every keystroke would steal focus out of the email input mid-type.
+function refreshShareSummary(){
+  const st=shareModalState;const box=document.getElementById('shareSummaryBox');
+  if(!st||!box)return;
+  const selectedTours=st.selectedTourIds.map(id=>S.tours[id]?.name).filter(Boolean);
+  const validRecipients=st.recipients.filter(r=>r.email.trim());
+  box.innerHTML=(selectedTours.length&&validRecipients.length)?`
+    <div style="background:var(--sf2);border-radius:8px;padding:.7rem;margin-top:.4rem;font-size:12.5px;color:var(--t2)">
+      <strong style="color:var(--gold)">Summary</strong><br/>
+      Tour${selectedTours.length>1?'s':''}: ${esc(selectedTours.join(', '))}<br/>
+      ${validRecipients.map(r=>`Shared with <strong>${esc(r.email)}</strong> — ${r.role==='editor'?'Can Edit':'Read Only'}`).join('<br/>')}
+    </div>`:'';
+}
+function sendShareInvitations(){
+  const st=shareModalState;
+  const errEl=document.getElementById('shareModalError');
+  errEl.style.display='none';
+  if(!st.selectedTourIds.length){errEl.textContent='Select at least one tour to share.';errEl.style.display='block';return;}
+  const recipients=st.recipients.filter(r=>r.email.trim());
+  if(!recipients.length){errEl.textContent='Add at least one recipient email.';errEl.style.display='block';return;}
+  const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  for(const r of recipients){
+    if(!emailRe.test(r.email.trim())){errEl.textContent=`"${r.email}" doesn't look like a valid email address.`;errEl.style.display='block';return;}
+  }
+  const message=document.getElementById('shareMessageInp').value.trim();
+  const tasks=[];
+  st.selectedTourIds.forEach(tourId=>{
+    const tour=S.tours[tourId];
+    if(!tour)return;
+    recipients.forEach(r=>tasks.push(shareOneTourWithOneRecipient(tourId,tour,r.email.trim(),r.role,message)));
+  });
+  Promise.all(tasks).then(()=>{
+    st.selectedTourIds.forEach(tourId=>{if(S.tours[tourId])S.tours[tourId].hasCollaborators=true;});
+    scheduleCloudSave(); // persists the " *" badge on the owner's own tour list
+    calClosePopup();
+    alert(`Invitation${tasks.length>1?'s':''} sent! They'll see it in NOMAD next time they sign in — look for the bell icon in the header.`);
+  }).catch(err=>{
+    console.error('sendShareInvitations failed',err);
+    errEl.textContent='Something went wrong sending the invitation. Please try again.';
+    errEl.style.display='block';
+  });
+}
+function shareOneTourWithOneRecipient(tourId,tour,toEmail,role,message){
+  const setup=sharedToursRef().doc(tourId).set({
+    ownerUid:currentUser.uid,
+    ownerEmail:currentUser.email,
+    ownerName:currentUser.displayName||'',
+    tourData:JSON.stringify(tour),
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
+  },{merge:true});
+  const invite=invitationsRef().add({
+    tourId,tourName:tour.name,
+    fromUid:currentUser.uid,fromEmail:currentUser.email,fromName:currentUser.displayName||'',
+    toEmail,role,message,
+    status:'pending',
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+  });
+  return Promise.all([setup,invite]).then(()=>{maybeSendInviteEmail(toEmail,tour.name,role,message);});
+}
 function openHomeSelectTourModal(){
-  const rows=Object.entries(S.tours).map(([id,t])=>`<div class="fmi" onclick="selectTourFromHome('${id}')" style="padding:.65rem .5rem">${esc(t.name)}</div>`).join('');
+  const ownedRows=Object.entries(S.tours).map(([id,t])=>`<div class="fmi" onclick="selectTourFromHome('${id}')" style="padding:.65rem .5rem">${esc(t.name)}${t.hasCollaborators?' <span style="color:var(--gold)">*</span>':''}</div>`).join('');
+  const sharedRows=(S.sharedRefs||[]).map(r=>`<div class="fmi" onclick="selectTourFromHome('${SHARED_PREFIX+r.tourId}')" style="padding:.65rem .5rem">${esc(r.tourName||'Shared tour')} <span style="color:var(--t3);font-size:11px">(${r.role==='editor'?'Can Edit':'Read Only'} — ${esc(r.ownerName||'')})</span></div>`).join('');
   document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Select a Tour</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
-    <div class="mbody" style="text-align:left;max-height:50vh;overflow-y:auto">${rows||'<div style="padding:1rem;color:var(--t3);font-size:13px">No tours yet — create one first.</div>'}</div>`;
+    <div class="mbody" style="text-align:left;max-height:50vh;overflow-y:auto">
+      ${ownedRows||'<div style="padding:1rem;color:var(--t3);font-size:13px">No tours yet — create one first.</div>'}
+      ${sharedRows?`<div style="margin:.6rem 0;font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">Shared With Me</div>${sharedRows}`:''}
+    </div>`;
   document.getElementById('calPopModal').style.display='flex';
 }
 function selectTourFromHome(id){
@@ -6563,7 +6928,8 @@ function openTourModal(){
   const body=document.getElementById('tourModalBody');
   body.innerHTML=Object.entries(S.tours).map(([id,t])=>`
     <div style="display:flex;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--bd);font-family:var(--font-ui)">
-      <div style="flex:1;font-size:13px;color:var(--t1)">${esc(t.name)}</div>
+      <div style="flex:1;font-size:13px;color:var(--t1)">${esc(t.name)}${t.hasCollaborators?' <span style="color:var(--gold);font-size:11px">*</span>':''}</div>
+      <button class="abtn" onclick="openCollaboratorsModal('${id}')" style="font-size:11px" title="Manage Collaborators"><i class="ti ti-users"></i></button>
       <button class="abtn" onclick="openTourEditModal('${id}')" style="font-size:11px"><i class="ti ti-edit"></i></button>
       <button class="abtn del" onclick="deleteTour('${id}')" style="font-size:11px"><i class="ti ti-trash"></i></button>
     </div>`).join('');
@@ -6599,13 +6965,15 @@ function createTour(){
   ];
   S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
   restoreFiltersIfLeavingLife();
+  if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX))detachSharedTourListener(S.cur.slice(SHARED_PREFIX.length));
   S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
 function openTourEditModal(forId){
   if(!forId&&isReadOnlyTour()){blockIfReadOnly();return;}
   editTourId=forId||S.cur;
-  const t=S.tours[editTourId];
+  const t=(typeof editTourId==='string'&&editTourId.startsWith(SHARED_PREFIX))?cur():S.tours[editTourId];
+  if(!t)return;
   document.getElementById('te_name').value=t.name;
   document.getElementById('te_desc').value=t.desc||'';
   document.getElementById('tourEditModal').style.display='flex';
@@ -6615,6 +6983,14 @@ function saveTourEdit(){if(blockIfReadOnly())return;
   const nm=document.getElementById('te_name').value.trim();
   const desc=document.getElementById('te_desc').value.trim();
   if(!nm){alert('Tour name cannot be empty.');return;}
+  if(typeof editTourId==='string'&&editTourId.startsWith(SHARED_PREFIX)){
+    const tourId=editTourId.slice(SHARED_PREFIX.length);
+    const t=sharedTourCache[tourId];
+    if(t){t.name=nm;t.desc=desc;}
+    closeTourEditModal();renderSB();renderContent();
+    scheduleCloudSave(); // S.cur already points at this shared tour, so this routes to sharedTours/{tourId}
+    return;
+  }
   S.tours[editTourId].name=nm;S.tours[editTourId].desc=desc;
   closeTourEditModal();renderSB();renderContent();
 }
@@ -6633,6 +7009,10 @@ if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').catch(err=>console.warn('Service worker registration failed:',err));
   });
 }
+
+// Catches invitations that arrive while the app is already open (login only
+// checks once). Light enough on Firestore's free tier for personal use.
+setInterval(()=>{if(currentUser)checkPendingInvitations();},120000);
 
 // ── "Download for: Android / Apple" buttons on the login screen ────────────
 // Chrome on Android fires this event when the page qualifies as installable;
