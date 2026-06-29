@@ -413,7 +413,9 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .fmi:hover{background:rgba(255,255,255,.03)}
 .fmi input[type=checkbox]{accent-color:var(--gold);cursor:pointer}
 /* EVENTS */
-.ev-item{display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .15s}
+.ev-item{display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .15s,opacity .15s}
+.ev-item.ev-completed{opacity:.45}
+.ev-item.ev-completed:hover{opacity:.7}
 .ev-item:hover{background:var(--sf2)}
 .ev-name{font-size:14px;color:var(--t1);font-family:var(--font-ui);line-height:1.4}
 .ev-loc{font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px}
@@ -1316,9 +1318,19 @@ function saveToCloudNow(manual){
       .catch(err=>{console.error('saveToCloudNow (shared) failed',err);setSyncStatus('error');});
   }
   if(S.cur===MY_TOUR_LIFE_ID){setSyncStatus('saved');return Promise.resolve();} // computed view, never persisted directly
-  return cloudDocRefFor(currentUser).set({state:JSON.stringify(S),updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
+  const ownSave=cloudDocRefFor(currentUser).set({state:JSON.stringify(S),updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
     .then(()=>{lastCloudSaveAt=Date.now();setSyncStatus('saved');if(manual)refreshSyncModalIfOpen();})
     .catch(err=>{console.error('saveToCloudNow failed',err);setSyncStatus('error');});
+  // If the tour currently being edited is shared with others, mirror this save
+  // into its shared copy too — otherwise only the owner's own private profile
+  // gets the update, and collaborators never see the change.
+  const activeOwnedTour=S.tours[S.cur];
+  if(activeOwnedTour&&activeOwnedTour.hasCollaborators){
+    const mirrorSave=sharedToursRef().doc(S.cur).set({tourData:JSON.stringify(activeOwnedTour),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})
+      .catch(err=>console.error('mirror save to sharedTours failed',err));
+    return Promise.all([ownSave,mirrorSave]);
+  }
+  return ownSave;
 }
 function scheduleCloudSave(){
   if(!currentUser||isApplyingRemoteState)return; // don't echo a just-loaded remote state back up as a "save"
@@ -1475,13 +1487,22 @@ function openComingSoonModal(title,desc){
 function openAccountModal(){
   document.getElementById('settingsPop').classList.remove('open');
   const email=currentUser?currentUser.email:'—';
-  const name=currentUser&&currentUser.displayName?currentUser.displayName:'';
+  // Backward-compatible default: if firstName/lastName were never set but an
+  // old single-field displayName exists (from before this split), pre-fill
+  // by splitting on the first space, so re-entering it isn't required.
+  let firstName=S.firstName||'',lastName=S.lastName||'';
+  if(!firstName&&currentUser&&currentUser.displayName){
+    const parts=currentUser.displayName.trim().split(' ');
+    firstName=parts[0]||'';lastName=parts.slice(1).join(' ')||'';
+  }
   document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Account Management</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
     <div class="mbody">
       <div style="font-size:12px;color:var(--t3);margin-bottom:.2rem;text-align:left">Signed in as</div>
       <div style="font-size:15px;color:var(--t1);margin-bottom:1rem;word-break:break-all;text-align:left">${esc(email)}</div>
-      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem;text-align:left">Your name</div>
-      <input id="accountNameInput" class="auth-input" type="text" placeholder="e.g. Juan" value="${esc(name)}" style="margin-bottom:.4rem"/>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem;text-align:left">First name</div>
+      <input id="accountFirstNameInput" class="auth-input" type="text" placeholder="e.g. Juan" value="${esc(firstName)}" style="margin-bottom:.5rem"/>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem;text-align:left">Last name</div>
+      <input id="accountLastNameInput" class="auth-input" type="text" placeholder="e.g. Carlos Angel" value="${esc(lastName)}" style="margin-bottom:.4rem"/>
       <div id="accountNameMsg" style="font-size:11.5px;min-height:14px;margin-bottom:.7rem;text-align:left"></div>
       <button class="btnp" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="saveAccountName()">Save Name</button>
       <button class="btng" style="width:100%;justify-content:center" onclick="authForgotPassword()">Send password reset email</button>
@@ -1490,10 +1511,17 @@ function openAccountModal(){
 }
 function saveAccountName(){
   if(!currentUser)return;
-  const name=document.getElementById('accountNameInput').value.trim();
+  const firstName=document.getElementById('accountFirstNameInput').value.trim();
+  const lastName=document.getElementById('accountLastNameInput').value.trim();
   const msgEl=document.getElementById('accountNameMsg');
-  currentUser.updateProfile({displayName:name}).then(()=>{
+  S.firstName=firstName;S.lastName=lastName;
+  // displayName stays the full combined name — other features (invitation
+  // "from" labels, the Report an Issue form, etc.) read the full name from it.
+  // Only the Home greeting specifically uses S.firstName on its own.
+  currentUser.updateProfile({displayName:[firstName,lastName].filter(Boolean).join(' ')}).then(()=>{
     msgEl.textContent='Saved.';msgEl.style.color='#4BC896';
+    scheduleCloudSave();
+    renderContent(); // refreshes the Home greeting if it's the active tab
   }).catch(err=>{
     msgEl.textContent=err.message||'Could not save right now — try again.';msgEl.style.color='#C84B4B';
   });
@@ -2575,7 +2603,7 @@ function renderDash(){
       <div class="slbl">${dd.length} stops</div>
     </div>`;
   }).join('');
-  const nextRows=sDests().filter(d=>d.arrival&&d.status!=='cancelled').slice(0,6).map(d=>`
+  const nextRows=sDests().filter(d=>d.arrival&&d.arrival>=today&&d.status!=='cancelled').slice(0,6).map(d=>`
     <div style="display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;border-bottom:1px solid rgba(128,128,128,.1);cursor:pointer;font-family:var(--font-ui);transition:background .15s" onclick="selDest('${d.id}')" onmouseover="this.style.background='rgba(201,168,76,.03)'" onmouseout="this.style.background=''">
       <span style="font-size:19px;flex-shrink:0">${flagHtml(d.flag)}</span>
       <div style="flex:1;min-width:0">
@@ -5264,6 +5292,7 @@ function toggleStoryMode(){
 
 // ── EVENTS ────────────────────────────────────────────────────────────────────
 let evTypeFilter=null; // null = all types, or a specific event_type string
+let evStatusFilter=null; // null = all, 'completed' = in the past, 'pending' = upcoming
 let evDateMode=localStorage.getItem('ae_ev_datemode')||'total-tour'; // 'current-end' | 'total-tour' | 'custom'
 let evCustomStart=null,evCustomEnd=null;
 function evEffectiveRange(){
@@ -5290,19 +5319,27 @@ function renderEvents(){
   if(eventCatMgmtMode)return renderEventCatMgmt();
   const evRange=evEffectiveRange();
   const inEvRange=d=>!d.arrival||!d.departure||(d.arrival<=evRange.end&&d.departure>=evRange.start);
+  const isEvCompleted=d=>(d.event_date||d.arrival||'')<today;
   const allEvDests=sDests().filter(d=>d.event).filter(inEvRange).sort((a,b)=>(a.arrival||'').localeCompare(b.arrival||''));
   const types=[...new Set(allEvDests.map(d=>d.event_type).filter(Boolean))].sort();
-  const evDests=evTypeFilter?allEvDests.filter(d=>d.event_type===evTypeFilter):allEvDests;
+  let evDests=evTypeFilter?allEvDests.filter(d=>d.event_type===evTypeFilter):allEvDests;
+  if(evStatusFilter)evDests=evDests.filter(d=>evStatusFilter==='completed'?isEvCompleted(d):!isEvCompleted(d));
   const typeFilterLabel=evTypeFilter||'All Types';
+  const statusFilterLabel=evStatusFilter?(evStatusFilter==='completed'?'Completed':'Pending'):'All Status';
   const evDateModeBtn=(mode,lbl)=>`<button onclick="evSetDateMode('${mode}')" style="border:none;background:${evDateMode===mode?'var(--gold)':'transparent'};color:${evDateMode===mode?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s;white-space:nowrap">${lbl}</button>`;
   const typeMenuItems=`<div class="fmi" onclick="setEvTypeFilter(null)" style="${!evTypeFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!evTypeFilter?'-check-filled':''}" style="font-size:13px"></i> All Types</div>`+
     types.map(t=>`<div class="fmi" onclick="setEvTypeFilter('${esc(t).replace(/'/g,"\\'")}')" style="${evTypeFilter===t?'color:var(--gold)':''}">${esc(t)}</div>`).join('');
+  const statusMenuItems=['',`completed`,`pending`].map(s=>{
+    const lbl=s===''?'All Status':(s==='completed'?'Completed':'Pending');
+    return`<div class="fmi" onclick="setEvStatusFilter(${s===''?'null':`'${s}'`})" style="${evStatusFilter===(s||null)?'color:var(--gold)':''}">${s===''?`<i class="ti ti-circle${!evStatusFilter?'-check-filled':''}" style="font-size:13px"></i> `:''}${lbl}</div>`;
+  }).join('');
   const items=evDests.map(d=>{
     const am=aM(d.act);
     const evCat=d.event_type?eventCatByName(d.event_type):null;
     const typeColor=evCat?evCat.color:am.color;
+    const completed=isEvCompleted(d);
     const dots=Array.from({length:5},(_,i)=>`<div class="pdot" style="background:${i<(d.priority||3)?am.color:'var(--bd2)'}"></div>`).join('');
-    return`<div class="ev-item" onclick="showEvCtx(event,'${d.id}')">
+    return`<div class="ev-item${completed?' ev-completed':''}" onclick="showEvCtx(event,'${d.id}')">
       <div style="width:12px;height:12px;border-radius:50%;background:${am.color};flex-shrink:0;margin-top:2px"></div>
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(d.event)}</div>
@@ -5319,7 +5356,11 @@ function renderEvents(){
   }).join('');
   return`<div class="panel">
     <div class="frow filter-row">
-      <div class="sec-ttl" style="margin-bottom:0;flex:1">Events &amp; Festivals · ${evDests.length}${evTypeFilter?'/'+allEvDests.length:''}</div>
+      <div class="sec-ttl" style="margin-bottom:0;flex:1">Events &amp; Festivals · ${evDests.length}${(evTypeFilter||evStatusFilter)?'/'+allEvDests.length:''}</div>
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleEvStatusMenu()"><i class="ti ti-circle-check"></i> ${esc(statusFilterLabel)} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="evStatusMenu">${statusMenuItems}</div>
+      </div>
       <div style="position:relative">
         <button class="fbtn" onclick="toggleEvTypeMenu()"><i class="ti ti-filter"></i> ${esc(typeFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="evTypeMenu">${typeMenuItems}</div>
@@ -5360,9 +5401,14 @@ function renderEventCatMgmt(){
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${catMgmtRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No categories yet — add one, then pick it from the Event Category dropdown when adding a destination.</div>'}</div>
   </div>`;
 }
-function toggleEvTypeMenu(){document.getElementById('evTypeMenu')?.classList.toggle('open');}
+function toggleEvTypeMenu(){document.getElementById('evStatusMenu')?.classList.remove('open');document.getElementById('evTypeMenu')?.classList.toggle('open');}
 function setEvTypeFilter(t){evTypeFilter=t;document.getElementById('evTypeMenu')?.classList.remove('open');renderContent();}
-document.addEventListener('click',e=>{const em=document.getElementById('evTypeMenu');if(em&&!em.parentElement?.contains(e.target))em.classList.remove('open');});
+function toggleEvStatusMenu(){document.getElementById('evTypeMenu')?.classList.remove('open');document.getElementById('evStatusMenu')?.classList.toggle('open');}
+function setEvStatusFilter(s){evStatusFilter=s;document.getElementById('evStatusMenu')?.classList.remove('open');renderContent();}
+document.addEventListener('click',e=>{
+  const em=document.getElementById('evTypeMenu');if(em&&!em.parentElement?.contains(e.target))em.classList.remove('open');
+  const sm=document.getElementById('evStatusMenu');if(sm&&!sm.parentElement?.contains(e.target))sm.classList.remove('open');
+});
 
 function showEvCtx(e,id){e.preventDefault();e.stopPropagation();ctxEvId=id;const m=document.getElementById('ctxMenu');m.style.display='block';m.style.left=Math.min(e.clientX,window.innerWidth-170)+'px';m.style.top=Math.min(e.clientY,window.innerHeight-80)+'px';}
 function ctxEdit(){document.getElementById('ctxMenu').style.display='none';if(ctxEvId)openDestModal(ctxEvId);}
@@ -6707,7 +6753,7 @@ function renderHome(){
       <div class="home-card-desc">${esc(c.desc)}</div>
     </div>`).join('');
   return`<div class="panel">
-    <div class="sec-ttl">Welcome${currentUser&&currentUser.displayName?', '+esc(currentUser.displayName):''}</div>
+    <div class="sec-ttl">Welcome${S.firstName?', '+esc(S.firstName):''}</div>
     <div style="font-size:13px;color:var(--t3);font-family:var(--font-ui);margin-bottom:1.2rem">Currently viewing: <strong style="color:var(--gold)">${esc(cur().name)}</strong></div>
     <div class="home-grid">${cardHTML}</div>
   </div>`;
@@ -7158,7 +7204,7 @@ function openTourModal(){
   body.innerHTML=Object.entries(S.tours).map(([id,t])=>`
     <div style="display:flex;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--bd);font-family:var(--font-ui)">
       <div style="flex:1;font-size:13px;color:var(--t1)">${esc(t.name)}${t.hasCollaborators?' <span style="color:var(--gold);font-size:11px">*</span>':''}</div>
-      <button class="abtn" onclick="openCollaboratorsModal('${id}')" style="font-size:11px" title="Manage Collaborators"><i class="ti ti-users"></i></button>
+      <button class="abtn" onclick="closeTourModal();openCollaboratorsModal('${id}')" style="font-size:11px" title="Manage Collaborators"><i class="ti ti-users"></i></button>
       <button class="abtn" onclick="openTourEditModal('${id}')" style="font-size:11px"><i class="ti ti-edit"></i></button>
       <button class="abtn del" onclick="deleteTour('${id}')" style="font-size:11px"><i class="ti ti-trash"></i></button>
     </div>`).join('');
