@@ -6072,11 +6072,24 @@ function renderBucket(){
   });
 
   const allBkt=[...visibleBkt].sort((a,b)=>{
+    if(bktSortMode==='custom')return(a.order||0)-(b.order||0);
+    // For all named sort modes: primary sort by the chosen key, secondary alphabetically by experience text
+    const strCmp=(x,y)=>(x||'').localeCompare(y||'');
     if(bktSortMode==='category'){
       const ca=catOrderIdx(a.category),cb=catOrderIdx(b.category);
       if(ca!==cb)return ca-cb;
+    }else if(bktSortMode==='act'){
+      const na=aM(a.act)?.name||'',nb=aM(b.act)?.name||'';
+      const c=strCmp(na,nb);if(c!==0)return c;
+    }else if(bktSortMode==='tour'){
+      const ta=a.tourId&&S.tours[a.tourId]?S.tours[a.tourId].name:'';
+      const tb=b.tourId&&S.tours[b.tourId]?S.tours[b.tourId].name:'';
+      const c=strCmp(ta,tb);if(c!==0)return c;
+    }else if(bktSortMode==='year'){
+      const ya=a.year||9999,yb=b.year||9999;
+      if(ya!==yb)return ya-yb;
     }
-    return(a.order||0)-(b.order||0);
+    return strCmp(a.text,b.text); // alphabetical secondary always
   });
   const done=allBkt.filter(b=>b.done).length;
 
@@ -6117,31 +6130,72 @@ function renderBucket(){
 
   const statusItems=['pending','achieved'].map(s=>`<label class="fmi"><input type="checkbox" ${BF.includes(s)?'checked':''} onchange="toggleBF('${s}')"/> ${s==='achieved'?'Achieved':'Pending'}</label>`).join('');
 
-  const items=bkt.map(b=>{
+  // ── Sort-mode labels ──────────────────────────────────────────────────────
+  const SORT_OPTS=[
+    {k:'category',l:'Category'},
+    {k:'act',     l:'Act'},
+    {k:'tour',    l:'Tour'},
+    {k:'year',    l:'Year'},
+    {k:'custom',  l:'Custom'},
+  ];
+  const sortLabel=SORT_OPTS.find(o=>o.k===bktSortMode)?.l||'Sort';
+  const sortMenuItems=SORT_OPTS.map(o=>`<div class="fmi" onclick="setBktSortMode('${o.k}')" style="${bktSortMode===o.k?'color:var(--gold)':''}"><i class="ti ti-circle${bktSortMode===o.k?'-check-filled':''}" style="font-size:13px"></i> ${o.l}</div>`).join('');
+
+  // ── Per-card: primary column (right-hand side) + secondary details (below title) ──
+  const buildCard=b=>{
     const am=aM(b.act);
     const bc=bktCatM(b.category);
-    const stars=Array.from({length:5},(_,i)=>`<span class="star ${i<(b.rating||0)?'on':'off'}" onclick="setBktR('${b.id}',${i+1})">${i<(b.rating||0)?'★':'☆'}</span>`).join('');
-    const yearLabel=b.year?b.year:'Future';
     const tourLabel=b.tourId&&S.tours[b.tourId]?S.tours[b.tourId].name:'';
-    return`<div class="bkt" draggable="true" data-id="${b.id}"
+    const yearLabel=b.year?String(b.year):'Future';
+    const stars=Array.from({length:5},(_,i)=>`<span class="star ${i<(b.rating||0)?'on':'off'}" onclick="setBktR('${b.id}',${i+1})">${i<(b.rating||0)?'★':'☆'}</span>`).join('');
+
+    // Primary badge (right column) — always the selected sort key, colored
+    let primaryBadge='';
+    if(bktSortMode==='category'||bktSortMode==='custom'){
+      primaryBadge=`<span style="font-size:11.5px;padding:2px 7px;border-radius:var(--radius);background:${bc.color}22;color:${bc.color};font-family:var(--font-ui);white-space:nowrap">${esc(bc.name)}</span>`;
+    }else if(bktSortMode==='act'){
+      primaryBadge=`<span style="font-size:11.5px;padding:2px 7px;border-radius:var(--radius);background:${am.color}22;color:${am.color};font-family:var(--font-ui);white-space:nowrap">${esc(am.name)}</span>`;
+    }else if(bktSortMode==='tour'){
+      primaryBadge=tourLabel?`<span style="font-size:11.5px;padding:2px 7px;border-radius:var(--radius);background:var(--sf2);color:var(--gold);font-family:var(--font-ui);white-space:nowrap">${esc(tourLabel)}</span>`:'<span style="font-size:11px;color:var(--t3);font-family:var(--font-ui)">All Tours</span>';
+    }else if(bktSortMode==='year'){
+      primaryBadge=`<span style="font-size:12px;font-family:var(--font-display);font-weight:700;color:var(--gold)">${yearLabel}</span>`;
+    }
+
+    // Secondary details — everything that is NOT the primary badge, shown below the title
+    const secondaryChips=[];
+    if(bktSortMode!=='category'&&bktSortMode!=='custom')
+      secondaryChips.push(`<span style="font-size:11px;padding:0 5px;border-radius:8px;background:${bc.color}22;color:${bc.color};font-family:var(--font-ui)">${esc(bc.name)}</span>`);
+    if(bktSortMode!=='act')
+      secondaryChips.push(`<span style="font-size:11px;padding:0 5px;border-radius:8px;background:${am.color}22;color:${am.color};font-family:var(--font-ui)">${esc(am.name)}</span>`);
+    if(bktSortMode!=='year')
+      secondaryChips.push(`<span style="font-size:11px;color:var(--t3);font-family:var(--font-ui)">${yearLabel}</span>`);
+    if(bktSortMode!=='tour'&&tourLabel)
+      secondaryChips.push(`<span style="font-size:11px;padding:0 5px;border-radius:8px;background:var(--sf2);color:var(--t3);font-family:var(--font-ui)">${esc(tourLabel)}</span>`);
+    if(b.country)
+      secondaryChips.push(`<span style="font-size:11px;color:var(--t3)">${esc(b.country)}</span>`);
+
+    return`<div class="bkt" draggable="${bktSortMode==='custom'}" data-id="${b.id}"
       ondragstart="bktDS(event,'${b.id}')" ondragover="bktDO(event,'${b.id}')" ondrop="bktDrop(event,'${b.id}')" ondragleave="this.classList.remove('drag-over')">
-      <i class="ti ti-grip-vertical" style="color:var(--t3);font-size:14px;cursor:grab;flex-shrink:0"></i>
+      ${bktSortMode==='custom'?'<i class="ti ti-grip-vertical" style="color:var(--t3);font-size:14px;cursor:grab;flex-shrink:0"></i>':''}
       <div class="bchk${b.done?' done':''}" onclick="toggleBkt('${b.id}')"></div>
       <div style="flex:1;min-width:0">
         <div class="btxt${b.done?' done':''}">${esc(b.text)}</div>
-        <div style="display:flex;align-items:center;gap:.5rem;margin-top:3px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:.35rem;margin-top:3px;flex-wrap:wrap">
           <div class="stars">${stars}</div>
-          ${b.country?`<span style="font-size:12px;color:var(--t3)">${esc(b.country)}</span>`:''}
-          <span style="font-size:12px;padding:0 5px;border-radius:8px;background:${bc.color}22;color:${bc.color};font-family:var(--font-ui)">${esc(bc.name)}</span>
-          <span style="font-size:11px;color:var(--t3);font-family:var(--font-ui)">${yearLabel}</span>
-          ${tourLabel?`<span style="font-size:11px;padding:0 5px;border-radius:8px;background:var(--sf2);color:var(--t3);font-family:var(--font-ui)">${esc(tourLabel)}</span>`:''}
+          ${secondaryChips.join('')}
         </div>
       </div>
-      <span style="font-size:11px;padding:1px 6px;border-radius:var(--radius);background:${am.color}22;color:${am.color};font-family:var(--font-ui);flex-shrink:0;margin:0 3px" class="hm">${esc(am.name)}</span>
-      <button class="abtn" onclick="openBktModal('${b.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button>
-      <button class="abtn del" onclick="removeBktItem('${b.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+        ${primaryBadge}
+      </div>
+      <div style="display:flex;gap:3px;flex-shrink:0">
+        <button class="abtn" onclick="openBktModal('${b.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button>
+        <button class="abtn del" onclick="removeBktItem('${b.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button>
+      </div>
     </div>`;
-  }).join('');
+  };
+
+  const items=bkt.map(buildCard).join('');
 
   return`<div class="panel">
     <div class="sgrid" style="margin-bottom:1rem">
@@ -6162,11 +6216,11 @@ function renderBucket(){
         <button class="fbtn" onclick="toggleBYMenu()"><i class="ti ti-calendar"></i> ${esc(yearFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="bymenu">${yearMenuItems}</div>
       </div>
-      ${cur().readOnly?'':'<button class="fbtn" onclick="toggleBktCatMgmtMode()" title="Create, rename, or remove Bucket List categories"><i class="ti ti-tag"></i> Manage Categories</button>'}
-      <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
-        <button onclick="setBktSortMode('category')" style="border:none;background:${bktSortMode==='category'?'var(--gold)':'transparent'};color:${bktSortMode==='category'?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s">By Category</button>
-        <button onclick="setBktSortMode('custom')" style="border:none;background:${bktSortMode==='custom'?'var(--gold)':'transparent'};color:${bktSortMode==='custom'?'#000':'var(--t3)'};font-family:var(--font-ui);font-size:11px;font-weight:600;padding:.3rem .7rem;border-radius:14px;cursor:pointer;transition:all .15s" title="Drag-and-drop order">Custom Order</button>
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleBktSortMenu()"><i class="ti ti-arrows-sort"></i> ${esc(sortLabel)} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="bktSortMenu">${sortMenuItems}</div>
       </div>
+      ${cur().readOnly?'':'<button class="fbtn" onclick="toggleBktCatMgmtMode()" title="Create, rename, or remove Bucket List categories"><i class="ti ti-tag"></i> Manage Categories</button>'}
       <div style="position:relative">
         <button class="fbtn" onclick="toggleIOMenu('bktIOMenu')" title="Template, Import, Export"><i class="ti ti-arrow-up"></i></button>
         <div class="fmenu" id="bktIOMenu">
@@ -6192,7 +6246,7 @@ function renderBucket(){
       </div>
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No experiences match the current filters.</div>'}</div>
-    <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:11px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate</div>
+    <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:11px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate${bktSortMode==='custom'?' · drag to reorder':''}</div>
   </div>`;
 }
 // "Manage Categories" sub-section for the Bucket List — same pattern as Edit Route under Route:
@@ -6216,26 +6270,24 @@ function renderBktCatMgmt(){
   </div>`;
 }
 
-function toggleBFMenu(){document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.remove('open');document.getElementById('bfmenu')?.classList.toggle('open');}
-function toggleBCMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.toggle('open');}
-function toggleBYMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.toggle('open');}
+function toggleBFMenu(){['bcmenu','bymenu','bktSortMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bfmenu')?.classList.toggle('open');}
+function toggleBCMenu(){['bfmenu','bymenu','bktSortMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bcmenu')?.classList.toggle('open');}
+function toggleBYMenu(){['bfmenu','bcmenu','bktSortMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bymenu')?.classList.toggle('open');}
+function toggleBktSortMenu(){['bfmenu','bcmenu','bymenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bktSortMenu')?.classList.toggle('open');}
+function setBktCatFilter(id){bktCatFilter=id;document.getElementById('bcmenu')?.classList.remove('open');renderContent();}
+function setBktYearFilter(y){bktYearFilter=y;document.getElementById('bymenu')?.classList.remove('open');renderContent();}
 function onBktSearch(v){bktSearch=v;renderContent();}
 function clearBucketList(){
   if(blockIfReadOnly())return;
-  const n=cur().bucket.length;
-  if(!n)return;
+  const n=cur().bucket.length;if(!n)return;
   if(!confirm(`Remove all ${n} experience${n===1?'':'s'} from the Bucket List? This cannot be undone.`))return;
-  cur().bucket=[];
-  bktSearch='';bktCatFilter=null;bktYearFilter=null;
-  renderContent();
+  cur().bucket=[];bktSearch='';bktCatFilter=null;bktYearFilter=null;renderContent();
 }
 function toggleBF(s){if(BF.includes(s))BF=BF.filter(x=>x!==s);else BF.push(s);saveBF();renderContent();}
-function setBktCatFilter(id){bktCatFilter=id;document.getElementById('bcmenu')?.classList.remove('open');renderContent();}
-function setBktYearFilter(y){bktYearFilter=y;document.getElementById('bymenu')?.classList.remove('open');renderContent();}
 document.addEventListener('click',e=>{
-  const bm=document.getElementById('bfmenu');if(bm&&!bm.parentElement?.contains(e.target))bm.classList.remove('open');
-  const cm=document.getElementById('bcmenu');if(cm&&!cm.parentElement?.contains(e.target))cm.classList.remove('open');
-  const ym=document.getElementById('bymenu');if(ym&&!ym.parentElement?.contains(e.target))ym.classList.remove('open');
+  ['bfmenu','bcmenu','bymenu','bktSortMenu'].forEach(id=>{
+    const el=document.getElementById(id);if(el&&!el.parentElement?.contains(e.target))el.classList.remove('open');
+  });
 });
 
 function toggleBkt(id){
