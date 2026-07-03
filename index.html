@@ -6047,6 +6047,2344 @@ function saveBudgetCat(){if(blockIfReadOnly())return;
   closeBudgetModal();renderContent();
 }
 
+
+/* ── ANGEL'S EYE CODEX PROTOTYPE — discovery library inside Bucket List ───── */
+const EXPERIENCE_CODEX = [
+  {
+    "id": "codex_001",
+    "experience": "Cap d'Agde Summer",
+    "country": "France",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Naturist",
+    "bestMonths": "Jul-Aug",
+    "duration": "4-7 days",
+    "budget": "$$$",
+    "adventure": 3,
+    "culture": 4,
+    "party": 10,
+    "nature": 8,
+    "photography": 9,
+    "lifeChanging": 8,
+    "tags": [
+      "naturist",
+      "lifestyle",
+      "beach",
+      "party"
+    ]
+  },
+  {
+    "id": "codex_002",
+    "experience": "Hedonism II",
+    "country": "Jamaica",
+    "continent": "Caribbean",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Resort",
+    "bestMonths": "Jan-Mar",
+    "duration": "5-7 days",
+    "budget": "$$$$",
+    "adventure": 3,
+    "culture": 3,
+    "party": 10,
+    "nature": 9,
+    "photography": 8,
+    "lifeChanging": 8,
+    "tags": [
+      "resort",
+      "lifestyle",
+      "party"
+    ]
+  },
+  {
+    "id": "codex_003",
+    "experience": "Burning Man",
+    "country": "USA",
+    "continent": "North America",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Transformational Festival",
+    "bestMonths": "Aug-Sep",
+    "duration": "8 days",
+    "budget": "$$$$",
+    "adventure": 8,
+    "culture": 8,
+    "party": 8,
+    "nature": 5,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "art",
+      "desert",
+      "radical self-expression"
+    ]
+  },
+  {
+    "id": "codex_004",
+    "experience": "Venice Masquerade Ball",
+    "country": "Italy",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Masquerade",
+    "bestMonths": "Feb",
+    "duration": "1 night",
+    "budget": "$$$$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 7,
+    "nature": 2,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "masks",
+      "luxury",
+      "carnival"
+    ]
+  },
+  {
+    "id": "codex_005",
+    "experience": "White Party Mykonos",
+    "country": "Greece",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Beach Party",
+    "bestMonths": "Jul-Aug",
+    "duration": "2-3 days",
+    "budget": "$$$",
+    "adventure": 2,
+    "culture": 5,
+    "party": 10,
+    "nature": 9,
+    "photography": 9,
+    "lifeChanging": 7,
+    "tags": [
+      "beach",
+      "nightlife",
+      "glamour"
+    ]
+  },
+  {
+    "id": "codex_006",
+    "experience": "KitKatClub Berlin",
+    "country": "Germany",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Alternative Nightlife",
+    "bestMonths": "All year",
+    "duration": "1 night",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 4,
+    "party": 10,
+    "nature": 1,
+    "photography": 6,
+    "lifeChanging": 7,
+    "tags": [
+      "berlin",
+      "club",
+      "underground"
+    ]
+  },
+  {
+    "id": "codex_007",
+    "experience": "Wasteland Festival",
+    "country": "Netherlands",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Fetish Festival",
+    "bestMonths": "Jul",
+    "duration": "2-3 days",
+    "budget": "$$$",
+    "adventure": 4,
+    "culture": 5,
+    "party": 9,
+    "nature": 2,
+    "photography": 8,
+    "lifeChanging": 8,
+    "tags": [
+      "fetish",
+      "performance",
+      "festival"
+    ]
+  },
+  {
+    "id": "codex_008",
+    "experience": "Torture Garden",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Club Event",
+    "bestMonths": "Various",
+    "duration": "1 night",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 4,
+    "party": 9,
+    "nature": 1,
+    "photography": 7,
+    "lifeChanging": 7,
+    "tags": [
+      "london",
+      "alternative",
+      "performance"
+    ]
+  },
+  {
+    "id": "codex_009",
+    "experience": "Naughty N'awlins",
+    "country": "USA",
+    "continent": "North America",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Lifestyle Event",
+    "bestMonths": "Jul",
+    "duration": "4 days",
+    "budget": "$$$",
+    "adventure": 2,
+    "culture": 5,
+    "party": 9,
+    "nature": 2,
+    "photography": 7,
+    "lifeChanging": 7,
+    "tags": [
+      "new orleans",
+      "lifestyle",
+      "party"
+    ]
+  },
+  {
+    "id": "codex_010",
+    "experience": "Lifestyle Cruise",
+    "country": "Various",
+    "continent": "Worldwide",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Cruise",
+    "bestMonths": "Various",
+    "duration": "7 days",
+    "budget": "$$$$",
+    "adventure": 3,
+    "culture": 4,
+    "party": 9,
+    "nature": 8,
+    "photography": 9,
+    "lifeChanging": 8,
+    "tags": [
+      "cruise",
+      "lifestyle",
+      "social"
+    ]
+  },
+  {
+    "id": "codex_011",
+    "experience": "Full Moon Party",
+    "country": "Thailand",
+    "continent": "Asia",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Beach Party",
+    "bestMonths": "Monthly",
+    "duration": "2-3 days",
+    "budget": "$$",
+    "adventure": 4,
+    "culture": 5,
+    "party": 10,
+    "nature": 9,
+    "photography": 9,
+    "lifeChanging": 7,
+    "tags": [
+      "beach",
+      "backpacker",
+      "party"
+    ]
+  },
+  {
+    "id": "codex_012",
+    "experience": "Ibiza Villa Party Season",
+    "country": "Spain",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Private Party",
+    "bestMonths": "Jun-Sep",
+    "duration": "3 days",
+    "budget": "$$$$",
+    "adventure": 2,
+    "culture": 5,
+    "party": 10,
+    "nature": 8,
+    "photography": 9,
+    "lifeChanging": 7,
+    "tags": [
+      "ibiza",
+      "villa",
+      "electronic"
+    ]
+  },
+  {
+    "id": "codex_013",
+    "experience": "Boom Festival Sensual Workshops",
+    "country": "Portugal",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Transformational",
+    "bestMonths": "Jul",
+    "duration": "7 days",
+    "budget": "$$$",
+    "adventure": 4,
+    "culture": 8,
+    "party": 8,
+    "nature": 8,
+    "photography": 9,
+    "lifeChanging": 9,
+    "tags": [
+      "psychedelic",
+      "workshops",
+      "community"
+    ]
+  },
+  {
+    "id": "codex_014",
+    "experience": "European Tantra Festival",
+    "country": "Various",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Retreat",
+    "bestMonths": "Various",
+    "duration": "4-7 days",
+    "budget": "$$$",
+    "adventure": 2,
+    "culture": 8,
+    "party": 4,
+    "nature": 7,
+    "photography": 7,
+    "lifeChanging": 9,
+    "tags": [
+      "tantra",
+      "retreat",
+      "connection"
+    ]
+  },
+  {
+    "id": "codex_015",
+    "experience": "Ozora Festival",
+    "country": "Hungary",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Psychedelic Festival",
+    "bestMonths": "Jul-Aug",
+    "duration": "7 days",
+    "budget": "$$$",
+    "adventure": 5,
+    "culture": 8,
+    "party": 8,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "psytrance",
+      "festival",
+      "art"
+    ]
+  },
+  {
+    "id": "codex_016",
+    "experience": "Rainbow Gathering",
+    "country": "Worldwide",
+    "continent": "Worldwide",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Community",
+    "bestMonths": "Various",
+    "duration": "7 days",
+    "budget": "$",
+    "adventure": 3,
+    "culture": 9,
+    "party": 5,
+    "nature": 9,
+    "photography": 9,
+    "lifeChanging": 9,
+    "tags": [
+      "community",
+      "off-grid",
+      "counterculture"
+    ]
+  },
+  {
+    "id": "codex_017",
+    "experience": "House of Yes",
+    "country": "USA",
+    "continent": "North America",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Performance Nightlife",
+    "bestMonths": "All year",
+    "duration": "1 night",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 7,
+    "party": 9,
+    "nature": 1,
+    "photography": 8,
+    "lifeChanging": 7,
+    "tags": [
+      "new york",
+      "performance",
+      "dance"
+    ]
+  },
+  {
+    "id": "codex_018",
+    "experience": "Amsterdam Dance Event",
+    "country": "Netherlands",
+    "continent": "Europe",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Music Festival",
+    "bestMonths": "Oct",
+    "duration": "5 days",
+    "budget": "$$$",
+    "adventure": 3,
+    "culture": 6,
+    "party": 10,
+    "nature": 1,
+    "photography": 8,
+    "lifeChanging": 7,
+    "tags": [
+      "electronic",
+      "clubs",
+      "amsterdam"
+    ]
+  },
+  {
+    "id": "codex_019",
+    "experience": "Desert Party in Morocco",
+    "country": "Morocco",
+    "continent": "Africa",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Desert Party",
+    "bestMonths": "Various",
+    "duration": "2 days",
+    "budget": "$$$",
+    "adventure": 5,
+    "culture": 6,
+    "party": 8,
+    "nature": 9,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "desert",
+      "music",
+      "night"
+    ]
+  },
+  {
+    "id": "codex_020",
+    "experience": "Tulum Jungle Party",
+    "country": "Mexico",
+    "continent": "North America",
+    "category": "Hedonistic/Lifestyle",
+    "subcategory": "Jungle Nightlife",
+    "bestMonths": "Dec-Apr",
+    "duration": "3 days",
+    "budget": "$$$",
+    "adventure": 3,
+    "culture": 5,
+    "party": 9,
+    "nature": 9,
+    "photography": 9,
+    "lifeChanging": 7,
+    "tags": [
+      "jungle",
+      "beach",
+      "electronic"
+    ]
+  },
+  {
+    "id": "codex_021",
+    "experience": "Yamabushi Mountain Training",
+    "country": "Japan",
+    "continent": "Asia",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Mountain Monks",
+    "bestMonths": "May-Oct",
+    "duration": "3 days",
+    "budget": "$$",
+    "adventure": 7,
+    "culture": 10,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "japan",
+      "discipline",
+      "mountains"
+    ]
+  },
+  {
+    "id": "codex_022",
+    "experience": "Kumbh Mela",
+    "country": "India",
+    "continent": "Asia",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Pilgrimage",
+    "bestMonths": "Event years",
+    "duration": "5 days",
+    "budget": "$$",
+    "adventure": 3,
+    "culture": 10,
+    "party": 3,
+    "nature": 4,
+    "photography": 9,
+    "lifeChanging": 10,
+    "tags": [
+      "pilgrimage",
+      "hindu",
+      "mass gathering"
+    ]
+  },
+  {
+    "id": "codex_023",
+    "experience": "Voodoo Festival in Ouidah",
+    "country": "Benin",
+    "continent": "Africa",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Traditional Ritual",
+    "bestMonths": "Jan",
+    "duration": "4 days",
+    "budget": "$$",
+    "adventure": 4,
+    "culture": 10,
+    "party": 4,
+    "nature": 5,
+    "photography": 8,
+    "lifeChanging": 10,
+    "tags": [
+      "voodoo",
+      "ceremony",
+      "benin"
+    ]
+  },
+  {
+    "id": "codex_024",
+    "experience": "Semana Santa in Seville",
+    "country": "Spain",
+    "continent": "Europe",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Religious Procession",
+    "bestMonths": "Mar-Apr",
+    "duration": "4 days",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 5,
+    "nature": 2,
+    "photography": 9,
+    "lifeChanging": 9,
+    "tags": [
+      "spain",
+      "procession",
+      "tradition"
+    ]
+  },
+  {
+    "id": "codex_025",
+    "experience": "Camino de Santiago",
+    "country": "Spain",
+    "continent": "Europe",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Pilgrimage",
+    "bestMonths": "May-Oct",
+    "duration": "7-35 days",
+    "budget": "$$",
+    "adventure": 7,
+    "culture": 10,
+    "party": 2,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "walking",
+      "pilgrimage",
+      "personal growth"
+    ]
+  },
+  {
+    "id": "codex_026",
+    "experience": "Vipassana Retreat",
+    "country": "Various",
+    "continent": "Worldwide",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Meditation",
+    "bestMonths": "All year",
+    "duration": "10 days",
+    "budget": "$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 1,
+    "nature": 7,
+    "photography": 6,
+    "lifeChanging": 10,
+    "tags": [
+      "silence",
+      "meditation",
+      "discipline"
+    ]
+  },
+  {
+    "id": "codex_027",
+    "experience": "Ayahuasca Retreat",
+    "country": "Peru",
+    "continent": "South America",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Plant Medicine",
+    "bestMonths": "Dry season",
+    "duration": "7 days",
+    "budget": "$$$",
+    "adventure": 4,
+    "culture": 9,
+    "party": 1,
+    "nature": 9,
+    "photography": 8,
+    "lifeChanging": 10,
+    "tags": [
+      "amazon",
+      "retreat",
+      "inner work"
+    ]
+  },
+  {
+    "id": "codex_028",
+    "experience": "Maasai Ceremony",
+    "country": "Kenya",
+    "continent": "Africa",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Indigenous Culture",
+    "bestMonths": "All year",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 4,
+    "culture": 10,
+    "party": 1,
+    "nature": 8,
+    "photography": 8,
+    "lifeChanging": 9,
+    "tags": [
+      "maasai",
+      "culture",
+      "ceremony"
+    ]
+  },
+  {
+    "id": "codex_029",
+    "experience": "Sami Reindeer Migration",
+    "country": "Norway",
+    "continent": "Europe",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Indigenous Arctic",
+    "bestMonths": "Winter",
+    "duration": "3 days",
+    "budget": "$$$",
+    "adventure": 4,
+    "culture": 9,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "sami",
+      "arctic",
+      "reindeer"
+    ]
+  },
+  {
+    "id": "codex_030",
+    "experience": "Balinese Purification Ceremony",
+    "country": "Indonesia",
+    "continent": "Asia",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Temple Ritual",
+    "bestMonths": "All year",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 1,
+    "culture": 10,
+    "party": 1,
+    "nature": 8,
+    "photography": 9,
+    "lifeChanging": 9,
+    "tags": [
+      "bali",
+      "water temple",
+      "purification"
+    ]
+  },
+  {
+    "id": "codex_031",
+    "experience": "Shinto Fire Ritual",
+    "country": "Japan",
+    "continent": "Asia",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Temple Ritual",
+    "bestMonths": "Various",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 1,
+    "nature": 6,
+    "photography": 9,
+    "lifeChanging": 9,
+    "tags": [
+      "fire",
+      "temple",
+      "japan"
+    ]
+  },
+  {
+    "id": "codex_032",
+    "experience": "Tibetan Monastery Stay",
+    "country": "Nepal",
+    "continent": "Asia",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Monastery",
+    "bestMonths": "Oct-Nov",
+    "duration": "5 days",
+    "budget": "$$",
+    "adventure": 3,
+    "culture": 10,
+    "party": 1,
+    "nature": 9,
+    "photography": 9,
+    "lifeChanging": 10,
+    "tags": [
+      "monastery",
+      "himalaya",
+      "buddhism"
+    ]
+  },
+  {
+    "id": "codex_033",
+    "experience": "Himalayan Meditation Retreat",
+    "country": "Nepal",
+    "continent": "Asia",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Retreat",
+    "bestMonths": "Oct-Nov",
+    "duration": "5 days",
+    "budget": "$$",
+    "adventure": 4,
+    "culture": 10,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "mountains",
+      "meditation",
+      "retreat"
+    ]
+  },
+  {
+    "id": "codex_034",
+    "experience": "Oracle of Delphi Pilgrimage",
+    "country": "Greece",
+    "continent": "Europe",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Ancient Sacred Site",
+    "bestMonths": "Apr-Oct",
+    "duration": "1 day",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 1,
+    "nature": 7,
+    "photography": 9,
+    "lifeChanging": 8,
+    "tags": [
+      "ancient",
+      "oracle",
+      "greece"
+    ]
+  },
+  {
+    "id": "codex_035",
+    "experience": "Mongolian Shaman Ceremony",
+    "country": "Mongolia",
+    "continent": "Asia",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Shamanism",
+    "bestMonths": "Summer",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 4,
+    "culture": 10,
+    "party": 1,
+    "nature": 9,
+    "photography": 9,
+    "lifeChanging": 10,
+    "tags": [
+      "shaman",
+      "steppe",
+      "mongolia"
+    ]
+  },
+  {
+    "id": "codex_036",
+    "experience": "Timkat Festival",
+    "country": "Ethiopia",
+    "continent": "Africa",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Orthodox Festival",
+    "bestMonths": "Jan",
+    "duration": "3 days",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 5,
+    "nature": 4,
+    "photography": 9,
+    "lifeChanging": 9,
+    "tags": [
+      "ethiopia",
+      "water",
+      "orthodox"
+    ]
+  },
+  {
+    "id": "codex_037",
+    "experience": "Fatima Candle Procession",
+    "country": "Portugal",
+    "continent": "Europe",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Pilgrimage",
+    "bestMonths": "May-Oct",
+    "duration": "2 days",
+    "budget": "$",
+    "adventure": 1,
+    "culture": 9,
+    "party": 2,
+    "nature": 3,
+    "photography": 8,
+    "lifeChanging": 8,
+    "tags": [
+      "candles",
+      "pilgrimage",
+      "portugal"
+    ]
+  },
+  {
+    "id": "codex_038",
+    "experience": "Mount Athos Pilgrimage",
+    "country": "Greece",
+    "continent": "Europe",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Monastic",
+    "bestMonths": "Spring/Fall",
+    "duration": "3 days",
+    "budget": "$$",
+    "adventure": 3,
+    "culture": 10,
+    "party": 1,
+    "nature": 8,
+    "photography": 9,
+    "lifeChanging": 10,
+    "tags": [
+      "monks",
+      "orthodox",
+      "men only"
+    ]
+  },
+  {
+    "id": "codex_039",
+    "experience": "Glastonbury Esoteric Scene",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Mysticism",
+    "bestMonths": "All year",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 3,
+    "nature": 5,
+    "photography": 8,
+    "lifeChanging": 8,
+    "tags": [
+      "avalon",
+      "pagan",
+      "mystic"
+    ]
+  },
+  {
+    "id": "codex_040",
+    "experience": "Sedona Vortexes",
+    "country": "USA",
+    "continent": "North America",
+    "category": "Spiritual/Ritual",
+    "subcategory": "Energy Sites",
+    "bestMonths": "Spring/Fall",
+    "duration": "3 days",
+    "budget": "$$$",
+    "adventure": 4,
+    "culture": 8,
+    "party": 2,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "desert",
+      "energy",
+      "arizona"
+    ]
+  },
+  {
+    "id": "codex_041",
+    "experience": "Civita di Bagnoregio",
+    "country": "Italy",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Cliff Village",
+    "bestMonths": "Apr-Oct",
+    "duration": "1 day",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 1,
+    "nature": 6,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "italy",
+      "cliff",
+      "medieval"
+    ]
+  },
+  {
+    "id": "codex_042",
+    "experience": "Ainsa",
+    "country": "Spain",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Medieval",
+    "bestMonths": "Apr-Oct",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 1,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "pyrenees",
+      "medieval",
+      "spain"
+    ]
+  },
+  {
+    "id": "codex_043",
+    "experience": "Albarracin",
+    "country": "Spain",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Medieval",
+    "bestMonths": "Apr-Oct",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 1,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "spain",
+      "pink village",
+      "medieval"
+    ]
+  },
+  {
+    "id": "codex_044",
+    "experience": "Monsanto",
+    "country": "Portugal",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Stone Village",
+    "bestMonths": "Apr-Oct",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 1,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "boulders",
+      "portugal",
+      "village"
+    ]
+  },
+  {
+    "id": "codex_045",
+    "experience": "Hallstatt",
+    "country": "Austria",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Lake Village",
+    "bestMonths": "All year",
+    "duration": "2 days",
+    "budget": "$$$",
+    "adventure": 2,
+    "culture": 8,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "lake",
+      "alps",
+      "austria"
+    ]
+  },
+  {
+    "id": "codex_046",
+    "experience": "Shirakawa-go",
+    "country": "Japan",
+    "continent": "Asia",
+    "category": "Hidden Village",
+    "subcategory": "UNESCO Village",
+    "bestMonths": "Jan-Feb",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 1,
+    "nature": 9,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "snow",
+      "japan",
+      "traditional houses"
+    ]
+  },
+  {
+    "id": "codex_047",
+    "experience": "Giethoorn",
+    "country": "Netherlands",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Canal Village",
+    "bestMonths": "Apr-Sep",
+    "duration": "1 day",
+    "budget": "$$",
+    "adventure": 1,
+    "culture": 8,
+    "party": 1,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 7,
+    "tags": [
+      "canals",
+      "boats",
+      "netherlands"
+    ]
+  },
+  {
+    "id": "codex_048",
+    "experience": "Monemvasia",
+    "country": "Greece",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Fortress Town",
+    "bestMonths": "Apr-Oct",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 2,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "fortress",
+      "sea",
+      "greece"
+    ]
+  },
+  {
+    "id": "codex_049",
+    "experience": "Kotor Old Town",
+    "country": "Montenegro",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Bay Town",
+    "bestMonths": "May-Oct",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 3,
+    "culture": 9,
+    "party": 3,
+    "nature": 9,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "bay",
+      "walls",
+      "montenegro"
+    ]
+  },
+  {
+    "id": "codex_050",
+    "experience": "Sighisoara",
+    "country": "Romania",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Medieval Citadel",
+    "bestMonths": "May-Oct",
+    "duration": "2 days",
+    "budget": "$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 2,
+    "nature": 7,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "transylvania",
+      "citadel",
+      "dracula"
+    ]
+  },
+  {
+    "id": "codex_051",
+    "experience": "Beget",
+    "country": "Spain",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Mountain Village",
+    "bestMonths": "Apr-Oct",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 1,
+    "nature": 8,
+    "photography": 9,
+    "lifeChanging": 8,
+    "tags": [
+      "catalonia",
+      "stone",
+      "mountains"
+    ]
+  },
+  {
+    "id": "codex_052",
+    "experience": "Eguisheim",
+    "country": "France",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Wine Village",
+    "bestMonths": "Apr-Oct",
+    "duration": "1 day",
+    "budget": "$$",
+    "adventure": 1,
+    "culture": 9,
+    "party": 2,
+    "nature": 7,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "alsace",
+      "wine",
+      "colorful"
+    ]
+  },
+  {
+    "id": "codex_053",
+    "experience": "Dinan",
+    "country": "France",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Brittany Medieval",
+    "bestMonths": "Apr-Oct",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 2,
+    "nature": 7,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "brittany",
+      "medieval",
+      "river"
+    ]
+  },
+  {
+    "id": "codex_054",
+    "experience": "Conques",
+    "country": "France",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Pilgrim Village",
+    "bestMonths": "Apr-Oct",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 1,
+    "culture": 10,
+    "party": 1,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "pilgrimage",
+      "france",
+      "stone"
+    ]
+  },
+  {
+    "id": "codex_055",
+    "experience": "Saint-Cirq-Lapopie",
+    "country": "France",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Cliff Village",
+    "bestMonths": "Apr-Oct",
+    "duration": "1 day",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 1,
+    "nature": 9,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "cliff",
+      "lot valley",
+      "france"
+    ]
+  },
+  {
+    "id": "codex_056",
+    "experience": "Gruyeres",
+    "country": "Switzerland",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Alpine Village",
+    "bestMonths": "All year",
+    "duration": "1 day",
+    "budget": "$$$",
+    "adventure": 2,
+    "culture": 8,
+    "party": 2,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 7,
+    "tags": [
+      "cheese",
+      "castle",
+      "switzerland"
+    ]
+  },
+  {
+    "id": "codex_057",
+    "experience": "Cesky Krumlov",
+    "country": "Czechia",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "UNESCO Town",
+    "bestMonths": "Apr-Oct",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 3,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "bohemia",
+      "castle",
+      "river"
+    ]
+  },
+  {
+    "id": "codex_058",
+    "experience": "Gokayama",
+    "country": "Japan",
+    "continent": "Asia",
+    "category": "Hidden Village",
+    "subcategory": "UNESCO Village",
+    "bestMonths": "Jan-Feb",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 1,
+    "nature": 9,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "snow",
+      "farmhouses",
+      "japan"
+    ]
+  },
+  {
+    "id": "codex_059",
+    "experience": "Huacachina",
+    "country": "Peru",
+    "continent": "South America",
+    "category": "Hidden Village",
+    "subcategory": "Desert Oasis",
+    "bestMonths": "May-Sep",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 8,
+    "culture": 5,
+    "party": 5,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "oasis",
+      "sandboarding",
+      "peru"
+    ]
+  },
+  {
+    "id": "codex_060",
+    "experience": "Rupit",
+    "country": "Spain",
+    "continent": "Europe",
+    "category": "Hidden Village",
+    "subcategory": "Medieval Village",
+    "bestMonths": "Apr-Oct",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 1,
+    "nature": 8,
+    "photography": 9,
+    "lifeChanging": 8,
+    "tags": [
+      "catalonia",
+      "stone",
+      "cliffs"
+    ]
+  },
+  {
+    "id": "codex_061",
+    "experience": "Wife Carrying Championship",
+    "country": "Finland",
+    "continent": "Europe",
+    "category": "Weird/Unique",
+    "subcategory": "Competition",
+    "bestMonths": "Jul",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 6,
+    "culture": 6,
+    "party": 8,
+    "nature": 5,
+    "photography": 8,
+    "lifeChanging": 7,
+    "tags": [
+      "weird sport",
+      "finland",
+      "competition"
+    ]
+  },
+  {
+    "id": "codex_062",
+    "experience": "Cheese Rolling",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "category": "Weird/Unique",
+    "subcategory": "Competition",
+    "bestMonths": "May",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 8,
+    "culture": 5,
+    "party": 8,
+    "nature": 5,
+    "photography": 8,
+    "lifeChanging": 7,
+    "tags": [
+      "gloucester",
+      "crazy",
+      "race"
+    ]
+  },
+  {
+    "id": "codex_063",
+    "experience": "Air Guitar World Championship",
+    "country": "Finland",
+    "continent": "Europe",
+    "category": "Weird/Unique",
+    "subcategory": "Competition",
+    "bestMonths": "Aug",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 3,
+    "culture": 6,
+    "party": 9,
+    "nature": 2,
+    "photography": 8,
+    "lifeChanging": 7,
+    "tags": [
+      "music",
+      "comedy",
+      "finland"
+    ]
+  },
+  {
+    "id": "codex_064",
+    "experience": "Monkey Buffet Festival",
+    "country": "Thailand",
+    "continent": "Asia",
+    "category": "Weird/Unique",
+    "subcategory": "Animal Festival",
+    "bestMonths": "Nov",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 2,
+    "culture": 7,
+    "party": 5,
+    "nature": 6,
+    "photography": 8,
+    "lifeChanging": 7,
+    "tags": [
+      "monkeys",
+      "festival",
+      "thailand"
+    ]
+  },
+  {
+    "id": "codex_065",
+    "experience": "Underwater Music Festival",
+    "country": "USA",
+    "continent": "North America",
+    "category": "Weird/Unique",
+    "subcategory": "Festival",
+    "bestMonths": "Jul",
+    "duration": "2 days",
+    "budget": "$$$",
+    "adventure": 6,
+    "culture": 6,
+    "party": 7,
+    "nature": 9,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "diving",
+      "music",
+      "florida"
+    ]
+  },
+  {
+    "id": "codex_066",
+    "experience": "Ice Swimming Championship",
+    "country": "Finland",
+    "continent": "Europe",
+    "category": "Weird/Unique",
+    "subcategory": "Extreme Competition",
+    "bestMonths": "Winter",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 9,
+    "culture": 5,
+    "party": 6,
+    "nature": 8,
+    "photography": 8,
+    "lifeChanging": 9,
+    "tags": [
+      "cold",
+      "ice",
+      "competition"
+    ]
+  },
+  {
+    "id": "codex_067",
+    "experience": "Bog Snorkeling Championship",
+    "country": "Wales",
+    "continent": "Europe",
+    "category": "Weird/Unique",
+    "subcategory": "Competition",
+    "bestMonths": "Aug",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 8,
+    "culture": 5,
+    "party": 8,
+    "nature": 5,
+    "photography": 8,
+    "lifeChanging": 7,
+    "tags": [
+      "mud",
+      "wales",
+      "weird"
+    ]
+  },
+  {
+    "id": "codex_068",
+    "experience": "La Tomatina",
+    "country": "Spain",
+    "continent": "Europe",
+    "category": "Weird/Unique",
+    "subcategory": "Food Fight Festival",
+    "bestMonths": "Aug",
+    "duration": "2 days",
+    "budget": "$",
+    "adventure": 5,
+    "culture": 7,
+    "party": 10,
+    "nature": 2,
+    "photography": 9,
+    "lifeChanging": 8,
+    "tags": [
+      "tomatoes",
+      "festival",
+      "spain"
+    ]
+  },
+  {
+    "id": "codex_069",
+    "experience": "Up Helly Aa",
+    "country": "Scotland",
+    "continent": "Europe",
+    "category": "Weird/Unique",
+    "subcategory": "Fire Festival",
+    "bestMonths": "Jan",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 4,
+    "culture": 10,
+    "party": 6,
+    "nature": 4,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "vikings",
+      "fire",
+      "scotland"
+    ]
+  },
+  {
+    "id": "codex_070",
+    "experience": "Kanamara Matsuri",
+    "country": "Japan",
+    "continent": "Asia",
+    "category": "Weird/Unique",
+    "subcategory": "Fertility Festival",
+    "bestMonths": "Apr",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 8,
+    "nature": 2,
+    "photography": 9,
+    "lifeChanging": 8,
+    "tags": [
+      "japan",
+      "fertility",
+      "festival"
+    ]
+  },
+  {
+    "id": "codex_071",
+    "experience": "Boryeong Mud Festival",
+    "country": "South Korea",
+    "continent": "Asia",
+    "category": "Weird/Unique",
+    "subcategory": "Mud Festival",
+    "bestMonths": "Jul",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 5,
+    "culture": 7,
+    "party": 10,
+    "nature": 4,
+    "photography": 9,
+    "lifeChanging": 7,
+    "tags": [
+      "mud",
+      "beach",
+      "korea"
+    ]
+  },
+  {
+    "id": "codex_072",
+    "experience": "Hadaka Matsuri",
+    "country": "Japan",
+    "continent": "Asia",
+    "category": "Weird/Unique",
+    "subcategory": "Naked Festival",
+    "bestMonths": "Feb",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 5,
+    "culture": 10,
+    "party": 6,
+    "nature": 2,
+    "photography": 9,
+    "lifeChanging": 9,
+    "tags": [
+      "ritual",
+      "japan",
+      "crowd"
+    ]
+  },
+  {
+    "id": "codex_073",
+    "experience": "Ghost Festival",
+    "country": "Taiwan",
+    "continent": "Asia",
+    "category": "Weird/Unique",
+    "subcategory": "Traditional Festival",
+    "bestMonths": "Aug-Sep",
+    "duration": "3 days",
+    "budget": "$$",
+    "adventure": 2,
+    "culture": 10,
+    "party": 3,
+    "nature": 3,
+    "photography": 8,
+    "lifeChanging": 8,
+    "tags": [
+      "spirits",
+      "taiwan",
+      "ritual"
+    ]
+  },
+  {
+    "id": "codex_074",
+    "experience": "Firewalking Ceremony",
+    "country": "Fiji",
+    "continent": "Oceania",
+    "category": "Weird/Unique",
+    "subcategory": "Ritual",
+    "bestMonths": "Various",
+    "duration": "2 days",
+    "budget": "$$$",
+    "adventure": 7,
+    "culture": 9,
+    "party": 2,
+    "nature": 8,
+    "photography": 9,
+    "lifeChanging": 9,
+    "tags": [
+      "firewalking",
+      "fiji",
+      "ritual"
+    ]
+  },
+  {
+    "id": "codex_075",
+    "experience": "Volcano Boarding",
+    "country": "Nicaragua",
+    "continent": "North America",
+    "category": "Weird/Unique",
+    "subcategory": "Extreme Adventure",
+    "bestMonths": "Nov-Apr",
+    "duration": "1 day",
+    "budget": "$$",
+    "adventure": 10,
+    "culture": 4,
+    "party": 4,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "volcano",
+      "adrenaline",
+      "nicaragua"
+    ]
+  },
+  {
+    "id": "codex_076",
+    "experience": "Polar Bear Plunge",
+    "country": "Canada",
+    "continent": "North America",
+    "category": "Weird/Unique",
+    "subcategory": "Cold Challenge",
+    "bestMonths": "Jan",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 8,
+    "culture": 3,
+    "party": 6,
+    "nature": 7,
+    "photography": 8,
+    "lifeChanging": 8,
+    "tags": [
+      "cold water",
+      "challenge",
+      "winter"
+    ]
+  },
+  {
+    "id": "codex_077",
+    "experience": "World Pillow Fight Day",
+    "country": "Various",
+    "continent": "Worldwide",
+    "category": "Weird/Unique",
+    "subcategory": "Urban Event",
+    "bestMonths": "Apr",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 3,
+    "culture": 3,
+    "party": 9,
+    "nature": 1,
+    "photography": 7,
+    "lifeChanging": 6,
+    "tags": [
+      "flashmob",
+      "fun",
+      "city"
+    ]
+  },
+  {
+    "id": "codex_078",
+    "experience": "Cooper's Hill Run",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "category": "Weird/Unique",
+    "subcategory": "Competition",
+    "bestMonths": "May",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 8,
+    "culture": 5,
+    "party": 8,
+    "nature": 5,
+    "photography": 9,
+    "lifeChanging": 7,
+    "tags": [
+      "cheese",
+      "race",
+      "england"
+    ]
+  },
+  {
+    "id": "codex_079",
+    "experience": "Night of the Radishes",
+    "country": "Mexico",
+    "continent": "North America",
+    "category": "Weird/Unique",
+    "subcategory": "Folk Art Festival",
+    "bestMonths": "Dec",
+    "duration": "1 day",
+    "budget": "$",
+    "adventure": 1,
+    "culture": 9,
+    "party": 5,
+    "nature": 2,
+    "photography": 8,
+    "lifeChanging": 7,
+    "tags": [
+      "oaxaca",
+      "radishes",
+      "art"
+    ]
+  },
+  {
+    "id": "codex_080",
+    "experience": "Krampus Parade",
+    "country": "Austria",
+    "continent": "Europe",
+    "category": "Weird/Unique",
+    "subcategory": "Dark Folklore",
+    "bestMonths": "Dec",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 3,
+    "culture": 9,
+    "party": 7,
+    "nature": 4,
+    "photography": 10,
+    "lifeChanging": 8,
+    "tags": [
+      "krampus",
+      "folklore",
+      "winter"
+    ]
+  },
+  {
+    "id": "codex_081",
+    "experience": "Live with San Bushmen",
+    "country": "Botswana",
+    "continent": "Africa",
+    "category": "Life Changing",
+    "subcategory": "Indigenous Culture",
+    "bestMonths": "May-Oct",
+    "duration": "5 days",
+    "budget": "$$$",
+    "adventure": 5,
+    "culture": 10,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "san",
+      "culture",
+      "human origins"
+    ]
+  },
+  {
+    "id": "codex_082",
+    "experience": "Gorilla Trekking",
+    "country": "Uganda",
+    "continent": "Africa",
+    "category": "Life Changing",
+    "subcategory": "Wildlife",
+    "bestMonths": "Jun-Sep",
+    "duration": "3 days",
+    "budget": "$$$$",
+    "adventure": 8,
+    "culture": 8,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "gorillas",
+      "wildlife",
+      "forest"
+    ]
+  },
+  {
+    "id": "codex_083",
+    "experience": "Antarctica Expedition",
+    "country": "Antarctica",
+    "continent": "Antarctica",
+    "category": "Life Changing",
+    "subcategory": "Polar Expedition",
+    "bestMonths": "Nov-Mar",
+    "duration": "10 days",
+    "budget": "$$$$$",
+    "adventure": 8,
+    "culture": 7,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "ice",
+      "expedition",
+      "remote"
+    ]
+  },
+  {
+    "id": "codex_084",
+    "experience": "Northern Lights in Lapland",
+    "country": "Finland",
+    "continent": "Europe",
+    "category": "Life Changing",
+    "subcategory": "Natural Phenomenon",
+    "bestMonths": "Jan-Mar",
+    "duration": "4 days",
+    "budget": "$$$",
+    "adventure": 4,
+    "culture": 5,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "aurora",
+      "winter",
+      "arctic"
+    ]
+  },
+  {
+    "id": "codex_085",
+    "experience": "Sossusvlei Sunrise",
+    "country": "Namibia",
+    "continent": "Africa",
+    "category": "Life Changing",
+    "subcategory": "Desert",
+    "bestMonths": "May-Oct",
+    "duration": "2 days",
+    "budget": "$$$",
+    "adventure": 5,
+    "culture": 5,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "dunes",
+      "sunrise",
+      "namibia"
+    ]
+  },
+  {
+    "id": "codex_086",
+    "experience": "Everest Base Camp",
+    "country": "Nepal",
+    "continent": "Asia",
+    "category": "Life Changing",
+    "subcategory": "Trek",
+    "bestMonths": "Mar-May",
+    "duration": "14 days",
+    "budget": "$$$$",
+    "adventure": 10,
+    "culture": 8,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "himalaya",
+      "trek",
+      "challenge"
+    ]
+  },
+  {
+    "id": "codex_087",
+    "experience": "Galapagos Expedition",
+    "country": "Ecuador",
+    "continent": "South America",
+    "category": "Life Changing",
+    "subcategory": "Wildlife",
+    "bestMonths": "Dec-May",
+    "duration": "7 days",
+    "budget": "$$$$$",
+    "adventure": 7,
+    "culture": 8,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "islands",
+      "wildlife",
+      "evolution"
+    ]
+  },
+  {
+    "id": "codex_088",
+    "experience": "Great Migration Safari",
+    "country": "Tanzania",
+    "continent": "Africa",
+    "category": "Life Changing",
+    "subcategory": "Wildlife",
+    "bestMonths": "Jun-Oct",
+    "duration": "5 days",
+    "budget": "$$$$",
+    "adventure": 8,
+    "culture": 8,
+    "party": 1,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "migration",
+      "safari",
+      "serengeti"
+    ]
+  },
+  {
+    "id": "codex_089",
+    "experience": "Atlantic Sailing Crossing",
+    "country": "Atlantic Ocean",
+    "continent": "Worldwide",
+    "category": "Life Changing",
+    "subcategory": "Sailing",
+    "bestMonths": "Nov-Jan",
+    "duration": "20 days",
+    "budget": "$$$$$",
+    "adventure": 9,
+    "culture": 7,
+    "party": 2,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "ocean",
+      "sailing",
+      "endurance"
+    ]
+  },
+  {
+    "id": "codex_090",
+    "experience": "Live on a Sailboat",
+    "country": "Various",
+    "continent": "Worldwide",
+    "category": "Life Changing",
+    "subcategory": "Slow Travel",
+    "bestMonths": "Various",
+    "duration": "30 days",
+    "budget": "$$$$",
+    "adventure": 7,
+    "culture": 7,
+    "party": 3,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "freedom",
+      "ocean",
+      "minimalism"
+    ]
+  },
+  {
+    "id": "codex_091",
+    "experience": "Volunteer Abroad",
+    "country": "Various",
+    "continent": "Worldwide",
+    "category": "Life Changing",
+    "subcategory": "Service",
+    "bestMonths": "Various",
+    "duration": "2 weeks",
+    "budget": "$$",
+    "adventure": 5,
+    "culture": 10,
+    "party": 1,
+    "nature": 7,
+    "photography": 7,
+    "lifeChanging": 10,
+    "tags": [
+      "service",
+      "purpose",
+      "people"
+    ]
+  },
+  {
+    "id": "codex_092",
+    "experience": "Study Japanese in Kyoto",
+    "country": "Japan",
+    "continent": "Asia",
+    "category": "Life Changing",
+    "subcategory": "Learning",
+    "bestMonths": "All year",
+    "duration": "1 month",
+    "budget": "$$$",
+    "adventure": 3,
+    "culture": 10,
+    "party": 2,
+    "nature": 6,
+    "photography": 8,
+    "lifeChanging": 10,
+    "tags": [
+      "language",
+      "kyoto",
+      "immersion"
+    ]
+  },
+  {
+    "id": "codex_093",
+    "experience": "Tuscan Harvest",
+    "country": "Italy",
+    "continent": "Europe",
+    "category": "Life Changing",
+    "subcategory": "Food & Wine",
+    "bestMonths": "Sep-Oct",
+    "duration": "1 week",
+    "budget": "$$$",
+    "adventure": 3,
+    "culture": 10,
+    "party": 4,
+    "nature": 8,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "wine",
+      "harvest",
+      "italy"
+    ]
+  },
+  {
+    "id": "codex_094",
+    "experience": "Sleep in the Sahara",
+    "country": "Morocco",
+    "continent": "Africa",
+    "category": "Life Changing",
+    "subcategory": "Desert Night",
+    "bestMonths": "Sep-Apr",
+    "duration": "2 days",
+    "budget": "$$",
+    "adventure": 4,
+    "culture": 7,
+    "party": 2,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "desert",
+      "stars",
+      "silence"
+    ]
+  },
+  {
+    "id": "codex_095",
+    "experience": "Silent Week",
+    "country": "Various",
+    "continent": "Worldwide",
+    "category": "Life Changing",
+    "subcategory": "Retreat",
+    "bestMonths": "All year",
+    "duration": "7 days",
+    "budget": "$",
+    "adventure": 2,
+    "culture": 9,
+    "party": 1,
+    "nature": 6,
+    "photography": 6,
+    "lifeChanging": 10,
+    "tags": [
+      "silence",
+      "retreat",
+      "mind"
+    ]
+  },
+  {
+    "id": "codex_096",
+    "experience": "Learn Scuba Diving",
+    "country": "Various",
+    "continent": "Worldwide",
+    "category": "Life Changing",
+    "subcategory": "Skill",
+    "bestMonths": "Various",
+    "duration": "5 days",
+    "budget": "$$$",
+    "adventure": 8,
+    "culture": 5,
+    "party": 2,
+    "nature": 9,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "ocean",
+      "skill",
+      "diving"
+    ]
+  },
+  {
+    "id": "codex_097",
+    "experience": "Learn Freediving",
+    "country": "Various",
+    "continent": "Worldwide",
+    "category": "Life Changing",
+    "subcategory": "Skill",
+    "bestMonths": "Various",
+    "duration": "5 days",
+    "budget": "$$$",
+    "adventure": 9,
+    "culture": 5,
+    "party": 2,
+    "nature": 9,
+    "photography": 10,
+    "lifeChanging": 9,
+    "tags": [
+      "breath",
+      "ocean",
+      "discipline"
+    ]
+  },
+  {
+    "id": "codex_098",
+    "experience": "Horse Trek Mongolia",
+    "country": "Mongolia",
+    "continent": "Asia",
+    "category": "Life Changing",
+    "subcategory": "Adventure",
+    "bestMonths": "Jun-Sep",
+    "duration": "7 days",
+    "budget": "$$$",
+    "adventure": 9,
+    "culture": 8,
+    "party": 2,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "horses",
+      "steppe",
+      "nomads"
+    ]
+  },
+  {
+    "id": "codex_099",
+    "experience": "Patagonia Road Trip",
+    "country": "Argentina/Chile",
+    "continent": "South America",
+    "category": "Life Changing",
+    "subcategory": "Road Trip",
+    "bestMonths": "Nov-Mar",
+    "duration": "2 weeks",
+    "budget": "$$$$",
+    "adventure": 8,
+    "culture": 7,
+    "party": 2,
+    "nature": 10,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "mountains",
+      "roadtrip",
+      "wild"
+    ]
+  },
+  {
+    "id": "codex_100",
+    "experience": "Complete the Camino Frances",
+    "country": "Spain",
+    "continent": "Europe",
+    "category": "Life Changing",
+    "subcategory": "Pilgrimage",
+    "bestMonths": "May-Oct",
+    "duration": "35 days",
+    "budget": "$$$",
+    "adventure": 8,
+    "culture": 10,
+    "party": 2,
+    "nature": 9,
+    "photography": 10,
+    "lifeChanging": 10,
+    "tags": [
+      "walking",
+      "pilgrimage",
+      "transformation"
+    ]
+  }
+];
+
+let codexSearch='';
+let codexCatFilter='all';
+let codexCountryFilter='all';
+let codexMonthFilter='all';
+let codexSortMode='match';
+
+function codexMatchScore(x){
+  // Juan-style weighting: cinematic, cultural, life-changing, intense, and still useful for route planning.
+  return Math.round(
+    (x.photography||0)*2.2 +
+    (x.lifeChanging||0)*2.0 +
+    (x.culture||0)*1.7 +
+    (x.party||0)*1.25 +
+    (x.adventure||0)*1.0 +
+    (x.nature||0)*0.9
+  );
+}
+function codexCats(){return ['all',...new Set(EXPERIENCE_CODEX.map(x=>x.category))].sort((a,b)=>a==='all'?-1:b==='all'?1:a.localeCompare(b));}
+function codexCountries(){return ['all',...new Set(EXPERIENCE_CODEX.map(x=>x.country))].sort((a,b)=>a==='all'?-1:b==='all'?1:a.localeCompare(b));}
+function codexMonths(){
+  const m=['all','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','All year','Various'];
+  return m;
+}
+function codexSet(k,v){window[k]=v;renderContent();}
+function codexAddToBucket(id){
+  const x=EXPERIENCE_CODEX.find(e=>e.id===id); if(!x)return;
+  const t=cur();
+  let cat=t.bktCategories.find(c=>(c.name||'').toLowerCase()===x.category.toLowerCase());
+  if(!cat){
+    cat={id:uid(),name:x.category,color:'#C9A84C'};
+    t.bktCategories.push(cat);
+  }
+  if(t.bucket.some(b=>(b.text||'').toLowerCase()===x.experience.toLowerCase()&&(b.country||'').toLowerCase()===(x.country||'').toLowerCase())){
+    alert('This experience is already in your Bucket List.');
+    return;
+  }
+  t.bucket.push({
+    id:uid(),
+    text:x.experience,
+    country:x.country,
+    category:cat.id,
+    rating:Math.max(1,Math.min(5,Math.round((x.lifeChanging||7)/2))),
+    done:false,
+    tourId:S.cur===MY_TOUR_LIFE_ID?'':S.cur,
+    year:'',
+    order:(t.bucket.length+1)*10,
+    notes:`From Angel's Eye Codex — ${x.subcategory}. Best months: ${x.bestMonths}. Duration: ${x.duration}. Budget: ${x.budget}. Match score: ${codexMatchScore(x)}.`
+  });
+  scheduleCloudSave();
+  renderContent();
+}
+function codexFiltered(){
+  let list=[...EXPERIENCE_CODEX];
+  if(codexCatFilter!=='all')list=list.filter(x=>x.category===codexCatFilter);
+  if(codexCountryFilter!=='all')list=list.filter(x=>x.country===codexCountryFilter);
+  if(codexMonthFilter!=='all'){
+    const q=codexMonthFilter.toLowerCase();
+    list=list.filter(x=>(x.bestMonths||'').toLowerCase().includes(q)||(x.bestMonths||'').toLowerCase().includes('all year')||(x.bestMonths||'').toLowerCase().includes('various'));
+  }
+  if(codexSearch){
+    const q=codexSearch.toLowerCase();
+    list=list.filter(x=>[x.experience,x.country,x.continent,x.category,x.subcategory,x.bestMonths,x.budget,...(x.tags||[])].join(' ').toLowerCase().includes(q));
+  }
+  list.sort((a,b)=>{
+    if(codexSortMode==='match')return codexMatchScore(b)-codexMatchScore(a);
+    if(codexSortMode==='life')return (b.lifeChanging||0)-(a.lifeChanging||0);
+    if(codexSortMode==='party')return (b.party||0)-(a.party||0);
+    if(codexSortMode==='photo')return (b.photography||0)-(a.photography||0);
+    return a.experience.localeCompare(b.experience);
+  });
+  return list;
+}
+function renderCodexSelect(label,globalName,items){
+  return `<select class="fi" onchange="codexSet('${globalName}',this.value)" style="font-size:12px;padding:.38rem .55rem;min-width:145px">
+    ${items.map(v=>`<option value="${esc(v)}" ${window[globalName]===v?'selected':''}>${esc(v==='all'?label+': All':v)}</option>`).join('')}
+  </select>`;
+}
+function renderCodexSection(){
+  const list=codexFiltered();
+  const cards=list.slice(0,36).map(x=>{
+    const match=codexMatchScore(x);
+    const already=cur().bucket.some(b=>(b.text||'').toLowerCase()===x.experience.toLowerCase()&&(b.country||'').toLowerCase()===(x.country||'').toLowerCase());
+    const tags=(x.tags||[]).slice(0,3).map(t=>`<span style="font-size:10px;color:var(--t3);border:1px solid var(--bd);border-radius:10px;padding:1px 6px">${esc(t)}</span>`).join('');
+    return `<div class="scard" style="cursor:default;padding:.75rem;display:flex;flex-direction:column;gap:.45rem">
+      <div style="display:flex;justify-content:space-between;gap:.5rem;align-items:flex-start">
+        <div style="min-width:0">
+          <div style="font-family:var(--font-display);font-weight:700;color:var(--t1);font-size:15px;line-height:1.2">${esc(x.experience)}</div>
+          <div style="font-family:var(--font-ui);font-size:11px;color:var(--t3);margin-top:2px">${esc(x.country)} · ${esc(x.subcategory)} · ${esc(x.bestMonths)}</div>
+        </div>
+        <div style="text-align:center;flex-shrink:0">
+          <div style="font-family:var(--font-display);font-size:22px;color:var(--gold);line-height:1">${match}</div>
+          <div style="font-family:var(--font-ui);font-size:9px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase">Match</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">${tags}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;font-family:var(--font-ui);font-size:10px;color:var(--t3)">
+        <div>🎉 ${x.party}</div><div>📸 ${x.photography}</div><div>🧠 ${x.lifeChanging}</div><div>🏔 ${x.adventure}</div>
+      </div>
+      <button class="abtn" onclick="codexAddToBucket('${x.id}')" style="margin-top:auto;padding:5px 8px;font-size:11px;${already?'opacity:.5':''}">
+        <i class="ti ti-${already?'check':'plus'}"></i> ${already?'Added':'Add to Bucket'}
+      </button>
+    </div>`;
+  }).join('');
+  return `<div style="margin:1rem 0 1.25rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.5rem">
+      <div class="sec-ttl" style="margin-bottom:0;flex:1"><i class="ti ti-eye"></i> Angel's Eye Codex</div>
+      <span style="font-family:var(--font-ui);font-size:11px;color:var(--t3)">${list.length}/${EXPERIENCE_CODEX.length} shown</span>
+    </div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:.75rem;box-shadow:var(--shadow);margin-bottom:.7rem">
+      <div style="font-family:var(--font-ui);font-size:12px;color:var(--t2);line-height:1.45;margin-bottom:.6rem">
+        Prototype discovery engine: filter 100 curated experiences and add them directly into your Bucket List. No AI, no extra backend, no cost.
+      </div>
+      <div class="frow" style="margin-bottom:.55rem">
+        <input class="fi" placeholder="Search ritual, hedonism, Japan, village…" value="${esc(codexSearch)}" oninput="codexSearch=this.value;renderContent()" style="font-size:12px;padding:.38rem .55rem;min-width:220px;flex:1"/>
+        ${renderCodexSelect('Category','codexCatFilter',codexCats())}
+        ${renderCodexSelect('Country','codexCountryFilter',codexCountries())}
+        ${renderCodexSelect('Month','codexMonthFilter',codexMonths())}
+        <select class="fi" onchange="codexSet('codexSortMode',this.value)" style="font-size:12px;padding:.38rem .55rem;min-width:130px">
+          <option value="match" ${codexSortMode==='match'?'selected':''}>Sort: Match</option>
+          <option value="life" ${codexSortMode==='life'?'selected':''}>Life-changing</option>
+          <option value="party" ${codexSortMode==='party'?'selected':''}>Party</option>
+          <option value="photo" ${codexSortMode==='photo'?'selected':''}>Photography</option>
+          <option value="az" ${codexSortMode==='az'?'selected':''}>A-Z</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">
+      ${cards||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No Codex experiences match your filters.</div>'}
+    </div>
+  </div>`;
+}
+
 // ── BUCKET LIST (with categories + achieved/pending filter) ──────────────────
 let bktCatFilter=null; // null = all categories, or specific category id
 let bktYearFilter=null; // null = all years, 'future' = no year set, or a specific year number
@@ -6238,6 +8576,7 @@ function renderBucket(){
         ${bktSearch?`<button onclick="onBktSearch('')" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t3);cursor:pointer;font-size:13px;line-height:1">&#x2715;</button>`:''}
       </div>
     </div>
+    ${renderCodexSection()}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Life Experiences</div>
       <div style="display:flex;gap:6px">
