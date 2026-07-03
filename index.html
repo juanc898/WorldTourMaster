@@ -974,19 +974,6 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
       <div class="fg"><label class="flbl">Nights</label><input class="fi" id="f_nights" type="number" min="0" placeholder="auto" oninput="recalcN()"/><div class="fc" id="f_ncalc"></div></div>
     </div>
   </div></div>
-  <div class="msect"><div class="msttl">Event / Festival / Experience</div><div class="mflds">
-    <div class="f2"><div class="fg"><label class="flbl">Event Name</label><input class="fi" id="f_event" type="text" placeholder="e.g. Running of the Bulls"/></div><div class="fg">
-      <label class="flbl">Event Category</label>
-      <select class="fi" id="f_event_type" onchange="onEventCatSelectChange(this)"></select>
-      <div id="newEventCatRow" style="display:none;margin-top:.4rem;gap:.4rem;align-items:center">
-        <input class="fi" id="f_new_event_cat" type="text" placeholder="New category name" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addInlineEventCat();}"/>
-        <input class="fi" id="f_new_event_cat_color" type="color" value="#C9A84C" style="width:42px;height:38px;padding:3px;flex:0 0 42px"/>
-        <button class="abtn" onclick="addInlineEventCat()" style="white-space:nowrap;flex-shrink:0"><i class="ti ti-check"></i> Add</button>
-      </div>
-    </div></div>
-    <div class="f2"><div class="fg"><label class="flbl">Event Start Date</label><input class="fi" id="f_event_start" type="date"/></div><div class="fg"><label class="flbl">Event End Date <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_event_end" type="date"/></div></div>
-    <div class="f2"><div class="fg"><label class="flbl">Event Cost ($)</label><input class="fi" id="f_event_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"><label class="flbl">Persons Sharing</label><input class="fi" id="f_event_persons" type="number" min="1" value="2"/></div></div>
-  </div></div>
   <div class="msect"><div class="msttl">Accommodation</div><div class="mflds">
     <div class="f2"><div class="fg"><label class="flbl">Hotel / Property</label><input class="fi" id="f_hotel" type="text" placeholder="Hotel name"/></div><div class="fg"><label class="flbl">Booking Ref #</label><input class="fi" id="f_hotel_ref" type="text" placeholder="Booking #"/></div></div>
     <div class="f3"><div class="fg"><label class="flbl">Total Cost ($)</label><input class="fi" id="f_cost" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcH()"/></div><div class="fg"><label class="flbl">Persons Sharing</label><input class="fi" id="f_persons" type="number" min="1" value="2" oninput="recalcH()"/></div><div class="fg"><label class="flbl">Amount Paid ($)</label><input class="fi" id="f_paid_hotel" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcH()"/></div></div>
@@ -999,6 +986,19 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     <div class="f2"><div class="fg"><label class="flbl">Dep. Airport/Station</label><input class="fi" id="f_t_dep_port" type="text" placeholder="e.g. ORD"/></div><div class="fg"><label class="flbl">Arr. Airport/Port</label><input class="fi" id="f_t_arr_port" type="text" placeholder="e.g. VCE"/></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Departure Date &amp; Time</label><input class="fi" id="f_t_dep_dt" type="datetime-local"/></div><div class="fg"><label class="flbl">Arrival Date &amp; Time</label><input class="fi" id="f_t_arr_dt" type="datetime-local"/></div></div>
     <div class="f3"><div class="fg"><label class="flbl">Transport Cost ($)</label><input class="fi" id="f_t_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"><label class="flbl">Persons Sharing</label><input class="fi" id="f_t_persons" type="number" min="1" value="2"/></div><div class="fg"><label class="flbl">Transport Paid?</label><select class="fi" id="f_t_paid"><option value="no">Not paid</option><option value="partial">Partially paid</option><option value="yes">Fully paid</option></select></div></div>
+  </div></div>
+  <div class="msect"><div class="msttl">Event / Festival / Experience</div><div class="mflds">
+    <div class="f2"><div class="fg"><label class="flbl">Event Name</label><input class="fi" id="f_event" type="text" placeholder="e.g. Running of the Bulls"/></div><div class="fg">
+      <label class="flbl">Event Category</label>
+      <select class="fi" id="f_event_type" onchange="onEventCatSelectChange(this)"></select>
+      <div id="newEventCatRow" style="display:none;margin-top:.4rem;gap:.4rem;align-items:center">
+        <input class="fi" id="f_new_event_cat" type="text" placeholder="New category name" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addInlineEventCat();}"/>
+        <input class="fi" id="f_new_event_cat_color" type="color" value="#C9A84C" style="width:42px;height:38px;padding:3px;flex:0 0 42px"/>
+        <button class="abtn" onclick="addInlineEventCat()" style="white-space:nowrap;flex-shrink:0"><i class="ti ti-check"></i> Add</button>
+      </div>
+    </div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Event Start Date</label><input class="fi" id="f_event_start" type="date"/></div><div class="fg"><label class="flbl">Event End Date <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_event_end" type="date"/></div></div>
+    <div class="f2"><div class="fg"><label class="flbl">Event Cost ($)</label><input class="fi" id="f_event_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"><label class="flbl">Persons Sharing</label><input class="fi" id="f_event_persons" type="number" min="1" value="2"/></div></div>
   </div></div>
   <div class="msect"><div class="msttl">Visa Requirements</div><div class="mflds">
     <div class="fg" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="f_visa_required" onchange="toggleVisaFields()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer"/><label class="flbl" for="f_visa_required" style="cursor:pointer">Visa required for this destination?</label></div>
@@ -1044,6 +1044,10 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <div class="fg"><label class="flbl">Experience</label><input class="fi" id="bkt_text" type="text" placeholder="e.g. Watch sunrise at Angkor Wat"/></div>
   <div class="f2"><div class="fg"><label class="flbl">Country</label><input class="fi" id="bkt_country" type="text" placeholder="e.g. Cambodia"/></div><div class="fg"><label class="flbl">Journey Act</label><select class="fi" id="bkt_act"></select></div></div>
   <div class="f2"><div class="fg"><label class="flbl">Category</label><select class="fi" id="bkt_category"></select></div><div class="fg"><label class="flbl">Star Rating</label><select class="fi" id="bkt_rating"><option value="0">No rating</option><option value="1">★ 1</option><option value="2">★★ 2</option><option value="3">★★★ 3</option><option value="4">★★★★ 4</option><option value="5">★★★★★ 5</option></select></div></div>
+  <div class="f2">
+    <div class="fg"><label class="flbl">Tour <span style="opacity:.6">(optional)</span></label><select class="fi" id="bkt_tour"><option value="">All Tours</option></select></div>
+    <div class="fg"><label class="flbl">Year <span style="opacity:.6">(optional)</span></label><input class="fi" id="bkt_year" type="number" min="1900" max="2199" placeholder="Future"/></div>
+  </div>
   <div class="fg"><label class="flbl">Status</label><select class="fi" id="bkt_done"><option value="false">Not done yet</option><option value="true">Completed ✓</option></select></div>
 </div>
 <div class="mfoot"><button class="btng" onclick="closeBktModal()">Cancel</button><button class="btnp" onclick="saveBktItem()">Save</button></div>
@@ -1377,7 +1381,7 @@ if(firebaseReady){
       sharedTourCache={};pendingInvitations=[];
       clearTimeout(cloudSaveTimer);
       lastStateSnapshot=null; // avoid bleeding undo history / change-detection state across accounts
-      undoStack=[];redoStack=[];
+      undoStack=[];redoStack=[];undoLabels=[];
       lastCloudSaveAt=null;
       authSetLoading(false);
       document.body.setAttribute('data-theme','luxury'); // back to the login screen's fixed theme
@@ -1395,6 +1399,30 @@ const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const fD=s=>{if(!s)return'';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});};
 const wS=s=>{if(!s)return'';return WD[new Date(s+'T12:00:00').getDay()];};
 const dBtw=(a,b)=>{if(!a||!b)return 0;return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5);};
+
+// Overnight travel detection: true when departure date < arrival date (e.g.
+// departs Mon night, lands Tue morning). Used to show red arrival date
+// and optionally adjust the usable nights count.
+function isOvernightTravel(d){
+  if(!d.t_dep_dt||!d.t_arr_dt)return false;
+  const dep=new Date(d.t_dep_dt),arr=new Date(d.t_arr_dt);
+  if(isNaN(dep)||isNaN(arr))return false;
+  const depDay=dep.toISOString().slice(0,10);
+  const arrDay=arr.toISOString().slice(0,10);
+  return arrDay>depDay;
+}
+// Per spec: if arrival time is after 06:00, reduce usable nights by 1.
+function overnightNightsPenalty(d){
+  if(!isOvernightTravel(d))return 0;
+  const arr=new Date(d.t_arr_dt);
+  if(isNaN(arr))return 0;
+  return arr.getHours()>=6?1:0;
+}
+function effectiveNights(d){
+  const base=dBtw(d.arrival,d.departure);
+  if(d.nights!==undefined&&d.nights!==null&&d.nights!=='')return parseInt(d.nights)||base;
+  return Math.max(0,base-overnightNightsPenalty(d));
+}
 const uid=()=>'i'+Date.now()+Math.floor(Math.random()*9999);
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 // A flag emoji is built from two Unicode Regional Indicator Symbols — this just reverses that
@@ -1473,6 +1501,7 @@ function renderSettingsMenu(){
     <div class="fmi" onclick="toggleThemePop(event)"><i class="ti ti-palette" style="width:16px;flex-shrink:0"></i> Change Mood?</div>
     <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
     <div class="fmi" onclick="openFaqModal()"><i class="ti ti-help-circle" style="width:16px;flex-shrink:0"></i> Help / FAQ</div>
+    <div class="fmi" onclick="document.getElementById('settingsPop').classList.remove('open');openRecentMovesModal()"><i class="ti ti-history" style="width:16px;flex-shrink:0"></i> Recent Moves</div>
     <div class="fmi" onclick="document.getElementById('settingsPop').classList.remove('open');startOnboardingTour();"><i class="ti ti-compass" style="width:16px;flex-shrink:0"></i> Quick Walkthrough</div>
     <div class="fmi" onclick="openReportIssueModal()"><i class="ti ti-message-report" style="width:16px;flex-shrink:0"></i> Report an Issue</div>
     <div style="border-top:1px solid var(--bd);margin:.3rem 0"></div>
@@ -1559,7 +1588,51 @@ function sendIssueReport(){
   window.location.href=`mailto:${ISSUE_REPORT_RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   calClosePopup();
 }
-// ── Help / FAQ ───────────────────────────────────────────────────────────────
+// ── Recent Moves ─────────────────────────────────────────────────────────────
+function openRecentMovesModal(){
+  renderRecentMovesModal();
+  document.getElementById('calPopModal').style.display='flex';
+}
+function renderRecentMovesModal(){
+  const visible=undoStack.slice(-15).map((snap,i)=>({snap,label:undoLabels[undoStack.length-15+i]||undoLabels[i]})).reverse();
+  // index relative to the full undoStack (needed for revertToMove)
+  const rows=visible.map((entry,vi)=>{
+    const absIdx=undoStack.length-1-vi; // position in undoStack from the end
+    const lbl=entry.label;
+    return`<div class="fmi" onclick="revertToMove(${absIdx})" style="display:flex;align-items:center;gap:8px;padding:.55rem .4rem">
+      <i class="ti ti-rotate-left" style="font-size:13px;color:var(--t3);flex-shrink:0"></i>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;color:var(--t1);font-family:var(--font-ui)">${esc(lbl?lbl.label:'Change')}</div>
+        <div style="font-size:11px;color:var(--t3)">${lbl?lbl.at:''}</div>
+      </div>
+      <i class="ti ti-chevron-right" style="font-size:12px;color:var(--t3);flex-shrink:0"></i>
+    </div>`;
+  }).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Recent Moves</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left;padding-top:0">
+      <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);padding:.6rem 0 .5rem;margin-bottom:.3rem">Tap any move to revert to that moment. This replaces the current state.</div>
+      <div style="max-height:55vh;overflow-y:auto">${rows||'<div style="padding:1rem;color:var(--t3);font-size:13px">No recent moves yet — start editing to build up a history.</div>'}</div>
+    </div>`;
+}
+function revertToMove(absIdx){
+  if(absIdx<0||absIdx>=undoStack.length)return;
+  if(!confirm('Revert to this moment? All changes made after this point will be lost.'))return;
+  // Push the current state onto undo so the revert itself is undoable
+  undoStack.push(JSON.stringify(S));
+  undoLabels.push({label:'Before revert',at:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+  // Restore the target snapshot
+  const target=undoStack[absIdx];
+  S=JSON.parse(target);
+  lastStateSnapshot=target;
+  if(!S.tours[S.cur])S.cur=Object.keys(S.tours)[0];
+  // Trim everything newer than absIdx from the stack (they no longer make sense after the revert)
+  undoStack=undoStack.slice(0,absIdx+1);
+  undoLabels=undoLabels.slice(0,absIdx+1);
+  redoStack=[];
+  calClosePopup();
+  curDestId=null;renderSB();renderContent();
+  scheduleCloudSave();
+}
 const NOMAD_FAQS=[
   {q:'How do I add a new destination?',a:'Go to Route or Tour Overview and tap "+ Add Destination" (or "+ ADD" on mobile) in the top right corner. Fill in the city, country, dates and act, then save.'},
   {q:'How do I create a new tour?',a:'Open the tour-name dropdown in the left sidebar and choose "+ New Tour". It starts completely empty, ready for you to build out from scratch.'},
@@ -2442,14 +2515,48 @@ function updateHStats(){
 // *before* this change gets archived onto the undo stack. Performing an undo/redo itself updates
 // the "last seen" snapshot before re-rendering, so the undo/redo action doesn't re-capture itself.
 let undoStack=[],redoStack=[];
+let undoLabels=[]; // parallel array — one label per entry in undoStack, describing what that state represents BEFORE the change
 let lastStateSnapshot=null;
 const MAX_UNDO=25;
 let lastSharedTourSnapshot=null; // tracks the active shared tour's content separately from S, since edits to it never touch S
+function describeChange(prevSnap,curSnap){
+  // Fast path: compare destination counts and names before parsing — avoids
+  // full JSON.parse on every keystroke when nothing structurally changed.
+  try{
+    const prev=JSON.parse(prevSnap),cur=JSON.parse(curSnap);
+    const pt=prev.tours[prev.cur],ct=cur.tours[cur.cur];
+    if(!pt||!ct)return'Tour changed';
+    if(ct.destinations.length>pt.destinations.length){
+      const newD=ct.destinations.find(d=>!pt.destinations.some(p=>p.id===d.id));
+      return`Added: ${newD?newD.city+', '+newD.country:'destination'}`;
+    }
+    if(ct.destinations.length<pt.destinations.length){
+      const rmD=pt.destinations.find(d=>!ct.destinations.some(c=>c.id===d.id));
+      return`Removed: ${rmD?rmD.city+', '+rmD.country:'destination'}`;
+    }
+    const modD=ct.destinations.find(cd=>{
+      const pd=pt.destinations.find(p=>p.id===cd.id);
+      return pd&&JSON.stringify(cd)!==JSON.stringify(pd);
+    });
+    if(modD)return`Edited: ${modD.city}, ${modD.country}`;
+    if(ct.budget!==pt.budget&&JSON.stringify(ct.budget)!==JSON.stringify(pt.budget))return'Budget updated';
+    if(ct.bucket!==pt.bucket&&JSON.stringify(ct.bucket)!==JSON.stringify(pt.bucket))return'Bucket list updated';
+    if(ct.name!==pt.name)return`Tour renamed: ${ct.name}`;
+    if(ct.acts&&pt.acts&&ct.acts.length!==pt.acts.length)return ct.acts.length>pt.acts.length?'Act added':'Act removed';
+    return'Settings changed';
+  }catch(e){return'Change';}
+}
+let pendingMoveLabel=null; // optional label pre-set by the caller right before a batch mutation
+function pushUndoLabel(label){pendingMoveLabel=label;}
+
 function captureUndoIfChanged(){
   const snap=JSON.stringify(S);
   if(lastStateSnapshot!==null&&snap!==lastStateSnapshot){
+    const label=pendingMoveLabel||describeChange(lastStateSnapshot,snap);
+    pendingMoveLabel=null;
     undoStack.push(lastStateSnapshot);
-    if(undoStack.length>MAX_UNDO)undoStack.shift();
+    undoLabels.push({label,at:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+    if(undoStack.length>MAX_UNDO){undoStack.shift();undoLabels.shift();}
     redoStack=[];
     scheduleCloudSave(); // a real change happened — sync it to the cloud (debounced)
   }
@@ -2667,7 +2774,7 @@ function closeProfileView(){curDestId=null;renderSB();renderContent();}
 function renderProfile(){
   const d=dBy(curDestId);if(!d)return renderDash();
   const am=aM(d.act);
-  const nights=dBtw(d.arrival,d.departure);
+  const nights=effectiveNights(d);
   const cpn=nights>0&&d.cost>0?(d.cost/nights).toFixed(2):'—';
   const cpnpp=nights>0&&d.cost>0&&d.persons>0?(d.cost/nights/d.persons).toFixed(2):'—';
   const owed=d.cost>0?(d.cost-(d.paid||0)).toFixed(2):'—';
@@ -2708,9 +2815,12 @@ function renderProfile(){
     ${d.event?`<div class="ev-pill"><i class="ti ti-confetti" style="color:${am.color};font-size:16px"></i><div><div style="font-size:13px;color:var(--t1);font-family:var(--font-ui)">${esc(d.event)}</div>${d.event_date?`<div style="font-size:11px;color:var(--gold);font-family:var(--font-ui)">${esc(d.event_date)}</div>`:''}</div></div>`:''}
     <div class="pgrid">
       <div class="pblk"><div class="bttl">Stay Details</div>
-        <div class="drow"><span class="dlbl">Arrival</span><span class="dval gld">${d.arrival?fD(d.arrival):'TBD'} <span style="color:var(--t3)">${wS(d.arrival)}</span></span></div>
+        <div class="drow"><span class="dlbl">Arrival</span><span class="dval" style="${isOvernightTravel(d)?'color:#E07A7A;font-weight:600':'color:var(--gold)'}">
+          ${d.arrival?fD(d.arrival):'TBD'} <span style="color:var(--t3)">${wS(d.arrival)}</span>
+          ${isOvernightTravel(d)?`<span title="Overnight travel — arrived next day after ${new Date(d.t_arr_dt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}" style="font-size:11.5px;margin-left:4px">🌙 Next day arrival</span>`:''}
+        </span></div>
         <div class="drow"><span class="dlbl">Departure</span><span class="dval gld">${d.departure?fD(d.departure):'TBD'} <span style="color:var(--t3)">${wS(d.departure)}</span></span></div>
-        <div class="drow"><span class="dlbl">Nights</span><span class="dval">${nights||'—'}</span></div>
+        <div class="drow"><span class="dlbl">Nights</span><span class="dval">${nights||'—'}${overnightNightsPenalty(d)>0?` <span style="font-size:11px;color:var(--t3)">(adjusted for late arrival)</span>`:''}</span></div>
         <div class="drow"><span class="dlbl">Status</span><span class="dval ${d.status==='confirmed'?'grn':d.status==='cancelled'?'red':d.status==='partial'?'gld':''}">${statusLabel(d.status)}</span></div>
         <div class="drow"><span class="dlbl">Act</span><span class="dval" style="color:${am.color}">${esc(am.name)}</span></div>
       </div>
@@ -2828,14 +2938,17 @@ function renderRoute(){
 function routeRowsHtml(filt){
   return filt.map(d=>{
     const am=aM(d.act);
-    const n=dBtw(d.arrival,d.departure);
+    const n=effectiveNights(d);
     const isPast=d.departure&&d.departure<today;
+    const overnight=isOvernightTravel(d);
+    const arrivalStyle=overnight?'color:#E07A7A;font-weight:600':'';
+    const overnightBadge=overnight?` <span title="Overnight travel — arrival next day" style="font-size:10px;color:#E07A7A;vertical-align:middle">🌙</span>`:'';
     return`<tr class="${d.status==='cancelled'?'cancelled':''}${isPast?' past':''}" onclick="viewDestFromRoute('${d.id}')">
       <td style="padding:.4rem .4rem .4rem .6rem"><span style="font-size:16px">${flagHtml(d.flag)}</span></td>
       <td><div class="rt-dest-name" style="font-size:15px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">${esc(d.city)}</div><div class="rt-dest-country" style="font-size:12px;color:var(--t3)">${esc(d.country)}</div>
-        <div class="rt-mobile-dates">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'—'} <i class="ti ti-arrow-right" style="font-size:11px;vertical-align:middle"></i> ${d.departure?fD(d.departure)+' '+wS(d.departure):'—'}${n>0?' · '+n+'n':''}</div>
+        <div class="rt-mobile-dates" style="${arrivalStyle}">${d.arrival?fD(d.arrival)+' '+wS(d.arrival):'—'}${overnightBadge} <i class="ti ti-arrow-right" style="font-size:11px;vertical-align:middle"></i> ${d.departure?fD(d.departure)+' '+wS(d.departure):'—'}${n>0?' · '+n+'n':''}</div>
       </td>
-      <td class="hm"><div style="font-size:14px">${d.arrival?fD(d.arrival):'—'} <span class="wd">${wS(d.arrival)}</span></div></td>
+      <td class="hm"><div style="font-size:14px;${arrivalStyle}">${d.arrival?fD(d.arrival):'—'} <span class="wd">${wS(d.arrival)}</span>${overnightBadge}</div></td>
       <td class="hm"><div style="font-size:14px">${d.departure?fD(d.departure):'—'} <span class="wd">${wS(d.departure)}</span></div></td>
       <td class="hm" style="color:var(--t3)">${n>0?n+'n':'—'}</td>
       <td><span class="${scls(d.status)}">${statusLabel(d.status)}</span></td>
@@ -5936,6 +6049,7 @@ function saveBudgetCat(){if(blockIfReadOnly())return;
 
 // ── BUCKET LIST (with categories + achieved/pending filter) ──────────────────
 let bktCatFilter=null; // null = all categories, or specific category id
+let bktYearFilter=null; // null = all years, 'future' = no year set, or a specific year number
 let bktSortMode=localStorage.getItem('ae_bkt_sort')||'category'; // 'category' (default) | 'custom' (after a manual drag)
 function setBktSortMode(mode){bktSortMode=mode;localStorage.setItem('ae_bkt_sort',mode);renderContent();}
 let bktCatMgmtMode=false; // toggles Bucket List between the main list and the "Manage Categories" sub-section
@@ -5944,7 +6058,19 @@ function toggleBktCatMgmtMode(){bktCatMgmtMode=!bktCatMgmtMode;renderContent();}
 function renderBucket(){
   if(bktCatMgmtMode)return renderBktCatMgmt();
   const catOrderIdx=id=>{const i=cBktCats().findIndex(c=>c.id===id);return i<0?9999:i;};
-  const allBkt=[...cur().bucket].sort((a,b)=>{
+
+  // Collect items visible in the current tour context.
+  // My Tour Life and owned tours: all items are accessible.
+  // For owned tours: items scoped to a specific OTHER tour are hidden;
+  // items with no tourId (= "all tours") are always shown.
+  const isMTL=S.cur===MY_TOUR_LIFE_ID;
+  const visibleBkt=[...cur().bucket].filter(b=>{
+    if(!b.tourId)return true; // "All Tours" — always visible
+    if(isMTL)return true;    // My Tour Life — aggregate, show everything
+    return b.tourId===S.cur; // owned-tour view — only show items scoped to THIS tour
+  });
+
+  const allBkt=[...visibleBkt].sort((a,b)=>{
     if(bktSortMode==='category'){
       const ca=catOrderIdx(a.category),cb=catOrderIdx(b.category);
       if(ca!==cb)return ca-cb;
@@ -5952,6 +6078,10 @@ function renderBucket(){
     return(a.order||0)-(b.order||0);
   });
   const done=allBkt.filter(b=>b.done).length;
+
+  // collect all distinct years present (for the year filter dropdown)
+  const allYears=[...new Set(allBkt.map(b=>b.year).filter(Boolean))].sort();
+
   // apply status filter
   let bkt=allBkt.filter(b=>{
     if(b.done&&!BF.includes('achieved'))return false;
@@ -5960,11 +6090,18 @@ function renderBucket(){
   });
   // apply category filter
   if(bktCatFilter)bkt=bkt.filter(b=>(b.category||'')===bktCatFilter);
+  // apply year filter
+  if(bktYearFilter)bkt=bkt.filter(b=>bktYearFilter==='future'?!b.year:b.year===bktYearFilter);
 
   const cats=cBktCats();
   const catFilterLabel=bktCatFilter?bktCatM(bktCatFilter).name:'All Categories';
   const catMenuItems=`<div class="fmi" onclick="setBktCatFilter(null)" style="${!bktCatFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!bktCatFilter?'-check-filled':''}" style="font-size:13px"></i> All Categories</div>`+
     cats.map(c=>`<div class="fmi" onclick="setBktCatFilter('${c.id}')" style="${bktCatFilter===c.id?'color:'+c.color:''}"><div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div> ${esc(c.name)}</div>`).join('');
+
+  const yearFilterLabel=!bktYearFilter?'All Years':bktYearFilter==='future'?'Future':bktYearFilter.toString();
+  const yearMenuItems=`<div class="fmi" onclick="setBktYearFilter(null)" style="${!bktYearFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!bktYearFilter?'-check-filled':''}" style="font-size:13px"></i> All Years</div>`+
+    `<div class="fmi" onclick="setBktYearFilter('future')" style="${bktYearFilter==='future'?'color:var(--gold)':''}">Future</div>`+
+    allYears.map(y=>`<div class="fmi" onclick="setBktYearFilter(${y})" style="${bktYearFilter===y?'color:var(--gold)':''}">${y}</div>`).join('');
 
   const statusItems=['pending','achieved'].map(s=>`<label class="fmi"><input type="checkbox" ${BF.includes(s)?'checked':''} onchange="toggleBF('${s}')"/> ${s==='achieved'?'Achieved':'Pending'}</label>`).join('');
 
@@ -5972,6 +6109,8 @@ function renderBucket(){
     const am=aM(b.act);
     const bc=bktCatM(b.category);
     const stars=Array.from({length:5},(_,i)=>`<span class="star ${i<(b.rating||0)?'on':'off'}" onclick="setBktR('${b.id}',${i+1})">${i<(b.rating||0)?'★':'☆'}</span>`).join('');
+    const yearLabel=b.year?b.year:'Future';
+    const tourLabel=b.tourId&&S.tours[b.tourId]?S.tours[b.tourId].name:'';
     return`<div class="bkt" draggable="true" data-id="${b.id}"
       ondragstart="bktDS(event,'${b.id}')" ondragover="bktDO(event,'${b.id}')" ondrop="bktDrop(event,'${b.id}')" ondragleave="this.classList.remove('drag-over')">
       <i class="ti ti-grip-vertical" style="color:var(--t3);font-size:14px;cursor:grab;flex-shrink:0"></i>
@@ -5980,8 +6119,10 @@ function renderBucket(){
         <div class="btxt${b.done?' done':''}">${esc(b.text)}</div>
         <div style="display:flex;align-items:center;gap:.5rem;margin-top:3px;flex-wrap:wrap">
           <div class="stars">${stars}</div>
-          <span style="font-size:12px;color:var(--t3)">${esc(b.country)}</span>
+          ${b.country?`<span style="font-size:12px;color:var(--t3)">${esc(b.country)}</span>`:''}
           <span style="font-size:12px;padding:0 5px;border-radius:8px;background:${bc.color}22;color:${bc.color};font-family:var(--font-ui)">${esc(bc.name)}</span>
+          <span style="font-size:11px;color:var(--t3);font-family:var(--font-ui)">${yearLabel}</span>
+          ${tourLabel?`<span style="font-size:11px;padding:0 5px;border-radius:8px;background:var(--sf2);color:var(--t3);font-family:var(--font-ui)">${esc(tourLabel)}</span>`:''}
         </div>
       </div>
       <span style="font-size:11px;padding:1px 6px;border-radius:var(--radius);background:${am.color}22;color:${am.color};font-family:var(--font-ui);flex-shrink:0;margin:0 3px" class="hm">${esc(am.name)}</span>
@@ -6004,6 +6145,10 @@ function renderBucket(){
       <div style="position:relative">
         <button class="fbtn" onclick="toggleBCMenu()"><i class="ti ti-tag"></i> ${esc(catFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="bcmenu">${catMenuItems}</div>
+      </div>
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleBYMenu()"><i class="ti ti-calendar"></i> ${esc(yearFilterLabel)} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="bymenu">${yearMenuItems}</div>
       </div>
       ${cur().readOnly?'':'<button class="fbtn" onclick="toggleBktCatMgmtMode()" title="Create, rename, or remove Bucket List categories"><i class="ti ti-tag"></i> Manage Categories</button>'}
       <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
@@ -6049,11 +6194,17 @@ function renderBktCatMgmt(){
   </div>`;
 }
 
-function toggleBFMenu(){document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bfmenu')?.classList.toggle('open');}
-function toggleBCMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.toggle('open');}
+function toggleBFMenu(){document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.remove('open');document.getElementById('bfmenu')?.classList.toggle('open');}
+function toggleBCMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.toggle('open');}
+function toggleBYMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.toggle('open');}
 function toggleBF(s){if(BF.includes(s))BF=BF.filter(x=>x!==s);else BF.push(s);saveBF();renderContent();}
 function setBktCatFilter(id){bktCatFilter=id;document.getElementById('bcmenu')?.classList.remove('open');renderContent();}
-document.addEventListener('click',e=>{const bm=document.getElementById('bfmenu');if(bm&&!bm.parentElement?.contains(e.target))bm.classList.remove('open');const cm=document.getElementById('bcmenu');if(cm&&!cm.parentElement?.contains(e.target))cm.classList.remove('open');});
+function setBktYearFilter(y){bktYearFilter=y;document.getElementById('bymenu')?.classList.remove('open');renderContent();}
+document.addEventListener('click',e=>{
+  const bm=document.getElementById('bfmenu');if(bm&&!bm.parentElement?.contains(e.target))bm.classList.remove('open');
+  const cm=document.getElementById('bcmenu');if(cm&&!cm.parentElement?.contains(e.target))cm.classList.remove('open');
+  const ym=document.getElementById('bymenu');if(ym&&!ym.parentElement?.contains(e.target))ym.classList.remove('open');
+});
 
 function toggleBkt(id){if(blockIfReadOnly())return;const b=cur().bucket.find(x=>x.id===id);if(b){b.done=!b.done;renderContent();updateHStats();}}
 function setBktR(id,r){if(blockIfReadOnly())return;const b=cur().bucket.find(x=>x.id===id);if(b){b.rating=b.rating===r?0:r;renderContent();}}
@@ -6240,8 +6391,28 @@ function openBktModal(editId){if(blockIfReadOnly())return;
   as.innerHTML=cActs().map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
   const cs=document.getElementById('bkt_category');
   cs.innerHTML='<option value="">— None —</option>'+cBktCats().map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
-  if(editId){const b=cur().bucket.find(x=>x.id===editId);if(b){document.getElementById('bkt_text').value=b.text;document.getElementById('bkt_country').value=b.country;as.value=b.act;cs.value=b.category||'';document.getElementById('bkt_rating').value=b.rating||0;document.getElementById('bkt_done').value=b.done?'true':'false';}}
-  else{document.getElementById('bkt_text').value='';document.getElementById('bkt_country').value='';cs.value='';document.getElementById('bkt_rating').value='0';document.getElementById('bkt_done').value='false';}
+  const ts=document.getElementById('bkt_tour');
+  ts.innerHTML='<option value="">All Tours</option>'+Object.entries(S.tours).map(([id,t])=>`<option value="${id}">${esc(t.name)}</option>`).join('');
+  if(editId){
+    const b=cur().bucket.find(x=>x.id===editId);
+    if(b){
+      document.getElementById('bkt_text').value=b.text;
+      document.getElementById('bkt_country').value=b.country||'';
+      as.value=b.act;cs.value=b.category||'';
+      document.getElementById('bkt_rating').value=b.rating||0;
+      document.getElementById('bkt_done').value=b.done?'true':'false';
+      ts.value=b.tourId||'';
+      document.getElementById('bkt_year').value=b.year||'';
+    }
+  }else{
+    document.getElementById('bkt_text').value='';
+    document.getElementById('bkt_country').value='';
+    cs.value='';
+    document.getElementById('bkt_rating').value='0';
+    document.getElementById('bkt_done').value='false';
+    ts.value='';
+    document.getElementById('bkt_year').value='';
+  }
   document.getElementById('bucketModal').style.display='flex';
 }
 function closeBktModal(){document.getElementById('bucketModal').style.display='none';}
@@ -6252,9 +6423,17 @@ function saveBktItem(){if(blockIfReadOnly())return;
   const category=document.getElementById('bkt_category').value;
   const rating=parseInt(document.getElementById('bkt_rating').value)||0;
   const done=document.getElementById('bkt_done').value==='true';
+  const tourId=document.getElementById('bkt_tour').value||''; // '' = all tours
+  const yearRaw=document.getElementById('bkt_year').value.trim();
+  const year=yearRaw?parseInt(yearRaw)||null:null; // null = future / unset
   if(!txt){alert('Please enter an experience description.');return;}
-  if(editBktId){const b=cur().bucket.find(x=>x.id===editBktId);if(b){b.text=txt;b.country=cntry;b.act=act;b.category=category;b.rating=rating;b.done=done;}}
-  else{const bkt=cur().bucket;bkt.push({id:uid(),text:txt,country:cntry,act,category,rating,done,order:bkt.length});}
+  if(editBktId){
+    const b=cur().bucket.find(x=>x.id===editBktId);
+    if(b){b.text=txt;b.country=cntry;b.act=act;b.category=category;b.rating=rating;b.done=done;b.tourId=tourId;b.year=year;}
+  }else{
+    const bkt=cur().bucket;
+    bkt.push({id:uid(),text:txt,country:cntry,act,category,rating,done,tourId,year,order:bkt.length});
+  }
   closeBktModal();renderContent();
 }
 function removeBktItem(id){if(blockIfReadOnly())return;if(!confirm('Remove this experience?'))return;cur().bucket=cur().bucket.filter(b=>b.id!==id);renderContent();}
