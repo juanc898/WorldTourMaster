@@ -6050,6 +6050,7 @@ function saveBudgetCat(){if(blockIfReadOnly())return;
 // ── BUCKET LIST (with categories + achieved/pending filter) ──────────────────
 let bktCatFilter=null; // null = all categories, or specific category id
 let bktYearFilter=null; // null = all years, 'future' = no year set, or a specific year number
+let bktSearch=''; // free-text search across experience name, country, category name
 let bktSortMode=localStorage.getItem('ae_bkt_sort')||'category'; // 'category' (default) | 'custom' (after a manual drag)
 function setBktSortMode(mode){bktSortMode=mode;localStorage.setItem('ae_bkt_sort',mode);renderContent();}
 let bktCatMgmtMode=false; // toggles Bucket List between the main list and the "Manage Categories" sub-section
@@ -6092,6 +6093,17 @@ function renderBucket(){
   if(bktCatFilter)bkt=bkt.filter(b=>(b.category||'')===bktCatFilter);
   // apply year filter
   if(bktYearFilter)bkt=bkt.filter(b=>bktYearFilter==='future'?!b.year:b.year===bktYearFilter);
+  // apply text search
+  if(bktSearch){
+    const q=bktSearch.toLowerCase();
+    bkt=bkt.filter(b=>{
+      const catName=bktCatM(b.category)?.name||'';
+      return b.text.toLowerCase().includes(q)||
+             (b.country||'').toLowerCase().includes(q)||
+             catName.toLowerCase().includes(q)||
+             (b.year?b.year.toString().includes(q):false);
+    });
+  }
 
   const cats=cBktCats();
   const catFilterLabel=bktCatFilter?bktCatM(bktCatFilter).name:'All Categories';
@@ -6165,9 +6177,19 @@ function renderBucket(){
       </div>
       <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${bkt.length}/${allBkt.length} shown</span>
     </div>
+    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem">
+      <div style="position:relative;flex:1;min-width:0">
+        <i class="ti ti-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:13px;pointer-events:none"></i>
+        <input class="fi" type="text" placeholder="Search experiences, country, category…" value="${esc(bktSearch)}" oninput="onBktSearch(this.value)" style="padding:.5rem .6rem .5rem 1.8rem;font-size:13px;width:100%;box-sizing:border-box"/>
+        ${bktSearch?`<button onclick="onBktSearch('')" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t3);cursor:pointer;font-size:13px;line-height:1">&#x2715;</button>`:''}
+      </div>
+    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
       <div class="sec-ttl" style="margin-bottom:0;flex:1">Life Experiences</div>
-      ${cur().readOnly?'':'<button class="abtn" onclick="openBktModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>'}
+      <div style="display:flex;gap:6px">
+        ${cur().readOnly?'':'<button class="abtn" onclick="openBktModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>'}
+        ${cur().readOnly||!allBkt.length?'':'<button class="abtn del" onclick="clearBucketList()" style="font-size:11px;padding:3px 8px" title="Remove all experiences"><i class="ti ti-trash"></i> Clear List</button>'}
+      </div>
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${items||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No experiences match the current filters.</div>'}</div>
     <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:11px;color:var(--t3);text-align:center">Click ✓ to complete · click ★ to rate</div>
@@ -6197,6 +6219,16 @@ function renderBktCatMgmt(){
 function toggleBFMenu(){document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.remove('open');document.getElementById('bfmenu')?.classList.toggle('open');}
 function toggleBCMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.toggle('open');}
 function toggleBYMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.toggle('open');}
+function onBktSearch(v){bktSearch=v;renderContent();}
+function clearBucketList(){
+  if(blockIfReadOnly())return;
+  const n=cur().bucket.length;
+  if(!n)return;
+  if(!confirm(`Remove all ${n} experience${n===1?'':'s'} from the Bucket List? This cannot be undone.`))return;
+  cur().bucket=[];
+  bktSearch='';bktCatFilter=null;bktYearFilter=null;
+  renderContent();
+}
 function toggleBF(s){if(BF.includes(s))BF=BF.filter(x=>x!==s);else BF.push(s);saveBF();renderContent();}
 function setBktCatFilter(id){bktCatFilter=id;document.getElementById('bcmenu')?.classList.remove('open');renderContent();}
 function setBktYearFilter(y){bktYearFilter=y;document.getElementById('bymenu')?.classList.remove('open');renderContent();}
@@ -6206,7 +6238,20 @@ document.addEventListener('click',e=>{
   const ym=document.getElementById('bymenu');if(ym&&!ym.parentElement?.contains(e.target))ym.classList.remove('open');
 });
 
-function toggleBkt(id){if(blockIfReadOnly())return;const b=cur().bucket.find(x=>x.id===id);if(b){b.done=!b.done;renderContent();updateHStats();}}
+function toggleBkt(id){
+  if(blockIfReadOnly())return;
+  const b=cur().bucket.find(x=>x.id===id);
+  if(!b)return;
+  b.done=!b.done;
+  // When completing an item that had no year yet, stamp the current year
+  // automatically — no need to open the edit form just to record when it happened.
+  if(b.done&&!b.year)b.year=new Date().getFullYear();
+  // When un-checking a just-auto-stamped item, clear the auto-year so it goes
+  // back to "Future" — only clear if it matches this exact year (don't destroy
+  // a year the user set manually to a different value).
+  if(!b.done&&b.year===new Date().getFullYear())b.year=null;
+  renderContent();updateHStats();
+}
 function setBktR(id,r){if(blockIfReadOnly())return;const b=cur().bucket.find(x=>x.id===id);if(b){b.rating=b.rating===r?0:r;renderContent();}}
 function bktDS(e,id){bktDragSrc=id;e.dataTransfer.effectAllowed='move';}
 function bktDO(e,id){e.preventDefault();document.querySelectorAll('.bkt').forEach(el=>el.classList.remove('drag-over'));if(id!==bktDragSrc)e.currentTarget.classList.add('drag-over');}
@@ -6590,10 +6635,12 @@ const BKT_FIELDS=[
   {k:'category',l:'Category',t:'text'},
   {k:'status',l:'Status (achieved/pending)',t:'text'},
   {k:'rating',l:'Rating (1-5)',t:'number'},
+  {k:'tourId',l:'Tour',t:'text'},
+  {k:'year',l:'Year',t:'number'},
 ];
 function exportBktTemplate(){
   const header=BKT_FIELDS.map(f=>f.l);
-  const example=['Watch sunrise over Venice in Carnival costume','Italy','The Prelude','Culture & Festivals','pending','5'];
+  const example=['Watch sunrise over Venice in Carnival costume','Italy','The Prelude','Culture & Festivals','pending','5','My World Tour','2027'];
   buildXlsxFromRows([header,example],'Bucket List').then(blob=>downloadBlob(blob,'bucket_list_template.xlsx'));
 }
 function exportBktCSV(){
@@ -6603,6 +6650,8 @@ function exportBktCSV(){
     if(f.k==='category')return bktCatM(b.category)?.name||'';
     if(f.k==='status')return b.done?'achieved':'pending';
     if(f.k==='rating')return b.rating!=null?String(b.rating):'';
+    if(f.k==='tourId')return b.tourId&&S.tours[b.tourId]?S.tours[b.tourId].name:'';
+    if(f.k==='year')return b.year!=null?String(b.year):'Future';
     return b[f.k]!=null?String(b[f.k]):'';
   }));
   buildXlsxFromRows([header,...rows],'Bucket List').then(blob=>downloadBlob(blob,'bucket_list_export.xlsx'));
@@ -6642,7 +6691,7 @@ function processImportedBktRows(rows,input){
   for(let i=1;i<rows.length;i++){
     const vals=rows[i];
     if(!vals||!vals.some(v=>v&&String(v).trim()))continue;
-    const obj={id:uid(),done:false,rating:0,category:'',act:'',country:''};
+    const obj={id:uid(),done:false,rating:0,category:'',act:'',country:'',tourId:'',year:null};
     const rowLabel=()=>obj.text?obj.text.slice(0,30):`row ${i}`;
     fkeys.forEach((k,j)=>{
       if(!k||vals[j]===undefined)return;
@@ -6683,6 +6732,16 @@ function processImportedBktRows(rows,input){
         if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Status "${resolved}" (${rowLabel()})`);
       }else if(k==='rating'){
         obj.rating=Math.max(0,Math.min(5,parseInt(v)||0));
+      }else if(k==='tourId'){
+        // match by tour name (case-insensitive); if not found, leave empty ("All Tours")
+        const matchedTour=Object.entries(S.tours).find(([,t])=>t.name.toLowerCase()===v.toLowerCase());
+        if(matchedTour)obj.tourId=matchedTour[0];
+        else{obj.tourId='';correctionNotes.push(`Tour "${v}" not found — set to "All Tours" (${rowLabel()})`);}
+      }else if(k==='year'){
+        const parsed=parseInt(v);
+        if(!isNaN(parsed)&&parsed>1900&&parsed<2200)obj.year=parsed;
+        else if(v.toLowerCase()==='future')obj.year=null;
+        else correctionNotes.push(`Year "${v}" invalid — defaulted to Future (${rowLabel()})`);
       }else{
         obj[k]=v;
       }
