@@ -1044,6 +1044,10 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <div class="fg"><label class="flbl">Experience</label><input class="fi" id="bkt_text" type="text" placeholder="e.g. Watch sunrise at Angkor Wat"/></div>
   <div class="f2"><div class="fg"><label class="flbl">Country</label><input class="fi" id="bkt_country" type="text" placeholder="e.g. Cambodia"/></div><div class="fg"><label class="flbl">Journey Act</label><select class="fi" id="bkt_act"></select></div></div>
   <div class="f2"><div class="fg"><label class="flbl">Category</label><select class="fi" id="bkt_category"></select></div><div class="fg"><label class="flbl">Star Rating</label><select class="fi" id="bkt_rating"><option value="0">No rating</option><option value="1">★ 1</option><option value="2">★★ 2</option><option value="3">★★★ 3</option><option value="4">★★★★ 4</option><option value="5">★★★★★ 5</option></select></div></div>
+  <div class="f2">
+    <div class="fg"><label class="flbl">Tour <span style="opacity:.6">(optional)</span></label><select class="fi" id="bkt_tour"><option value="">All Tours</option></select></div>
+    <div class="fg"><label class="flbl">Year <span style="opacity:.6">(optional)</span></label><input class="fi" id="bkt_year" type="number" min="1900" max="2199" placeholder="Future"/></div>
+  </div>
   <div class="fg"><label class="flbl">Status</label><select class="fi" id="bkt_done"><option value="false">Not done yet</option><option value="true">Completed ✓</option></select></div>
 </div>
 <div class="mfoot"><button class="btng" onclick="closeBktModal()">Cancel</button><button class="btnp" onclick="saveBktItem()">Save</button></div>
@@ -6045,6 +6049,7 @@ function saveBudgetCat(){if(blockIfReadOnly())return;
 
 // ── BUCKET LIST (with categories + achieved/pending filter) ──────────────────
 let bktCatFilter=null; // null = all categories, or specific category id
+let bktYearFilter=null; // null = all years, 'future' = no year set, or a specific year number
 let bktSortMode=localStorage.getItem('ae_bkt_sort')||'category'; // 'category' (default) | 'custom' (after a manual drag)
 function setBktSortMode(mode){bktSortMode=mode;localStorage.setItem('ae_bkt_sort',mode);renderContent();}
 let bktCatMgmtMode=false; // toggles Bucket List between the main list and the "Manage Categories" sub-section
@@ -6053,7 +6058,19 @@ function toggleBktCatMgmtMode(){bktCatMgmtMode=!bktCatMgmtMode;renderContent();}
 function renderBucket(){
   if(bktCatMgmtMode)return renderBktCatMgmt();
   const catOrderIdx=id=>{const i=cBktCats().findIndex(c=>c.id===id);return i<0?9999:i;};
-  const allBkt=[...cur().bucket].sort((a,b)=>{
+
+  // Collect items visible in the current tour context.
+  // My Tour Life and owned tours: all items are accessible.
+  // For owned tours: items scoped to a specific OTHER tour are hidden;
+  // items with no tourId (= "all tours") are always shown.
+  const isMTL=S.cur===MY_TOUR_LIFE_ID;
+  const visibleBkt=[...cur().bucket].filter(b=>{
+    if(!b.tourId)return true; // "All Tours" — always visible
+    if(isMTL)return true;    // My Tour Life — aggregate, show everything
+    return b.tourId===S.cur; // owned-tour view — only show items scoped to THIS tour
+  });
+
+  const allBkt=[...visibleBkt].sort((a,b)=>{
     if(bktSortMode==='category'){
       const ca=catOrderIdx(a.category),cb=catOrderIdx(b.category);
       if(ca!==cb)return ca-cb;
@@ -6061,6 +6078,10 @@ function renderBucket(){
     return(a.order||0)-(b.order||0);
   });
   const done=allBkt.filter(b=>b.done).length;
+
+  // collect all distinct years present (for the year filter dropdown)
+  const allYears=[...new Set(allBkt.map(b=>b.year).filter(Boolean))].sort();
+
   // apply status filter
   let bkt=allBkt.filter(b=>{
     if(b.done&&!BF.includes('achieved'))return false;
@@ -6069,11 +6090,18 @@ function renderBucket(){
   });
   // apply category filter
   if(bktCatFilter)bkt=bkt.filter(b=>(b.category||'')===bktCatFilter);
+  // apply year filter
+  if(bktYearFilter)bkt=bkt.filter(b=>bktYearFilter==='future'?!b.year:b.year===bktYearFilter);
 
   const cats=cBktCats();
   const catFilterLabel=bktCatFilter?bktCatM(bktCatFilter).name:'All Categories';
   const catMenuItems=`<div class="fmi" onclick="setBktCatFilter(null)" style="${!bktCatFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!bktCatFilter?'-check-filled':''}" style="font-size:13px"></i> All Categories</div>`+
     cats.map(c=>`<div class="fmi" onclick="setBktCatFilter('${c.id}')" style="${bktCatFilter===c.id?'color:'+c.color:''}"><div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div> ${esc(c.name)}</div>`).join('');
+
+  const yearFilterLabel=!bktYearFilter?'All Years':bktYearFilter==='future'?'Future':bktYearFilter.toString();
+  const yearMenuItems=`<div class="fmi" onclick="setBktYearFilter(null)" style="${!bktYearFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!bktYearFilter?'-check-filled':''}" style="font-size:13px"></i> All Years</div>`+
+    `<div class="fmi" onclick="setBktYearFilter('future')" style="${bktYearFilter==='future'?'color:var(--gold)':''}">Future</div>`+
+    allYears.map(y=>`<div class="fmi" onclick="setBktYearFilter(${y})" style="${bktYearFilter===y?'color:var(--gold)':''}">${y}</div>`).join('');
 
   const statusItems=['pending','achieved'].map(s=>`<label class="fmi"><input type="checkbox" ${BF.includes(s)?'checked':''} onchange="toggleBF('${s}')"/> ${s==='achieved'?'Achieved':'Pending'}</label>`).join('');
 
@@ -6081,6 +6109,8 @@ function renderBucket(){
     const am=aM(b.act);
     const bc=bktCatM(b.category);
     const stars=Array.from({length:5},(_,i)=>`<span class="star ${i<(b.rating||0)?'on':'off'}" onclick="setBktR('${b.id}',${i+1})">${i<(b.rating||0)?'★':'☆'}</span>`).join('');
+    const yearLabel=b.year?b.year:'Future';
+    const tourLabel=b.tourId&&S.tours[b.tourId]?S.tours[b.tourId].name:'';
     return`<div class="bkt" draggable="true" data-id="${b.id}"
       ondragstart="bktDS(event,'${b.id}')" ondragover="bktDO(event,'${b.id}')" ondrop="bktDrop(event,'${b.id}')" ondragleave="this.classList.remove('drag-over')">
       <i class="ti ti-grip-vertical" style="color:var(--t3);font-size:14px;cursor:grab;flex-shrink:0"></i>
@@ -6089,8 +6119,10 @@ function renderBucket(){
         <div class="btxt${b.done?' done':''}">${esc(b.text)}</div>
         <div style="display:flex;align-items:center;gap:.5rem;margin-top:3px;flex-wrap:wrap">
           <div class="stars">${stars}</div>
-          <span style="font-size:12px;color:var(--t3)">${esc(b.country)}</span>
+          ${b.country?`<span style="font-size:12px;color:var(--t3)">${esc(b.country)}</span>`:''}
           <span style="font-size:12px;padding:0 5px;border-radius:8px;background:${bc.color}22;color:${bc.color};font-family:var(--font-ui)">${esc(bc.name)}</span>
+          <span style="font-size:11px;color:var(--t3);font-family:var(--font-ui)">${yearLabel}</span>
+          ${tourLabel?`<span style="font-size:11px;padding:0 5px;border-radius:8px;background:var(--sf2);color:var(--t3);font-family:var(--font-ui)">${esc(tourLabel)}</span>`:''}
         </div>
       </div>
       <span style="font-size:11px;padding:1px 6px;border-radius:var(--radius);background:${am.color}22;color:${am.color};font-family:var(--font-ui);flex-shrink:0;margin:0 3px" class="hm">${esc(am.name)}</span>
@@ -6113,6 +6145,10 @@ function renderBucket(){
       <div style="position:relative">
         <button class="fbtn" onclick="toggleBCMenu()"><i class="ti ti-tag"></i> ${esc(catFilterLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="bcmenu">${catMenuItems}</div>
+      </div>
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleBYMenu()"><i class="ti ti-calendar"></i> ${esc(yearFilterLabel)} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="bymenu">${yearMenuItems}</div>
       </div>
       ${cur().readOnly?'':'<button class="fbtn" onclick="toggleBktCatMgmtMode()" title="Create, rename, or remove Bucket List categories"><i class="ti ti-tag"></i> Manage Categories</button>'}
       <div style="display:inline-flex;background:var(--sf2);border:1px solid var(--bd);border-radius:18px;padding:2px">
@@ -6158,11 +6194,17 @@ function renderBktCatMgmt(){
   </div>`;
 }
 
-function toggleBFMenu(){document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bfmenu')?.classList.toggle('open');}
-function toggleBCMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.toggle('open');}
+function toggleBFMenu(){document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.remove('open');document.getElementById('bfmenu')?.classList.toggle('open');}
+function toggleBCMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.toggle('open');}
+function toggleBYMenu(){document.getElementById('bfmenu')?.classList.remove('open');document.getElementById('bcmenu')?.classList.remove('open');document.getElementById('bymenu')?.classList.toggle('open');}
 function toggleBF(s){if(BF.includes(s))BF=BF.filter(x=>x!==s);else BF.push(s);saveBF();renderContent();}
 function setBktCatFilter(id){bktCatFilter=id;document.getElementById('bcmenu')?.classList.remove('open');renderContent();}
-document.addEventListener('click',e=>{const bm=document.getElementById('bfmenu');if(bm&&!bm.parentElement?.contains(e.target))bm.classList.remove('open');const cm=document.getElementById('bcmenu');if(cm&&!cm.parentElement?.contains(e.target))cm.classList.remove('open');});
+function setBktYearFilter(y){bktYearFilter=y;document.getElementById('bymenu')?.classList.remove('open');renderContent();}
+document.addEventListener('click',e=>{
+  const bm=document.getElementById('bfmenu');if(bm&&!bm.parentElement?.contains(e.target))bm.classList.remove('open');
+  const cm=document.getElementById('bcmenu');if(cm&&!cm.parentElement?.contains(e.target))cm.classList.remove('open');
+  const ym=document.getElementById('bymenu');if(ym&&!ym.parentElement?.contains(e.target))ym.classList.remove('open');
+});
 
 function toggleBkt(id){if(blockIfReadOnly())return;const b=cur().bucket.find(x=>x.id===id);if(b){b.done=!b.done;renderContent();updateHStats();}}
 function setBktR(id,r){if(blockIfReadOnly())return;const b=cur().bucket.find(x=>x.id===id);if(b){b.rating=b.rating===r?0:r;renderContent();}}
@@ -6349,8 +6391,28 @@ function openBktModal(editId){if(blockIfReadOnly())return;
   as.innerHTML=cActs().map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
   const cs=document.getElementById('bkt_category');
   cs.innerHTML='<option value="">— None —</option>'+cBktCats().map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
-  if(editId){const b=cur().bucket.find(x=>x.id===editId);if(b){document.getElementById('bkt_text').value=b.text;document.getElementById('bkt_country').value=b.country;as.value=b.act;cs.value=b.category||'';document.getElementById('bkt_rating').value=b.rating||0;document.getElementById('bkt_done').value=b.done?'true':'false';}}
-  else{document.getElementById('bkt_text').value='';document.getElementById('bkt_country').value='';cs.value='';document.getElementById('bkt_rating').value='0';document.getElementById('bkt_done').value='false';}
+  const ts=document.getElementById('bkt_tour');
+  ts.innerHTML='<option value="">All Tours</option>'+Object.entries(S.tours).map(([id,t])=>`<option value="${id}">${esc(t.name)}</option>`).join('');
+  if(editId){
+    const b=cur().bucket.find(x=>x.id===editId);
+    if(b){
+      document.getElementById('bkt_text').value=b.text;
+      document.getElementById('bkt_country').value=b.country||'';
+      as.value=b.act;cs.value=b.category||'';
+      document.getElementById('bkt_rating').value=b.rating||0;
+      document.getElementById('bkt_done').value=b.done?'true':'false';
+      ts.value=b.tourId||'';
+      document.getElementById('bkt_year').value=b.year||'';
+    }
+  }else{
+    document.getElementById('bkt_text').value='';
+    document.getElementById('bkt_country').value='';
+    cs.value='';
+    document.getElementById('bkt_rating').value='0';
+    document.getElementById('bkt_done').value='false';
+    ts.value='';
+    document.getElementById('bkt_year').value='';
+  }
   document.getElementById('bucketModal').style.display='flex';
 }
 function closeBktModal(){document.getElementById('bucketModal').style.display='none';}
@@ -6361,9 +6423,17 @@ function saveBktItem(){if(blockIfReadOnly())return;
   const category=document.getElementById('bkt_category').value;
   const rating=parseInt(document.getElementById('bkt_rating').value)||0;
   const done=document.getElementById('bkt_done').value==='true';
+  const tourId=document.getElementById('bkt_tour').value||''; // '' = all tours
+  const yearRaw=document.getElementById('bkt_year').value.trim();
+  const year=yearRaw?parseInt(yearRaw)||null:null; // null = future / unset
   if(!txt){alert('Please enter an experience description.');return;}
-  if(editBktId){const b=cur().bucket.find(x=>x.id===editBktId);if(b){b.text=txt;b.country=cntry;b.act=act;b.category=category;b.rating=rating;b.done=done;}}
-  else{const bkt=cur().bucket;bkt.push({id:uid(),text:txt,country:cntry,act,category,rating,done,order:bkt.length});}
+  if(editBktId){
+    const b=cur().bucket.find(x=>x.id===editBktId);
+    if(b){b.text=txt;b.country=cntry;b.act=act;b.category=category;b.rating=rating;b.done=done;b.tourId=tourId;b.year=year;}
+  }else{
+    const bkt=cur().bucket;
+    bkt.push({id:uid(),text:txt,country:cntry,act,category,rating,done,tourId,year,order:bkt.length});
+  }
   closeBktModal();renderContent();
 }
 function removeBktItem(id){if(blockIfReadOnly())return;if(!confirm('Remove this experience?'))return;cur().bucket=cur().bucket.filter(b=>b.id!==id);renderContent();}
