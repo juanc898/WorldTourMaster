@@ -2968,8 +2968,37 @@ function routeRowsHtml(filt){
 function routeMatchesSearch(d,q){
   if(!q)return true;
   const am=aM(d.act);
-  const hay=[d.city,d.country,d.status,am?.name,d.event,d.event_type,d.notes].filter(Boolean).join(' ').toLowerCase();
-  return hay.includes(q.trim().toLowerCase());
+  const q2=q.trim().toLowerCase();
+  // Build a haystack from every meaningful text field on the destination.
+  // Include all accommodation, transport, visa, event, and notes fields so
+  // a search for a booking reference, hotel name, flight number, etc. all work.
+  const fields=[
+    d.city, d.country,
+    statusLabel(d.status),
+    am?.name,
+    // Accommodation
+    d.hotel, d.hotel_ref,
+    // Transport
+    d.mot, d.t_company, d.t_num, d.t_ref,
+    d.t_dep_port, d.t_arr_port, d.t_connection,
+    // Event / Festival
+    d.event, d.event_type,
+    // Visa
+    d.visa_type, d.visa_notes,
+    // Notes & to-do
+    d.notes, d.todo,
+    // Dates (allows searching "2027" or "Mar 2026", etc.)
+    d.arrival, d.departure,
+    d.event_date, d.event_start, d.event_end,
+    // Custom fields (variable labels and values)
+    ...(d.customFields||[]).map(cf=>cf.value),
+    ...(customFieldDefs||[]).map(def=>{
+      const cf=(d.customFields||[]).find(c=>c.id===def.id);
+      return[def.label, cf?.value];
+    }).flat(),
+  ];
+  const hay=fields.filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(q2);
 }
 function onRouteSearch(val){
   routeSearch=val;
