@@ -7059,6 +7059,7 @@ function renderHome(){
   const onLife=cur().readOnly;
   const cards=[
     {id:'homeCardCreateTour',icon:'ti-plus',title:'Create a New Tour',desc:'Start planning a brand-new trip from scratch.',action:'createTour()'},
+    {icon:'ti-copy',title:'Duplicate a Tour',desc:'Make a full copy of an existing tour and rename it.',action:'openDuplicateTourModal()'},
     {icon:'ti-list-details',title:'Select an Existing Tour',desc:`Jump into one of your ${tourCount} saved tour${tourCount===1?'':'s'}.`,action:'openHomeSelectTourModal()'},
     {icon:'ti-settings',title:'Manage Existing Tours',desc:'Rename, edit, or delete any of your tours.',action:'openTourModal()'},
     {icon:'ti-infinity',title:'View "My Tour Life"',desc:'A lifetime compilation of every tour you\u2019ve taken, all in one place.',action:'goToMyTourLife()'},
@@ -7524,12 +7525,94 @@ function openTourModal(){
     <div style="display:flex;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--bd);font-family:var(--font-ui)">
       <div style="flex:1;font-size:13px;color:var(--t1)">${esc(t.name)}${t.hasCollaborators?' <span style="color:var(--gold);font-size:11px">*</span>':''}</div>
       <button class="abtn" onclick="closeTourModal();openCollaboratorsModal('${id}')" style="font-size:11px" title="Manage Collaborators"><i class="ti ti-users"></i></button>
-      <button class="abtn" onclick="openTourEditModal('${id}')" style="font-size:11px"><i class="ti ti-edit"></i></button>
+      <button class="abtn" onclick="openTourEditModal('${id}')" style="font-size:11px" title="Rename"><i class="ti ti-edit"></i></button>
+      <button class="abtn" onclick="duplicateTourById('${id}')" style="font-size:11px" title="Duplicate this tour"><i class="ti ti-copy"></i></button>
       <button class="abtn del" onclick="deleteTour('${id}')" style="font-size:11px"><i class="ti ti-trash"></i></button>
     </div>`).join('');
   document.getElementById('tourModal').style.display='flex';
 }
 function closeTourModal(){document.getElementById('tourModal').style.display='none';}
+
+// ── Duplicate Tour ────────────────────────────────────────────────────────────
+// The modal lets the user pick which tour to copy and set the new name.
+// Opened both from the Home screen card and from the Manage Tours copy button.
+let duplicateSourceId=null; // pre-filled when called from the Manage Tours button
+function openDuplicateTourModal(preselectedId){
+  duplicateSourceId=preselectedId||null;
+  const tourCount=Object.keys(S.tours).length;
+  const tourOptions=Object.entries(S.tours).map(([id,t])=>
+    `<option value="${id}"${id===(preselectedId||S.cur)?' selected':''}>${esc(t.name)}</option>`
+  ).join('');
+  document.getElementById('calPopBody').innerHTML=`
+    <div class="mhdr"><div class="mttl">Duplicate a Tour</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Tour to duplicate</div>
+      <select id="dupTourSrc" class="auth-input" style="margin-bottom:.8rem">${tourOptions}</select>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">New tour name</div>
+      <input id="dupTourName" class="auth-input" type="text" style="margin-bottom:.3rem"
+        placeholder="e.g. Europe Summer 2028 (Copy)"
+        value="${esc((S.tours[preselectedId||S.cur]?.name||''))} (Copy)"
+        oninput="this.value=this.value"/>
+      <div id="dupTourError" class="auth-error" style="display:none;margin-bottom:.5rem"></div>
+      <button class="btnp" style="width:100%;justify-content:center;margin-top:.6rem" onclick="executeDuplicateTour()">Create Copy</button>
+    </div>`;
+  // When the source selection changes, suggest an updated name automatically
+  document.getElementById('calPopModal').style.display='flex';
+  setTimeout(()=>{
+    const sel=document.getElementById('dupTourSrc');
+    if(sel)sel.addEventListener('change',()=>{
+      const nm=S.tours[sel.value]?.name||'';
+      const nameInp=document.getElementById('dupTourName');
+      if(nameInp&&(!nameInp.dataset.edited))nameInp.value=nm+' (Copy)';
+    });
+    const nameInp=document.getElementById('dupTourName');
+    if(nameInp)nameInp.addEventListener('input',()=>{nameInp.dataset.edited='1';});
+  },0);
+}
+function duplicateTourById(id){
+  closeTourModal();
+  openDuplicateTourModal(id);
+}
+function executeDuplicateTour(){
+  const srcId=document.getElementById('dupTourSrc').value;
+  const newName=document.getElementById('dupTourName').value.trim();
+  const errEl=document.getElementById('dupTourError');
+  errEl.style.display='none';
+  if(!newName){errEl.textContent='Please enter a name for the copy.';errEl.style.display='block';return;}
+  const src=S.tours[srcId];
+  if(!src){errEl.textContent='Source tour not found.';errEl.style.display='block';return;}
+  // Deep-clone the entire tour, then re-assign every id so the copy is fully
+  // independent — edits to one never affect the other.
+  const idMap={}; // old id → new id, so cross-references (act ids on destinations, etc.) are consistent
+  function freshId(oldId){if(!oldId)return uid();if(!idMap[oldId])idMap[oldId]=uid();return idMap[oldId];}
+  const clone=JSON.parse(JSON.stringify(src)); // deep clone
+  clone.name=newName;
+  clone.desc=src.desc||'';
+  clone.hasCollaborators=false; // copies start unshared
+  // Re-id acts
+  clone.acts=(clone.acts||[]).map(a=>({...a,id:freshId(a.id)}));
+  // Re-id destinations, remapping act references
+  clone.destinations=(clone.destinations||[]).map(d=>({...d,id:freshId(d.id),act:freshId(d.act)||d.act}));
+  // Re-id budget categories and their expenses
+  clone.budget=(clone.budget||[]).map(c=>({...c,id:freshId(c.id),expenses:(c.expenses||[]).map(e=>({...e,id:freshId(e.id)}))}));
+  clone.budgetOrder=(clone.budgetOrder||[]).map(oid=>freshId(oid));
+  // Re-id bucket list items and their categories
+  clone.bktCategories=(clone.bktCategories||[]).map(c=>({...c,id:freshId(c.id)}));
+  clone.bucket=(clone.bucket||[]).map(b=>({...b,id:freshId(b.id),category:freshId(b.category)||b.category,act:freshId(b.act)||b.act}));
+  // Re-id event categories
+  clone.eventCategories=(clone.eventCategories||[]).map(c=>({...c,id:freshId(c.id)}));
+  // Re-id stats categories and items
+  clone.statsCategories=(clone.statsCategories||[]).map(c=>({...c,id:freshId(c.id)}));
+  clone.stats=(clone.stats||[]).map(s=>({...s,id:freshId(s.id),category:freshId(s.category)||s.category}));
+  const newId=uid();
+  S.tours[newId]=clone;
+  calClosePopup();
+  restoreFiltersIfLeavingLife();
+  if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX))detachSharedTourListener(S.cur.slice(SHARED_PREFIX.length));
+  S.cur=newId;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;
+  renderSB();renderContent();
+  scheduleCloudSave();
+}
 function createTour(){
   const name=prompt('Tour name:','New World Tour');if(!name)return;
   const desc=prompt('Tour description (optional):','')||'';
