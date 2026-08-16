@@ -7645,9 +7645,14 @@ function processImportedGearRows(rows,input){
   if(!rows||rows.length<2){alert('No valid rows found in the file.');input.value='';return;}
   const header=rows[0].map(h=>(h||'').toLowerCase().trim());
   const colIdx={};
-  GEAR_FIELDS.forEach(f=>{
-    const idx=header.findIndex(h=>h===f.l.toLowerCase()||h===f.k.toLowerCase());
-    if(idx>=0)colIdx[f.k]=idx;
+  GEAR_FIELDS.forEach((f,pos)=>{
+    // Primary: match by label or key name in the header row
+    let idx=header.findIndex(h=>h===f.l.toLowerCase()||h===f.k.toLowerCase());
+    // Fallback: if the header cell wasn't recognized (e.g. Excel stored it as a
+    // number), use the known column position from GEAR_FIELDS. This handles the
+    // common case where re-saving in Excel corrupts the "Quantity" header to "1".
+    if(idx<0&&pos<rows[0].length)idx=pos;
+    colIdx[f.k]=idx;
   });
   const imported=[];
   for(let i=1;i<rows.length;i++){
@@ -7655,7 +7660,7 @@ function processImportedGearRows(rows,input){
     const name=colIdx.name!=null?String(row[colIdx.name]||'').trim():'';
     if(!name)continue;
     const qtyRaw=colIdx.qty!=null?row[colIdx.qty]:null;
-    const qty=qtyRaw!=null&&qtyRaw!==''?parseInt(String(qtyRaw))||null:null;
+    const qty=qtyRaw!=null&&String(qtyRaw).trim()!==''?parseInt(String(qtyRaw))||null:null;
     const catName=colIdx.category!=null?String(row[colIdx.category]||'').trim():'';
     const catObj=catName?cGearCats().find(c=>c.name.toLowerCase()===catName.toLowerCase()):null;
     const checkedRaw=colIdx.checked!=null?String(row[colIdx.checked]||'').trim().toLowerCase():'';
