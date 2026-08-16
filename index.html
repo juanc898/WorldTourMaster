@@ -1248,18 +1248,7 @@ function buildBlankTourState(){
     {id:uid(),name:'Luxury',color:'#8B4BC8'},
     {id:uid(),name:'Nature',color:'#4BC896'},
   ];
-  const defaultGearCats=[
-    {id:uid(),name:'Clothing',color:'#4B8BC8'},
-    {id:uid(),name:'Documents / Money / Security',color:'#C9A84C'},
-    {id:uid(),name:'Tech',color:'#4BC896'},
-    {id:uid(),name:'Photography / Content Gear',color:'#8B4BC8'},
-    {id:uid(),name:'Bathroom',color:'#4BBFC8'},
-    {id:uid(),name:'Health / Fitness',color:'#C84B6B'},
-    {id:uid(),name:'Travel Utility',color:'#C8734B'},
-    {id:uid(),name:'Special World-Tour Gear',color:'#C9A84C'},
-    {id:uid(),name:'Others',color:'#888888'},
-  ];
-  return {cur:id,onboardingDone:false,sharedRefs:[],tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],gearCategories:defaultGearCats,gear:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
+  return {cur:id,onboardingDone:false,sharedRefs:[],tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],gearCategories:makeDefaultGearCats(),gear:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
 }
 
 // ── Firestore read/write — one document per user, isolated by uid via security rules ──
@@ -1302,6 +1291,18 @@ function loadFromCloud(u){
       // predates this feature won't have the field at all — treat that as
       // "already past onboarding", never auto-show it for a returning user.
       if(S.onboardingDone===undefined)S.onboardingDone=true;
+      // Gear feature migration: any tour that pre-dates the Gear section won't
+      // have gearCategories — seed the defaults now, once, at load time, so the
+      // user sees them immediately without any special action needed.
+      let gearMigrated=false;
+      Object.values(S.tours).forEach(t=>{
+        if(!t.gearCategories||t.gearCategories.length===0){
+          t.gearCategories=makeDefaultGearCats();
+          if(!t.gear)t.gear=[];
+          gearMigrated=true;
+        }
+      });
+      if(gearMigrated)saveToCloudNow(); // persist the migration right away
       // "My Tour Life" must never be the tour someone lands on automatically —
       // it's a deliberate look-up, never a default. If that's what got saved
       // (e.g. the tab was closed while viewing it), fall back to a real tour.
@@ -1439,6 +1440,19 @@ function effectiveNights(d){
 }
 const uid=()=>'i'+Date.now()+Math.floor(Math.random()*9999);
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// Default gear categories — defined globally so they're accessible from
+// buildBlankTourState, createTour, cGearCats, and the migration pass alike.
+function makeDefaultGearCats(){return[
+  {id:uid(),name:'Clothing',color:'#4B8BC8'},
+  {id:uid(),name:'Documents & Money',color:'#C9A84C'},
+  {id:uid(),name:'Tech',color:'#4BC896'},
+  {id:uid(),name:'Photography',color:'#8B4BC8'},
+  {id:uid(),name:'Bathroom',color:'#4BBFC8'},
+  {id:uid(),name:'Health',color:'#C84B6B'},
+  {id:uid(),name:'Travel Utility',color:'#C8734B'},
+  {id:uid(),name:'Special Gear',color:'#C9A84C'},
+  {id:uid(),name:'Others',color:'#888888'},
+];}
 // A flag emoji is built from two Unicode Regional Indicator Symbols — this just reverses that
 // back into the lowercase ISO 3166-1 alpha-2 code (🇵🇱 -> 'pl') so a flag image can be looked up.
 function flagToCode(emoji){
@@ -7374,26 +7388,7 @@ let gearSearch='';
 let gearCatMgmtMode=false;
 function toggleGearCatMgmtMode(){gearCatMgmtMode=!gearCatMgmtMode;renderContent();}
 const cGear=()=>cur().gear||(cur().gear=[]);
-const cGearCats=()=>{
-  const t=cur();
-  if(!t.gearCategories||t.gearCategories.length===0){
-    // First time this account opens Gear — seed the defaults.
-    // Runs once per tour, silently, without needing a full account reset.
-    t.gearCategories=[
-      {id:uid(),name:'Clothing',color:'#4B8BC8'},
-      {id:uid(),name:'Documents / Money / Security',color:'#C9A84C'},
-      {id:uid(),name:'Tech',color:'#4BC896'},
-      {id:uid(),name:'Photography / Content Gear',color:'#8B4BC8'},
-      {id:uid(),name:'Bathroom',color:'#4BBFC8'},
-      {id:uid(),name:'Health / Fitness',color:'#C84B6B'},
-      {id:uid(),name:'Travel Utility',color:'#C8734B'},
-      {id:uid(),name:'Special World-Tour Gear',color:'#C9A84C'},
-      {id:uid(),name:'Others',color:'#888888'},
-    ];
-    scheduleCloudSave();
-  }
-  return t.gearCategories;
-};
+const cGearCats=()=>cur().gearCategories||(cur().gearCategories=[]);
 const gearCatM=id=>cGearCats().find(c=>c.id===id)||{name:'Uncategorised',color:'#888'};
 function setGearCatFilter(id){gearCatFilter=id;document.getElementById('gearCatMenu')?.classList.remove('open');renderContent();}
 function onGearSearch(v){gearSearch=v;renderContent();}
@@ -7401,6 +7396,15 @@ function toggleGearCatMenu(){document.getElementById('gearCatMenu')?.classList.t
 document.addEventListener('click',e=>{const el=document.getElementById('gearCatMenu');if(el&&!el.parentElement?.contains(e.target))el.classList.remove('open');});
 
 function renderGear(){
+  // Guarantee categories exist. This runs every time the Gear tab renders,
+  // so it catches existing accounts whose Firestore data pre-dates this feature
+  // (whether gearCategories was missing OR was an empty array from a previous run).
+  const t=cur();
+  if(t&&!t.readOnly&&(!t.gearCategories||t.gearCategories.length===0)){
+    t.gearCategories=makeDefaultGearCats();
+    if(!t.gear)t.gear=[];
+    scheduleCloudSave();
+  }
   if(gearCatMgmtMode)return renderGearCatMgmt();
   const all=cGear();
   let list=gearCatFilter?all.filter(g=>(g.category||'')===gearCatFilter):all;
@@ -7956,7 +7960,7 @@ function createTour(){
     {id:uid(),name:'Luxury',color:'#8B4BC8'},
     {id:uid(),name:'Nature',color:'#4BC896'},
   ];
-  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],gearCategories:defaultGearCats,gear:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
+  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],gearCategories:makeDefaultGearCats(),gear:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
   restoreFiltersIfLeavingLife();
   if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX))detachSharedTourListener(S.cur.slice(SHARED_PREFIX.length));
   S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
