@@ -7396,6 +7396,15 @@ function toggleGearCatMenu(){document.getElementById('gearCatMenu')?.classList.t
 document.addEventListener('click',e=>{const el=document.getElementById('gearCatMenu');if(el&&!el.parentElement?.contains(e.target))el.classList.remove('open');});
 
 function renderGear(){
+  // Guarantee categories exist. This runs every time the Gear tab renders,
+  // so it catches existing accounts whose Firestore data pre-dates this feature
+  // (whether gearCategories was missing OR was an empty array from a previous run).
+  const t=cur();
+  if(t&&!t.readOnly&&(!t.gearCategories||t.gearCategories.length===0)){
+    t.gearCategories=makeDefaultGearCats();
+    if(!t.gear)t.gear=[];
+    scheduleCloudSave();
+  }
   if(gearCatMgmtMode)return renderGearCatMgmt();
   const all=cGear();
   let list=gearCatFilter?all.filter(g=>(g.category||'')===gearCatFilter):all;
