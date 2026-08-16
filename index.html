@@ -7652,13 +7652,13 @@ function processImportedGearRows(rows,input){
   const imported=[];
   for(let i=1;i<rows.length;i++){
     const row=rows[i];if(!row||row.every(c=>!c))continue;
-    const name=colIdx.name!=null?(row[colIdx.name]||'').trim():'';
+    const name=colIdx.name!=null?String(row[colIdx.name]||'').trim():'';
     if(!name)continue;
-    const qtyRaw=colIdx.qty!=null?(row[colIdx.qty]||'').trim():'';
-    const qty=parseInt(qtyRaw)||null;
-    const catName=colIdx.category!=null?(row[colIdx.category]||'').trim():'';
+    const qtyRaw=colIdx.qty!=null?row[colIdx.qty]:null;
+    const qty=qtyRaw!=null&&qtyRaw!==''?parseInt(String(qtyRaw))||null:null;
+    const catName=colIdx.category!=null?String(row[colIdx.category]||'').trim():'';
     const catObj=catName?cGearCats().find(c=>c.name.toLowerCase()===catName.toLowerCase()):null;
-    const checkedRaw=colIdx.checked!=null?(row[colIdx.checked]||'').trim().toLowerCase():'';
+    const checkedRaw=colIdx.checked!=null?String(row[colIdx.checked]||'').trim().toLowerCase():'';
     const checked=checkedRaw==='yes'||checkedRaw==='true';
     imported.push({id:uid(),name,qty,category:catObj?catObj.id:'',checked});
   }
