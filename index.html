@@ -432,6 +432,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .bexp{display:flex;justify-content:space-between;align-items:center;padding:.4rem .75rem;border-bottom:1px solid rgba(128,128,128,.08);font-family:var(--font-ui);font-size:12px}
 /* BUCKET */
 .bkt{display:flex;align-items:center;gap:.4rem;padding:.5rem .75rem;border-bottom:1px solid var(--bd);font-family:var(--font-ui);cursor:default;user-select:none}
+.gear-item{display:flex;align-items:center;gap:.5rem;padding:.55rem .85rem;border-bottom:1px solid var(--bd);font-family:var(--font-ui);cursor:default;user-select:none;transition:opacity .15s}
+.gear-checked{opacity:.45}
 .bkt.drag-over{border-top:2px solid var(--gold)}
 .bchk{width:16px;height:16px;border:1px solid var(--bd2);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s}
 .bchk.done{background:var(--gold-dim);border-color:var(--gold)}
@@ -939,6 +941,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   <div class="nav-tab" data-tab="bucket" onclick="switchTab('bucket',this)"><i class="ti ti-list-check"></i> Bucket List</div>
   <div class="nav-tab" data-tab="visas" onclick="switchTab('visas',this)"><i class="ti ti-e-passport"></i> Visas</div>
   <div class="nav-tab" data-tab="stats" onclick="switchTab('stats',this)"><i class="ti ti-chart-bar"></i> Tour Statistics</div>
+  <div class="nav-tab" data-tab="gear" onclick="switchTab('gear',this)"><i class="ti ti-backpack"></i> Gear</div>
   <div class="nav-tab" data-tab="ai" onclick="switchTab('ai',this)"><i class="ti ti-message-bolt"></i> AI Advisor</div>
 </nav>
 <div class="main">
@@ -1245,7 +1248,18 @@ function buildBlankTourState(){
     {id:uid(),name:'Luxury',color:'#8B4BC8'},
     {id:uid(),name:'Nature',color:'#4BC896'},
   ];
-  return {cur:id,onboardingDone:false,sharedRefs:[],tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
+  const defaultGearCats=[
+    {id:uid(),name:'Clothing',color:'#4B8BC8'},
+    {id:uid(),name:'Documents / Money / Security',color:'#C9A84C'},
+    {id:uid(),name:'Tech',color:'#4BC896'},
+    {id:uid(),name:'Photography / Content Gear',color:'#8B4BC8'},
+    {id:uid(),name:'Bathroom',color:'#4BBFC8'},
+    {id:uid(),name:'Health / Fitness',color:'#C84B6B'},
+    {id:uid(),name:'Travel Utility',color:'#C8734B'},
+    {id:uid(),name:'Special World-Tour Gear',color:'#C9A84C'},
+    {id:uid(),name:'Others',color:'#888888'},
+  ];
+  return {cur:id,onboardingDone:false,sharedRefs:[],tours:{[id]:{name:'My World Tour',desc:'',acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],gearCategories:defaultGearCats,gear:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)}}};
 }
 
 // ── Firestore read/write — one document per user, isolated by uid via security rules ──
@@ -2065,7 +2079,7 @@ function buildMyTourLife(){
     }).catch(()=>{});
   });
   return Promise.all(fetches).then(()=>{
-    const acts=[],destinations=[],bktCategories=[],eventCategories=[],bucket=[],statsCategories=[],stats=[],budget=[],budgetOrder=[];
+    const acts=[],destinations=[],bktCategories=[],eventCategories=[],bucket=[],statsCategories=[],stats=[],gearCategories=[],gear=[],budget=[],budgetOrder=[];
     let i=0;
     const foldIn=(t,actId,actName)=>{
       acts.push({id:actId,name:actName,subtitle:'',color:palette[i%palette.length]});i++;
@@ -2075,6 +2089,8 @@ function buildMyTourLife(){
       (t.bucket||[]).forEach(b=>bucket.push({...b}));
       (t.statsCategories||[]).forEach(c=>statsCategories.push({...c}));
       (t.stats||[]).forEach(s=>stats.push({...s}));
+      (t.gearCategories||[]).forEach(c=>gearCategories.push({...c}));
+      (t.gear||[]).forEach(g=>gear.push({...g}));
       (t.budget||[]).forEach(c=>budget.push({...c,expenses:[...(c.expenses||[])]}));
       (t.budgetOrder||[]).forEach(id=>budgetOrder.push(id));
     };
@@ -2083,7 +2099,7 @@ function buildMyTourLife(){
       const t=sharedTourCache[r.tourId];
       if(t)foldIn(t,'life_shared_'+r.tourId,t.name+' (Shared)');
     });
-    return{name:'My Tour Life',desc:'A lifetime compilation of every tour you have taken — including tours you collaborate on.',acts,destinations,bktCategories,eventCategories,bucket,statsCategories,stats,budget,budgetOrder,readOnly:true};
+    return{name:'My Tour Life',desc:'A lifetime compilation of every tour you have taken — including tours you collaborate on.',acts,destinations,bktCategories,eventCategories,bucket,statsCategories,stats,gearCategories,gear,budget,budgetOrder,readOnly:true};
   });
 }
 // Pure synchronous accessor — cur() can never await a promise, so the actual
@@ -2613,6 +2629,7 @@ function renderContent(){
   else if(tab==='bucket')el.innerHTML=renderBucket();
   else if(tab==='visas')el.innerHTML=renderVisas();
   else if(tab==='stats')el.innerHTML=renderStats();
+  else if(tab==='gear')el.innerHTML=renderGear();
   else if(tab==='ai')el.innerHTML=renderAI();
   setupMobileFilterToggles();
 }
@@ -7351,6 +7368,302 @@ function launchConfetti(){
   setTimeout(()=>root.remove(),3800);
 }
 
+// ── GEAR CHECKLIST ────────────────────────────────────────────────────────────
+let gearCatFilter=null;
+let gearSearch='';
+let gearCatMgmtMode=false;
+function toggleGearCatMgmtMode(){gearCatMgmtMode=!gearCatMgmtMode;renderContent();}
+const cGear=()=>cur().gear||(cur().gear=[]);
+const cGearCats=()=>{
+  const t=cur();
+  if(!t.gearCategories||t.gearCategories.length===0){
+    // First time this account opens Gear — seed the defaults.
+    // Runs once per tour, silently, without needing a full account reset.
+    t.gearCategories=[
+      {id:uid(),name:'Clothing',color:'#4B8BC8'},
+      {id:uid(),name:'Documents / Money / Security',color:'#C9A84C'},
+      {id:uid(),name:'Tech',color:'#4BC896'},
+      {id:uid(),name:'Photography / Content Gear',color:'#8B4BC8'},
+      {id:uid(),name:'Bathroom',color:'#4BBFC8'},
+      {id:uid(),name:'Health / Fitness',color:'#C84B6B'},
+      {id:uid(),name:'Travel Utility',color:'#C8734B'},
+      {id:uid(),name:'Special World-Tour Gear',color:'#C9A84C'},
+      {id:uid(),name:'Others',color:'#888888'},
+    ];
+    scheduleCloudSave();
+  }
+  return t.gearCategories;
+};
+const gearCatM=id=>cGearCats().find(c=>c.id===id)||{name:'Uncategorised',color:'#888'};
+function setGearCatFilter(id){gearCatFilter=id;document.getElementById('gearCatMenu')?.classList.remove('open');renderContent();}
+function onGearSearch(v){gearSearch=v;renderContent();}
+function toggleGearCatMenu(){document.getElementById('gearCatMenu')?.classList.toggle('open');}
+document.addEventListener('click',e=>{const el=document.getElementById('gearCatMenu');if(el&&!el.parentElement?.contains(e.target))el.classList.remove('open');});
+
+function renderGear(){
+  if(gearCatMgmtMode)return renderGearCatMgmt();
+  const all=cGear();
+  let list=gearCatFilter?all.filter(g=>(g.category||'')===gearCatFilter):all;
+  if(gearSearch){
+    const q=gearSearch.toLowerCase();
+    list=list.filter(g=>g.name.toLowerCase().includes(q)||(gearCatM(g.category)?.name||'').toLowerCase().includes(q)||(g.qty?String(g.qty):'' ).includes(q));
+  }
+  // group by category order
+  const catOrder=cGearCats().map(c=>c.id);
+  list=[...list].sort((a,b)=>{
+    const ia=catOrder.indexOf(a.category||''),ib=catOrder.indexOf(b.category||'');
+    if(ia!==ib)return ia-ib;
+    return a.name.localeCompare(b.name);
+  });
+  const checked=all.filter(g=>g.checked).length;
+  const cats=cGearCats();
+  const catFilterLabel=gearCatFilter?gearCatM(gearCatFilter).name:'All Categories';
+  const catMenuItems=`<div class="fmi" onclick="setGearCatFilter(null)" style="${!gearCatFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!gearCatFilter?'-check-filled':''}" style="font-size:13px"></i> All Categories</div>`+
+    cats.map(c=>`<div class="fmi" onclick="setGearCatFilter('${c.id}')" style="${gearCatFilter===c.id?'color:'+c.color:''}"><div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div> ${esc(c.name)}</div>`).join('');
+  // group items under a header per category
+  const grouped={};
+  const uncat=[];
+  list.forEach(g=>{
+    const cat=cGearCats().find(c=>c.id===g.category);
+    if(cat){if(!grouped[cat.id])grouped[cat.id]=[];grouped[cat.id].push(g);}
+    else uncat.push(g);
+  });
+  const buildItem=g=>{
+    const cat=gearCatM(g.category);
+    return`<div class="gear-item${g.checked?' gear-checked':''}">
+      <div class="bchk${g.checked?' done':''}" onclick="toggleGear('${g.id}')"></div>
+      <div style="flex:1;min-width:0">
+        <span class="btxt${g.checked?' done':''}">${esc(g.name)}</span>
+        ${g.qty?`<span style="font-size:12px;color:var(--t3);margin-left:4px">x${esc(String(g.qty))}</span>`:''}
+      </div>
+      ${cur().readOnly?'':'<div style="display:flex;gap:3px;flex-shrink:0">'}
+        ${cur().readOnly?'':`<button class="abtn" onclick="openGearModal('${g.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button>
+        <button class="abtn del" onclick="removeGearItem('${g.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button>
+      </div>`}
+    </div>`;
+  };
+  let rows='';
+  cGearCats().forEach(cat=>{
+    if(grouped[cat.id]&&grouped[cat.id].length){
+      rows+=`<div style="padding:.45rem .9rem .2rem;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:${cat.color};background:${cat.color}18;font-family:var(--font-ui)">${esc(cat.name)}</div>`;
+      rows+=grouped[cat.id].map(buildItem).join('');
+    }
+  });
+  if(uncat.length){
+    rows+=`<div style="padding:.45rem .9rem .2rem;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);background:var(--sf2);font-family:var(--font-ui)">Uncategorised</div>`;
+    rows+=uncat.map(buildItem).join('');
+  }
+  return`<div class="panel">
+    <div class="sgrid" style="margin-bottom:1rem">
+      <div class="scard"><div class="sval">${checked}</div><div class="slbl">Packed</div></div>
+      <div class="scard"><div class="sval">${all.length-checked}</div><div class="slbl">Remaining</div></div>
+      <div class="scard"><div class="sval">${all.length?Math.round(checked/all.length*100):0}%</div><div class="slbl">Ready</div></div>
+    </div>
+    <div class="frow filter-row">
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleGearCatMenu()"><i class="ti ti-filter"></i> ${esc(catFilterLabel)} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="gearCatMenu">${catMenuItems}</div>
+      </div>
+      ${cur().readOnly?'':'<button class="fbtn" onclick="toggleGearCatMgmtMode()"><i class="ti ti-tag"></i> Manage Categories</button>'}
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleIOMenu('gearIOMenu')"><i class="ti ti-arrow-up"></i></button>
+        <div class="fmenu" id="gearIOMenu">
+          <div class="fmi" onclick="exportGearTemplate();toggleIOMenu('gearIOMenu')"><i class="ti ti-file-spreadsheet"></i> Download Template</div>
+          <label class="fmi" style="cursor:pointer"><i class="ti ti-upload"></i> Import<input type="file" accept=".csv,.xlsx" style="display:none" onchange="importGearCSV(this);toggleIOMenu('gearIOMenu')"/></label>
+          <div class="fmi" onclick="exportGearCSV();toggleIOMenu('gearIOMenu')"><i class="ti ti-download"></i> Export</div>
+        </div>
+      </div>
+      <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${list.length}/${all.length} shown</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem">
+      <div style="position:relative;flex:1;min-width:0">
+        <i class="ti ti-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:13px;pointer-events:none"></i>
+        <input class="fi" type="text" placeholder="Search gear items…" value="${esc(gearSearch)}" oninput="onGearSearch(this.value)" style="padding:.5rem .6rem .5rem 1.8rem;font-size:13px;width:100%;box-sizing:border-box"/>
+        ${gearSearch?`<button onclick="onGearSearch('')" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t3);cursor:pointer;font-size:13px;line-height:1">&#x2715;</button>`:''}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+      <div class="sec-ttl" style="margin-bottom:0;flex:1">Packing List</div>
+      <div style="display:flex;gap:6px">
+        ${cur().readOnly?'':'<button class="abtn" onclick="openGearModal()" style="font-size:11px;padding:3px 8px"><i class="ti ti-plus"></i> Add</button>'}
+        ${cur().readOnly||!all.length?'':'<button class="abtn" onclick="uncheckAllGear()" style="font-size:11px;padding:3px 8px" title="Uncheck all items"><i class="ti ti-square"></i> Reset</button>'}
+        ${cur().readOnly||!all.length?'':'<button class="abtn del" onclick="clearGearList()" style="font-size:11px;padding:3px 8px"><i class="ti ti-trash"></i> Clear List</button>'}
+      </div>
+    </div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${rows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No items yet — add your first piece of gear.</div>'}</div>
+    <div style="margin-top:.4rem;font-family:var(--font-ui);font-size:11px;color:var(--t3);text-align:center">Tap the checkbox to mark an item as packed</div>
+  </div>`;
+}
+function renderGearCatMgmt(){
+  const cats=cGearCats();
+  const rows=cats.map(c=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:.6rem .6rem;border-bottom:1px solid rgba(128,128,128,.1)">
+      <div style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+      <span style="flex:1;font-size:13px;color:var(--t2);font-family:var(--font-ui)">${esc(c.name)}</span>
+      <button class="abtn" onclick="openGearCatModal('${c.id}')" style="font-size:11px;padding:2px 6px"><i class="ti ti-edit"></i></button>
+      <button class="abtn del" onclick="removeGearCat('${c.id}')" style="font-size:11px;padding:2px 6px"><i class="ti ti-trash"></i></button>
+    </div>`).join('');
+  return`<div class="panel">
+    <div class="frow">
+      <button class="fbtn" onclick="toggleGearCatMgmtMode()"><i class="ti ti-arrow-left"></i> Back to Gear</button>
+      <button class="add-btn" onclick="openGearCatModal()"><i class="ti ti-plus"></i> New Category</button>
+    </div>
+    <div class="sec-ttl">Manage Gear Categories</div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">${rows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No categories yet.</div>'}</div>
+  </div>`;
+}
+
+// ── Gear CRUD ─────────────────────────────────────────────────────────────────
+function toggleGear(id){
+  if(blockIfReadOnly())return;
+  const g=cGear().find(x=>x.id===id);
+  if(g){g.checked=!g.checked;renderContent();}
+}
+function uncheckAllGear(){
+  if(blockIfReadOnly())return;
+  cGear().forEach(g=>g.checked=false);renderContent();
+}
+function clearGearList(){
+  if(blockIfReadOnly())return;
+  const n=cGear().length;
+  if(!n)return;
+  if(!confirm(`Remove all ${n} item${n===1?'':'s'} from the packing list? This cannot be undone.`))return;
+  cur().gear=[];gearSearch='';gearCatFilter=null;renderContent();
+}
+function removeGearItem(id){
+  if(blockIfReadOnly())return;
+  if(!confirm('Remove this item?'))return;
+  cur().gear=cGear().filter(g=>g.id!==id);renderContent();
+}
+function openGearModal(editId){
+  if(blockIfReadOnly())return;
+  const g=editId?cGear().find(x=>x.id===editId):null;
+  const catOpts=cGearCats().map(c=>`<option value="${c.id}"${g&&g.category===c.id?' selected':''}>${esc(c.name)}</option>`).join('');
+  document.getElementById('calPopBody').innerHTML=`
+    <div class="mhdr"><div class="mttl">${g?'Edit Item':'Add Item'}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Item name</div>
+      <input id="gearNameInp" class="auth-input" type="text" placeholder="e.g. Passport" value="${g?esc(g.name):''}" style="margin-bottom:.6rem"/>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Quantity <span style="opacity:.6">(optional)</span></div>
+      <input id="gearQtyInp" class="auth-input" type="number" min="1" placeholder="e.g. 5" value="${g&&g.qty?g.qty:''}" style="margin-bottom:.6rem"/>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Category</div>
+      <select id="gearCatInp" class="auth-input" style="margin-bottom:.8rem"><option value="">— None —</option>${catOpts}</select>
+      <button class="btnp" style="width:100%;justify-content:center" onclick="saveGearItem(${g?`'${g.id}'`:'null'})">${g?'Save Changes':'Add Item'}</button>
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function saveGearItem(editId){
+  if(blockIfReadOnly())return;
+  const name=document.getElementById('gearNameInp').value.trim();
+  if(!name)return;
+  const qty=parseInt(document.getElementById('gearQtyInp').value)||null;
+  const category=document.getElementById('gearCatInp').value;
+  if(editId){
+    const g=cGear().find(x=>x.id===editId);
+    if(g){g.name=name;g.qty=qty;g.category=category;}
+  }else{
+    cGear().push({id:uid(),name,qty,category,checked:false});
+  }
+  calClosePopup();renderContent();
+}
+function openGearCatModal(editId){
+  const c=editId?cGearCats().find(x=>x.id===editId):null;
+  document.getElementById('calPopBody').innerHTML=`
+    <div class="mhdr"><div class="mttl">${c?'Edit Category':'New Category'}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Category name</div>
+      <input id="gearCatNameInp" class="auth-input" type="text" placeholder="e.g. Camping" value="${c?esc(c.name):''}" style="margin-bottom:.6rem"/>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Color</div>
+      <input id="gearCatColorInp" type="color" value="${c?c.color:'#C9A84C'}" style="width:100%;height:38px;border-radius:8px;border:1px solid var(--bd);margin-bottom:.8rem;cursor:pointer;background:var(--ink)"/>
+      <button class="btnp" style="width:100%;justify-content:center" onclick="saveGearCat(${c?`'${c.id}'`:'null'})">${c?'Save Changes':'Add Category'}</button>
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function saveGearCat(editId){
+  const name=document.getElementById('gearCatNameInp').value.trim();
+  if(!name)return;
+  const color=document.getElementById('gearCatColorInp').value;
+  if(editId){
+    const c=cGearCats().find(x=>x.id===editId);
+    if(c){c.name=name;c.color=color;}
+  }else{
+    cGearCats().push({id:uid(),name,color});
+  }
+  calClosePopup();renderContent();
+}
+function removeGearCat(id){
+  if(!confirm('Remove this category? Items in it will become uncategorised.'))return;
+  cur().gearCategories=cGearCats().filter(c=>c.id!==id);
+  cGear().forEach(g=>{if(g.category===id)g.category='';});
+  if(gearCatFilter===id)gearCatFilter=null;
+  renderContent();
+}
+
+// ── Gear Excel import / export ────────────────────────────────────────────────
+const GEAR_FIELDS=[
+  {k:'name',l:'Item'},
+  {k:'qty', l:'Quantity'},
+  {k:'category',l:'Category'},
+  {k:'checked',l:'Packed (yes/no)'},
+];
+function exportGearTemplate(){
+  const header=GEAR_FIELDS.map(f=>f.l);
+  const example=['Passport','1','Documents / Money / Security','no'];
+  buildXlsxFromRows([header,example],'Gear').then(blob=>downloadBlob(blob,'gear_template.xlsx'));
+}
+function exportGearCSV(){
+  const header=GEAR_FIELDS.map(f=>f.l);
+  const rows=cGear().map(g=>GEAR_FIELDS.map(f=>{
+    if(f.k==='category')return gearCatM(g.category)?.name||'';
+    if(f.k==='checked')return g.checked?'yes':'no';
+    if(f.k==='qty')return g.qty!=null?String(g.qty):'';
+    return g[f.k]!=null?String(g[f.k]):'';
+  }));
+  buildXlsxFromRows([header,...rows],'Gear').then(blob=>downloadBlob(blob,'gear_export.xlsx'));
+}
+function importGearCSV(input){
+  if(blockIfReadOnly()){input.value='';return;}
+  const file=input.files[0];if(!file){return;}
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    let rows=[];
+    if(file.name.endsWith('.xlsx')||file.name.endsWith('.xls')){
+      try{rows=await parseXlsxToRows(e.target.result);}catch(err){alert('Could not read Excel file: '+err.message);input.value='';return;}
+    }else{
+      rows=e.target.result.split('\n').map(r=>r.split(',').map(c=>c.trim().replace(/^"|"$/g,'')));
+    }
+    if(!rows.length){input.value='';return;}
+    // Map header labels to GEAR_FIELDS keys
+    const header=rows[0].map(h=>h.toLowerCase().trim());
+    const colIdx={};
+    GEAR_FIELDS.forEach(f=>{
+      const idx=header.findIndex(h=>h===f.l.toLowerCase()||h===f.k.toLowerCase());
+      if(idx>=0)colIdx[f.k]=idx;
+    });
+    const imported=[];
+    for(let i=1;i<rows.length;i++){
+      const row=rows[i];if(!row||row.every(c=>!c))continue;
+      const name=colIdx.name!=null?row[colIdx.name]?.trim():'';
+      if(!name)continue;
+      const qtyRaw=colIdx.qty!=null?row[colIdx.qty]?.trim():'';
+      const qty=parseInt(qtyRaw)||null;
+      const catName=colIdx.category!=null?row[colIdx.category]?.trim():'';
+      const catObj=catName?cGearCats().find(c=>c.name.toLowerCase()===catName.toLowerCase()):null;
+      const checkedRaw=colIdx.checked!=null?row[colIdx.checked]?.trim().toLowerCase():'';
+      const checked=checkedRaw==='yes'||checkedRaw==='true';
+      imported.push({id:uid(),name,qty,category:catObj?catObj.id:'',checked});
+    }
+    if(!imported.length){alert('No valid rows found in the file.');input.value='';return;}
+    const merge=confirm(`Import ${imported.length} item${imported.length===1?'':'s'}?\n\nOK = Add to existing list\nCancel = Replace existing list`);
+    if(merge===null){input.value='';return;}
+    if(merge)cur().gear=[...cGear(),...imported];
+    else cur().gear=imported;
+    input.value='';renderContent();
+  };
+  if(file.name.endsWith('.xlsx')||file.name.endsWith('.xls'))reader.readAsArrayBuffer(file);
+  else reader.readAsText(file);
+}
+
 // ── AI ────────────────────────────────────────────────────────────────────────
 const AI={
   "Can I stay 10 more days in Spain?":"Based on your Schengen entry Jan 22, 2027, your Spanish itinerary already uses ~63 zone-days. Adding 10 risks the 90/180-day rule. Bridge with Morocco between Barcelona legs — your Cap d'Agde stretch already helps stretch your Schengen window.",
@@ -7604,6 +7917,9 @@ function executeDuplicateTour(){
   // Re-id stats categories and items
   clone.statsCategories=(clone.statsCategories||[]).map(c=>({...c,id:freshId(c.id)}));
   clone.stats=(clone.stats||[]).map(s=>({...s,id:freshId(s.id),category:freshId(s.category)||s.category}));
+  // Re-id gear categories and items
+  clone.gearCategories=(clone.gearCategories||[]).map(c=>({...c,id:freshId(c.id)}));
+  clone.gear=(clone.gear||[]).map(g=>({...g,id:freshId(g.id),category:freshId(g.category)||g.category}));
   const newId=uid();
   S.tours[newId]=clone;
   calClosePopup();
@@ -7640,7 +7956,7 @@ function createTour(){
     {id:uid(),name:'Luxury',color:'#8B4BC8'},
     {id:uid(),name:'Nature',color:'#4BC896'},
   ];
-  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
+  S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],gearCategories:defaultGearCats,gear:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
   restoreFiltersIfLeavingLife();
   if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX))detachSharedTourListener(S.cur.slice(SHARED_PREFIX.length));
   S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
