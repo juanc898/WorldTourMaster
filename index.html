@@ -650,6 +650,8 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   #routeEditTbl th:nth-child(4),#routeEditTbl td:nth-child(4),
   #routeEditTbl th:nth-child(5),#routeEditTbl td:nth-child(5){width:27%}
   #routeEditTbl th:nth-child(6),#routeEditTbl td:nth-child(6){width:15%}
+  #routeEditTbl th:nth-child(7),#routeEditTbl td:nth-child(7){width:34px;padding-left:0!important;padding-right:.2rem!important}
+  #routeEditTbl td:nth-child(7) button{padding:2px 5px!important;font-size:11px!important}
   #routeEditTbl td{padding-left:.25rem!important;padding-right:.25rem!important}
   /* Top-align every cell — with the weekday label now stacked under the date, the date/destination
      cells are taller than the single-line Nights cell, so center-aligning (the table default)
@@ -1136,6 +1138,13 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
 <div id="ctxMenu" class="ctx" style="display:none">
   <div class="ctx-item" onclick="ctxEdit()"><i class="ti ti-edit"></i> Edit destination</div>
   <div class="ctx-item" onclick="ctxKnowMore()"><i class="ti ti-message-bolt"></i> Know more (AI)</div>
+</div>
+<!-- EDIT ROUTE ROW MENU — one shared menu (not one per row) positioned near whichever
+     row's kebab button was clicked, same approach as the Events context menu above. -->
+<div id="routeRowMenu" class="ctx" style="display:none">
+  <div class="ctx-item" onclick="routeRowAddAbove()"><i class="ti ti-arrow-bar-to-up"></i> Add destination above</div>
+  <div class="ctx-item" onclick="routeRowAddBelow()"><i class="ti ti-arrow-bar-to-down"></i> Add destination below</div>
+  <div class="ctx-item" onclick="routeRowDeleteDest()" style="color:#E07A7A"><i class="ti ti-trash"></i> Delete destination</div>
 </div>
 <!-- Firebase compat SDK: global namespace (firebase.*), not ES modules — keeps every
      existing onclick="fn()" handler in this file working unchanged, since module scripts
@@ -2849,6 +2858,7 @@ function renderRouteEdit(){
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_a_${r.id}">${wS(r.arrival)}</span></div></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_d_${r.id}">${wS(r.departure)}</span></div></td>
       <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:12px;padding:.3rem .4rem;width:56px"/></td>
+      <td style="padding:.4rem .3rem;text-align:center"><button class="abtn" onclick="showRouteRowMenu(event,'${r.id}')" title="Row actions"><i class="ti ti-dots-vertical"></i></button></td>
     </tr>`;
   }).join('');
   return`<div class="panel">
@@ -2875,8 +2885,8 @@ function renderRouteEdit(){
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
       <table class="rtbl" id="routeEditTbl">
-        <thead><tr><th></th><th>Country</th><th>City</th><th>Arrival</th><th>Departure</th><th>Nights</th></tr></thead>
-        <tbody>${rows||'<tr><td colspan="6" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations yet</td></tr>'}</tbody>
+        <thead><tr><th></th><th>Country</th><th>City</th><th>Arrival</th><th>Departure</th><th>Nights</th><th></th></tr></thead>
+        <tbody>${rows||'<tr><td colspan="7" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations yet</td></tr>'}</tbody>
       </table>
     </div>
   </div>`;
@@ -2969,6 +2979,50 @@ function updateRouteCity(id,value){
   const r=routeDraft?.find(x=>x.id===id);if(!r)return;
   r.city=value.trim();
 }
+// ── Edit Route row menu: delete / insert above / insert below ──────────────────
+// Unlike date/country/city edits, these three actions take effect immediately —
+// same convention as the trash icon on the main Route table — rather than
+// waiting for Save Changes, since deferring structural add/remove through the
+// draft/diff system would add a lot of risk for little benefit here.
+let routeRowMenuId=null;
+function showRouteRowMenu(e,id){
+  e.preventDefault();e.stopPropagation();
+  routeRowMenuId=id;
+  const m=document.getElementById('routeRowMenu');
+  m.style.display='block';
+  m.style.left=Math.min(e.clientX,window.innerWidth-210)+'px';
+  m.style.top=Math.min(e.clientY,window.innerHeight-120)+'px';
+}
+function routeRowDeleteDest(){
+  document.getElementById('routeRowMenu').style.display='none';
+  if(blockIfReadOnly())return;
+  const id=routeRowMenuId;if(!id||!routeDraft)return;
+  const r=routeDraft.find(x=>x.id===id);
+  const label=r&&(r.city||r.country)?[r.city,r.country].filter(Boolean).join(', '):'this destination';
+  if(!confirm(`Delete ${label}?\n\nThis removes it from your itinerary immediately — it does not wait for Save Changes and cannot be undone automatically.`))return;
+  cur().destinations=cDests().filter(d=>d.id!==id);
+  routeDraft=routeDraft.filter(x=>x.id!==id);
+  if(curDestId===id)curDestId=null;
+  renderSB();renderContent();
+}
+// Shared by Add Above/Below: builds a blank destination, inheriting the reference row's
+// Journey Act so it lands in the same act as the row it was inserted next to.
+function insertBlankRouteRow(offset){
+  document.getElementById('routeRowMenu').style.display='none';
+  if(blockIfReadOnly())return;
+  const id=routeRowMenuId;if(!id||!routeDraft)return;
+  const idx=routeDraft.findIndex(x=>x.id===id);if(idx<0)return;
+  const refDest=dBy(id);
+  const newId=uid();
+  const blank={id:newId,act:refDest?refDest.act:(cActs()[0]?.id||''),status:'planned',country:'',city:'',flag:'📍',priority:3,arrival:'',departure:''};
+  cDests().push(blank);
+  routeDraft.splice(idx+offset,0,{id:newId,arrival:'',departure:'',country:'',city:'',flag:'📍'});
+  renderSB();renderContent();
+  // Scroll the freshly-inserted (empty) row into view so it's obvious where to start typing.
+  setTimeout(()=>{document.querySelector(`#routeEditTbl tr[data-id="${newId}"]`)?.scrollIntoView({block:'center',behavior:'smooth'});},50);
+}
+function routeRowAddAbove(){insertBlankRouteRow(0);}
+function routeRowAddBelow(){insertBlankRouteRow(1);}
 // Core gap/overlap-closing algorithm, generalized to work on any array of rows shaped like
 // {arrival,departure} in a given order — used identically whether operating on the live
 // destinations (main Route view) or on the in-memory draft (Edit Route preview). Walks the rows
@@ -5395,7 +5449,7 @@ function ctxKnowMore(){
   renderContent();
   setTimeout(()=>{aiMsgs.push({role:'ai',content:`Here's what you should know about **${d.event}** in ${d.city}, ${d.country}:\n\nThis will connect to the Claude API to deliver real-time, detailed intelligence — traditions, history, what to wear, what to bring, tickets, best spots, and insider secrets only locals know.\n\nIn the full powered version, each answer draws from your ${cDests().length} destination records and live web data for the most current guidance.`});renderContent();const el=document.getElementById('aiMsgs');if(el)el.scrollTop=el.scrollHeight;},700);
 }
-document.addEventListener('click',()=>{const m=document.getElementById('ctxMenu');if(m)m.style.display='none';});
+document.addEventListener('click',()=>{const m=document.getElementById('ctxMenu');if(m)m.style.display='none';const rm=document.getElementById('routeRowMenu');if(rm)rm.style.display='none';});
 document.addEventListener('click',e=>{const fm=document.getElementById('fmenu');if(fm&&!fm.parentElement?.contains(e.target))fm.classList.remove('open');});
 
 // ── BUDGET ────────────────────────────────────────────────────────────────────
