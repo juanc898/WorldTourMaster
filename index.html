@@ -2811,9 +2811,9 @@ function onRouteSearch(val){
 function toggleRouteEditMode(){
   if(!routeEditMode){
     if(blockIfReadOnly())return;
-    // Entering Edit Route — snapshot just the date-relevant fields into a draft. Nothing here
+    // Entering Edit Route — snapshot dates plus country/city/flag into a draft. Nothing here
     // touches the real destinations until Save Changes is clicked.
-    routeDraft=sDests().map(d=>({id:d.id,arrival:d.arrival,departure:d.departure}));
+    routeDraft=sDests().map(d=>({id:d.id,arrival:d.arrival,departure:d.departure,country:d.country||'',city:d.city||'',flag:d.flag||''}));
     routeEditMode=true;
   }else{
     // Leaving via the back button without an explicit Save/Cancel — treat it the same as
