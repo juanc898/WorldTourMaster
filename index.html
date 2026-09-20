@@ -1040,13 +1040,14 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     <div class="fg" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="f_visa_required" onchange="toggleVisaFields()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer"/><label class="flbl" for="f_visa_required" style="cursor:pointer">Visa required for this destination?</label></div>
     <div id="visaExtraFields" style="display:none">
       <div class="f2">
-        <div class="fg"><label class="flbl">Visa Type</label><select class="fi" id="f_visa_type"><option value="Physical">Physical Visa</option><option value="E-Visa">E-Visa</option><option value="On Arrival">Visa On Arrival</option></select></div>
+        <div class="fg"><label class="flbl">Visa Type</label><select class="fi" id="f_visa_type"><option value="Physical">Physical Visa</option><option value="E-Visa">E-Visa</option><option value="On Arrival">Visa On Arrival</option><option value="ETA">ETA (Electronic Travel Authorization)</option></select></div>
         <div class="fg"><label class="flbl">Visa Cost ($) <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_visa_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div>
       </div>
       <div class="f2">
         <div class="fg"><label class="flbl">Persons Sharing</label><input class="fi" id="f_visa_persons" type="number" min="1" value="2"/></div>
         <div class="fg"><label class="flbl">Visa Status</label><select class="fi" id="f_visa_status"><option value="Pending">Pending</option><option value="Obtained">Obtained</option></select></div>
       </div>
+      <div class="fg"><label class="flbl">Allowed Stay (days) <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_visa_days" type="number" min="0" placeholder="e.g. 90"/></div>
     </div>
   </div></div>
   <div class="msect"><div class="msttl">Vaccines / Other Paperwork Required</div><div class="mflds">
@@ -2631,7 +2632,7 @@ function renderProfile(){
   let visaHealthHTML='';
   if(d.visa_required||d.vaccines_required){
     visaHealthHTML=`<div class="pblk-f"><div class="bttl">Visa &amp; Health Requirements</div>`
-      +(d.visa_required?`<div class="drow"><span class="dlbl">Visa Required</span><span class="dval pyes" style="background:none;padding:0">✓ Yes — ${esc(d.visa_type||'Physical')}</span></div>${d.visa_cost>0?`<div class="drow"><span class="dlbl">Visa Cost</span><span class="dval">$${parseFloat(d.visa_cost).toFixed(2)}</span></div>`:''}<div class="drow"><span class="dlbl">Visa Status</span><span class="dval ${d.visa_status==='Obtained'?'grn':''}">${d.visa_status==='Obtained'?'✓ Obtained':'⏳ Pending'}</span></div>`:'')
+      +(d.visa_required?`<div class="drow"><span class="dlbl">Visa Required</span><span class="dval pyes" style="background:none;padding:0">✓ Yes — ${esc(d.visa_type||'Physical')}</span></div>${d.visa_cost>0?`<div class="drow"><span class="dlbl">Visa Cost</span><span class="dval">$${parseFloat(d.visa_cost).toFixed(2)}</span></div>`:''}${d.visa_days!=null?`<div class="drow"><span class="dlbl">Allowed Stay</span><span class="dval">${d.visa_days} day${d.visa_days===1?'':'s'}</span></div>`:''}<div class="drow"><span class="dlbl">Visa Status</span><span class="dval ${d.visa_status==='Obtained'?'grn':''}">${d.visa_status==='Obtained'?'✓ Obtained':'⏳ Pending'}</span></div>`:'')
       +(d.vaccines_required?`<div class="drow"><span class="dlbl">Vaccines/Paperwork</span><span class="dval pyes" style="background:none;padding:0">✓ Required</span></div>${d.vaccines_detail?`<div class="drow"><span class="dlbl">Details</span><span class="dval">${esc(d.vaccines_detail)}</span></div>`:''}`:'')
       +`</div>`;
   }
@@ -2691,8 +2692,8 @@ const FIELDS=[
   {k:'t_arr_dt',l:'Arrival DateTime (YYYY-MM-DDTHH:MM)',t:'text'},
   {k:'t_connection',l:'Connection Info',t:'text'},{k:'t_cost',l:'Transport Cost ($)',t:'number'},
   {k:'t_paid',l:'Transport Paid (yes/no/partial)',t:'text'},{k:'t_persons',l:'Transport Persons Sharing',t:'number'},
-  {k:'visa_required',l:'Visa Required (yes/no)',t:'text'},{k:'visa_type',l:'Visa Type (Physical/E-Visa/On Arrival)',t:'text'},
-  {k:'visa_cost',l:'Visa Cost ($)',t:'number'},{k:'visa_status',l:'Visa Status (Obtained/Pending)',t:'text'},{k:'visa_persons',l:'Visa Persons Sharing',t:'number'},
+  {k:'visa_required',l:'Visa Required (yes/no)',t:'text'},{k:'visa_type',l:'Visa Type (Physical/E-Visa/On Arrival/ETA)',t:'text'},
+  {k:'visa_cost',l:'Visa Cost ($)',t:'number'},{k:'visa_status',l:'Visa Status (Obtained/Pending)',t:'text'},{k:'visa_persons',l:'Visa Persons Sharing',t:'number'},{k:'visa_days',l:'Allowed Stay (days)',t:'number'},
   {k:'vaccines_required',l:'Vaccines/Paperwork Required (yes/no)',t:'text'},{k:'vaccines_detail',l:'Vaccines/Paperwork Detail',t:'text'},
   {k:'notes',l:'Notes & Memories',t:'text'},{k:'todo',l:'Things To Do (use | for line breaks)',t:'text'},
 ];
@@ -3211,10 +3212,11 @@ const ROUTE_FULL_FIELDS=[
   {k:'event_cost',l:'Event Cost ($)',t:'number'},
   {k:'event_persons',l:'Event Persons',t:'number'},
   {k:'visa_required',l:'Visa Req.',t:'checkbox'},
-  {k:'visa_type',l:'Visa Type',t:'select',opts:[['Physical','Physical'],['E-Visa','E-Visa'],['On Arrival','On Arrival']]},
+  {k:'visa_type',l:'Visa Type',t:'select',opts:[['Physical','Physical'],['E-Visa','E-Visa'],['On Arrival','On Arrival'],['ETA','ETA']]},
   {k:'visa_cost',l:'Visa Cost ($)',t:'number'},
   {k:'visa_persons',l:'Visa Persons',t:'number'},
   {k:'visa_status',l:'Visa Status',t:'select',opts:[['Pending','Pending'],['Obtained','Obtained']]},
+  {k:'visa_days',l:'Allowed Stay (days)',t:'number'},
   {k:'vaccines_required',l:'Vaccines Req.',t:'checkbox'},
   {k:'vaccines_detail',l:'Vaccines Detail',t:'text'},
   {k:'notes',l:'Notes',t:'textarea'},
@@ -4020,7 +4022,7 @@ function processImportedRows(rows,input){
     const STATUS_OPTS=['planned','partial','confirmed','wishlist','completed','cancelled'];
     const MOT_OPTS=['Flight','Train','Ferry','Car Rental','Motorbike','Bus','Private Transfer','Cruise'];
     const TPAID_OPTS=['no','partial','yes'];
-    const VISA_OPTS=['Physical','E-Visa','On Arrival'];
+    const VISA_OPTS=['Physical','E-Visa','On Arrival','ETA'];
     const VISA_STATUS_OPTS=['Obtained','Pending'];
     const DATE_FIELDS=new Set(['arrival','departure','event_start','event_end']);
     // Scan every slash/dash-separated date in the WHOLE file once, looking for any unambiguous
@@ -6686,6 +6688,128 @@ function setNationality(code){
   renderContent();
 }
 
+// ── Refresh Visa Data ────────────────────────────────────────────────────────
+// Pulls live visa-requirement data from a free, MIT-licensed, actively-maintained community
+// dataset (sourced from passportindex.org, the same site most people already check by hand):
+// https://github.com/imorte/passport-index-data
+// This is NOT an official government source and is only refreshed periodically by volunteers —
+// treat it as a fast starting point, not a substitute for checking an official source close to
+// departure. Only Visa Required / Visa Type / Allowed Stay are touched; Visa Cost, Visa Status,
+// and Persons Sharing (anything the person already tracks themselves) are left exactly as-is.
+const VISA_DATA_URL='https://raw.githubusercontent.com/imorte/passport-index-data/main/passport-index.json';
+const VISA_DATA_COMMITS_URL='https://api.github.com/repos/imorte/passport-index-data/commits?path=passport-index.json&per_page=1';
+let visaDataCache=null; // {data, fetchedAt, sourceUpdatedAt} — kept in memory for the session so re-opening Visas doesn't always re-fetch
+function refreshVisaDataFromSource(){
+  if(blockIfReadOnly())return;
+  if(!userNationality){
+    alert('Please select your passport/nationality above first — the visa lookup needs to know which passport to check.');
+    document.getElementById('nationalitySelect')?.focus();
+    return;
+  }
+  const btn=document.getElementById('refreshVisaBtn');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Fetching latest data…';}
+  // Fetch the data itself and (separately) when it was actually last updated upstream — the
+  // second call is "best effort": if GitHub's API is rate-limited or unreachable, the visa
+  // lookup still proceeds fine, it just won't show a "source updated" date this time.
+  const dataPromise=fetch(VISA_DATA_URL).then(r=>{
+    if(!r.ok)throw new Error('Server responded with '+r.status);
+    return r.json();
+  });
+  const commitPromise=fetch(VISA_DATA_COMMITS_URL).then(r=>r.ok?r.json():null)
+    .then(commits=>commits&&commits[0]?.commit?.committer?.date||null)
+    .catch(()=>null);
+  Promise.all([dataPromise,commitPromise]).then(([data,sourceUpdatedAt])=>{
+    visaDataCache={data,fetchedAt:Date.now(),sourceUpdatedAt};
+    if(sourceUpdatedAt)localStorage.setItem('ae_visa_source_updated',sourceUpdatedAt); // survives to the next session, shown even before a fresh refresh
+    applyVisaDataLookup(data);
+  }).catch(err=>{
+    alert('Could not fetch visa data right now.\n\n'+err.message+'\n\nCheck your internet connection and try again — or the data source may be temporarily unavailable.');
+  }).finally(()=>{
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-refresh"></i> Refresh Visa Data';}
+  });
+}
+// Maps a dataset "status" string onto this app's own Visa Type options.
+function mapVisaStatus(status){
+  if(status==='visa free'||status===-1||status==='-1')return{required:false,type:''};
+  if(status==='visa on arrival')return{required:true,type:'On Arrival'};
+  if(status==='eta')return{required:true,type:'ETA'};
+  if(status==='e-visa')return{required:true,type:'E-Visa'};
+  if(status==='visa required')return{required:true,type:'Physical'};
+  return null; // 'no admission' and anything unrecognized — deliberately not auto-mapped, flagged separately
+}
+function applyVisaDataLookup(data){
+  // Build a case-insensitive index of the data's own top-level keys once, rather than assuming
+  // they're lowercase — protects against this source (or a future replacement) using a different
+  // casing convention than documented, which is exactly what caused this lookup to fail before.
+  const topKeyIndex={};Object.keys(data).forEach(k=>{topKeyIndex[k.toLowerCase()]=k;});
+  const realNatKey=topKeyIndex[userNationality.toLowerCase()];
+  const nationalityData=realNatKey?data[realNatKey]:null;
+  if(!nationalityData){
+    alert(`This data source doesn't have an entry for the selected nationality (looked for "${userNationality}" among ${Object.keys(data).length} entries). Nothing was changed.`);
+    return;
+  }
+  const subKeyIndex={};Object.keys(nationalityData).forEach(k=>{subKeyIndex[k.toLowerCase()]=k;});
+  const nameByCode={};COUNTRIES.forEach(([code,name])=>{nameByCode[code.toLowerCase()]=name;});
+  const codeByName={};COUNTRIES.forEach(([code,name])=>{codeByName[name.toLowerCase()]=code.toLowerCase();});
+  const dests=cDests().filter(d=>d.status!=='cancelled'&&d.country);
+  const preview=[];   // {dest, mapped:{required,type,days}}
+  const flagged=[];   // destinations with "no admission" or an unrecognized status — needs manual check
+  const notFound=[];  // destination's country name didn't resolve to anything in the dataset
+  const byCountry=new Map(); // country name -> {code, entry} so every destination in that country gets the same result
+  dests.forEach(d=>{
+    const key=d.country.toLowerCase();
+    if(!byCountry.has(key)){
+      const code=codeByName[key];
+      const realDestKey=code?subKeyIndex[code]:null;
+      const entry=realDestKey?nationalityData[realDestKey]:null;
+      byCountry.set(key,{code,entry});
+    }
+    const{code,entry}=byCountry.get(key);
+    if(!code||!entry){notFound.push(d);return;}
+    const mapped=mapVisaStatus(entry.status);
+    if(!mapped){flagged.push(d);return;}
+    preview.push({dest:d,mapped:{...mapped,days:entry.days!=null?entry.days:null}});
+  });
+  if(!preview.length&&!flagged.length){
+    alert(`No matches found for any of your ${dests.length} destination${dests.length===1?'':'s'} — none of the country names could be matched against this data source. Nothing was changed.`);
+    return;
+  }
+  const needVisa=preview.filter(p=>p.mapped.required).length;
+  const noVisa=preview.length-needVisa;
+  const byType={};preview.forEach(p=>{if(p.mapped.required)byType[p.mapped.type]=(byType[p.mapped.type]||0)+1;});
+  const typeSummary=Object.entries(byType).map(([t,n])=>`${n} × ${t}`).join(', ');
+  const natName=COUNTRIES.find(c=>c[0]===userNationality)?.[1]||userNationality;
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Refresh Visa Data</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">
+      <div style="font-size:12.5px;color:var(--t2);line-height:1.6;margin-bottom:.8rem">
+        Checked <strong>${dests.length}</strong> destination${dests.length===1?'':'s'} against a <strong>${natName}</strong> passport.<br/>
+        <strong style="color:var(--green)">${noVisa}</strong> need no visa · <strong style="color:var(--gold)">${needVisa}</strong> need one${typeSummary?' ('+esc(typeSummary)+')':''}
+        ${flagged.length?`<br/><span style="color:#E07A7A">⚠ ${flagged.length} flagged for manual review (possible entry restriction)</span>`:''}
+        ${notFound.length?`<br/><span style="color:var(--t3)">${notFound.length} destination${notFound.length===1?'':'s'} couldn't be matched — country name not recognized by this source</span>`:''}
+      </div>
+      <div style="font-size:11.5px;color:var(--t3);background:var(--sf2);border-radius:8px;padding:.6rem .7rem;margin-bottom:.9rem;line-height:1.5">
+        <i class="ti ti-info-circle"></i> This only updates <strong>Visa Required</strong>, <strong>Visa Type</strong>, and <strong>Allowed Stay</strong>. Your Visa Cost, Status, and Persons Sharing are left untouched. Source is a community-maintained dataset, not an official government feed — please double-check close to departure.
+      </div>
+      <button class="btnp" style="width:100%;justify-content:center" onclick="commitVisaDataLookup()">Apply to ${preview.length} destination${preview.length===1?'':'s'}</button>
+    </div>`;
+  window._pendingVisaPreview=preview; // handed to commitVisaDataLookup — simplest way to pass this through the shared modal pattern
+  document.getElementById('calPopModal').style.display='flex';
+}
+function commitVisaDataLookup(){
+  const preview=window._pendingVisaPreview;
+  if(!preview)return;
+  preview.forEach(({dest,mapped})=>{
+    dest.visa_required=mapped.required;
+    dest.visa_type=mapped.required?mapped.type:'';
+    dest.visa_days=mapped.days;
+    if(mapped.required&&!dest.visa_status)dest.visa_status='Pending'; // only set a default if it was never set at all
+    if(mapped.required&&!dest.visa_persons)dest.visa_persons=2;
+  });
+  window._pendingVisaPreview=null;
+  calClosePopup();
+  renderSB();renderContent();
+}
+
 function renderVisas(){
   const dests=sDests().filter(d=>d.status!=='cancelled');
   const visaDests=dests.filter(d=>d.visa_required);
@@ -6750,7 +6874,7 @@ function renderVisas(){
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(d.city)}, ${esc(d.country)}</div>
         <div class="ev-loc">${esc(am.name)} · ${d.arrival?fD(d.arrival):'TBD'}${d.departure?' – '+fD(d.departure):''}</div>
-        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.visa_type||'Physical')} visa${d.visa_cost>0?' · $'+parseFloat(d.visa_cost).toFixed(2):''}</div>
+        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(d.visa_type||'Physical')} visa${d.visa_cost>0?' · $'+parseFloat(d.visa_cost).toFixed(2):''}${d.visa_days!=null?' · '+d.visa_days+' day'+(d.visa_days===1?'':'s')+' allowed':''}</div>
       </div>
       <span class="sbadge ${statusObtained?'sb-confirmed':'sb-planned'}" style="flex-shrink:0">${statusObtained?'✓ Obtained':'⏳ Pending'}</span>
     </div>`;
@@ -6780,13 +6904,21 @@ function renderVisas(){
   return`<div class="panel">
     <div class="sec-ttl">Your Passport / Nationality</div>
     <div class="scard" style="margin-bottom:1rem;cursor:default">
-      <div style="display:flex;align-items:center;gap:.75rem">
+      <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
         <span style="font-size:32px">${natFlag?flagHtml(natFlag):'🛂'}</span>
-        <div style="flex:1">
+        <div style="flex:1;min-width:180px">
           <select class="fi" id="nationalitySelect" onchange="setNationality(this.value)" style="font-size:14px">${natOptions}</select>
           <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:4px">Saved on this device — used to determine which destinations below need a visa</div>
         </div>
+        <button class="fbtn" id="refreshVisaBtn" onclick="refreshVisaDataFromSource()" title="Look up visa requirements for every destination against your selected passport, using a free community-maintained dataset"><i class="ti ti-refresh"></i> Refresh Visa Data</button>
       </div>
+      ${(()=>{
+        const sourceDate=visaDataCache?.sourceUpdatedAt||localStorage.getItem('ae_visa_source_updated');
+        const parts=[];
+        if(sourceDate)parts.push(`Data source last updated: ${new Date(sourceDate).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}`);
+        if(visaDataCache)parts.push(`you last checked: ${new Date(visaDataCache.fetchedAt).toLocaleString()}`);
+        return parts.length?`<div style="font-size:10.5px;color:var(--t3);font-family:var(--font-ui);margin-top:.5rem">${esc(parts.join(' · '))}</div>`:'';
+      })()}
     </div>
 
     <div class="sgrid">
@@ -8026,7 +8158,7 @@ function openDestModal(editId){if(blockIfReadOnly())return;
   document.getElementById('destModalTitle').textContent=editId?'Edit Destination':'Add Destination';
   const as=document.getElementById('f_act');
   as.innerHTML=cActs().map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
-  const flds=['status','city','flag','priority','arrival','departure','nights','event','event_type','event_start','event_end','event_cost','event_persons','hotel','hotel_ref','cost','persons','paid_hotel','mot','t_company','t_ref','t_persons','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','visa_type','visa_cost','visa_status','visa_persons','vaccines_detail','notes','todo'];
+  const flds=['status','city','flag','priority','arrival','departure','nights','event','event_type','event_start','event_end','event_cost','event_persons','hotel','hotel_ref','cost','persons','paid_hotel','mot','t_company','t_ref','t_persons','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','visa_type','visa_cost','visa_status','visa_persons','visa_days','vaccines_detail','notes','todo'];
   flds.forEach(f=>{const el=document.getElementById('f_'+f);if(el){if(el.tagName==='SELECT')el.selectedIndex=0;else el.value='';}});
   document.getElementById('f_persons').value='2';document.getElementById('f_t_paid').value='no';
   document.getElementById('f_event_persons').value='2';document.getElementById('f_t_persons').value='2';document.getElementById('f_visa_persons').value='2';
@@ -8046,7 +8178,7 @@ function openDestModal(editId){if(blockIfReadOnly())return;
       sv('t_dep_dt',d.t_dep_dt);sv('t_arr_dt',d.t_arr_dt);sv('t_connection',d.t_connection);
       sv('t_cost',d.t_cost||'');sv('t_paid',d.t_paid||'no');sv('t_num',d.t_num);sv('t_persons',d.t_persons||2);
       document.getElementById('f_visa_required').checked=!!d.visa_required;
-      sv('visa_type',d.visa_type||'Physical');sv('visa_cost',d.visa_cost||'');sv('visa_status',d.visa_status||'Pending');sv('visa_persons',d.visa_persons||2);
+      sv('visa_type',d.visa_type||'Physical');sv('visa_cost',d.visa_cost||'');sv('visa_status',d.visa_status||'Pending');sv('visa_persons',d.visa_persons||2);sv('visa_days',d.visa_days!=null?d.visa_days:'');
       toggleVisaFields();
       document.getElementById('f_vaccines_required').checked=!!d.vaccines_required;
       sv('vaccines_detail',d.vaccines_detail);
@@ -8093,7 +8225,7 @@ function saveDest(){if(blockIfReadOnly())return;
     mot:gv('mot'),t_company:gv('t_company'),t_ref:gv('t_ref'),t_dep_port:gv('t_dep_port'),t_arr_port:gv('t_arr_port'),
     t_dep_dt:gv('t_dep_dt'),t_arr_dt:gv('t_arr_dt'),t_connection:gv('t_connection'),
     t_cost:gn('t_cost'),t_paid:gv('t_paid'),t_num:gv('t_num'),t_persons:parseInt(gv('t_persons'))||2,
-    visa_required:visaRequired,visa_type:visaRequired?gv('visa_type'):'',visa_cost:visaRequired?gn('visa_cost'):0,visa_status:visaRequired?gv('visa_status'):'',visa_persons:visaRequired?(parseInt(gv('visa_persons'))||2):2,
+    visa_required:visaRequired,visa_type:visaRequired?gv('visa_type'):'',visa_cost:visaRequired?gn('visa_cost'):0,visa_status:visaRequired?gv('visa_status'):'',visa_persons:visaRequired?(parseInt(gv('visa_persons'))||2):2,visa_days:gv('visa_days')?parseInt(gv('visa_days')):null,
     vaccines_required:vaccinesRequired,vaccines_detail:vaccinesRequired?gv('vaccines_detail'):'',
     notes:document.getElementById('f_notes')?.value?.trim()||'',
     todo:document.getElementById('f_todo')?.value?.trim()||'',
