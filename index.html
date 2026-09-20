@@ -411,8 +411,10 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 /* Edit All Fields scrolls within its own capped-height container (both directions), so the
    header needs position:sticky to stay visible while scrolling down through many rows. */
 #routeFullEditTbl thead th{position:sticky;top:0;z-index:2;background:var(--card-bg);white-space:nowrap}
-#routeFullEditTbl td{white-space:nowrap}
+#routeFullEditTbl td{white-space:nowrap;padding:0}
 #routeFullEditTbl td textarea{white-space:normal}
+.rfc-static{padding:.45rem .5rem;font-size:12.5px;color:var(--t1);cursor:pointer;min-height:1.2em;border-radius:4px}
+.rfc-static:hover{background:var(--sf2)}
 #routeEditTbl tr.re-drop-above td,#routeFullEditTbl tr.re-drop-above td{box-shadow:inset 0 2px 0 var(--gold)}
 #routeEditTbl tr.re-drop-below td,#routeFullEditTbl tr.re-drop-below td{box-shadow:inset 0 -2px 0 var(--gold)}
 .rt-mobile-dates{display:none;font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px;white-space:nowrap}
@@ -3165,10 +3167,17 @@ function confirmCancelRouteChanges(){
 // Complements Edit Route: Edit Route is for fast date-sequence work (with its cross-row
 // auto-calculate/Fix-Dates-Gaps cascade); this is for bulk-editing everything else — Hotel,
 // Transport, Event, Visa, Notes — without opening the modal one destination at a time.
-// Deliberately simpler on the date side: arrival/departure/nights here only stay consistent
-// WITHIN their own row, same as the Add Destination form does, with no cascade to other rows.
-// NOTE: custom fields (user-defined, variable per account) aren't columns here — those still
-// go through the regular per-destination Edit form.
+
+// Used both to snapshot the initial draft AND to build a blank row for a freshly-inserted
+// destination (via the row menu's Add Above/Below) — one source of truth for the row shape.
+// ── EDIT ALL FIELDS (spreadsheet-style grid — every Add-Destination-form field, per row) ───────
+// Cells render as plain static text by default — NOT a live <select>/<input> per cell — and only
+// become a real, focused input for the ONE cell just clicked, Excel/Sheets-style. This is what
+// keeps a 200-row × 40-column grid fast: at any moment there's at most one live form control in
+// the whole table, not thousands. No drag-to-reorder here (that's Edit Route's job) — instead,
+// tick rows and use Bulk Edit to change one field across many destinations in a single action.
+// NOTE: custom fields (user-defined, variable per account) aren't columns here — those still go
+// through the regular per-destination Edit form.
 const ROUTE_FULL_FIELDS=[
   {k:'hotel',l:'Hotel',t:'text'},
   {k:'hotel_ref',l:'Hotel Ref #',t:'text'},
@@ -3206,6 +3215,11 @@ const ROUTE_FULL_FIELDS=[
 const ROUTE_FULL_STATUS_OPTS=[['planned','Planned'],['partial','Partially Confirmed'],['confirmed','Confirmed'],['wishlist','Wishlist'],['completed','Completed'],['cancelled','Cancelled']];
 const ROUTE_FULL_PRIORITY_OPTS=[['5','★★★★★ Must do'],['4','★★★★ High'],['3','★★★ Medium'],['2','★★ Low'],['1','★ Someday']];
 const ROUTE_FULL_CORE_KEYS=['act','status','country','city','priority','arrival','departure'];
+const ROUTE_FULL_CORE_COLS=[{k:'act',l:'Act'},{k:'status',l:'Status'},{k:'country',l:'Country'},{k:'city',l:'City'},{k:'priority',l:'Priority'},{k:'arrival',l:'Arrival'},{k:'departure',l:'Departure'},{k:'nights',l:'Nights'}];
+const ROUTE_FULL_ALL_COLS=[...ROUTE_FULL_CORE_COLS,...ROUTE_FULL_FIELDS];
+// Bulk Edit is deliberately limited to select-backed (unambiguous) fields, so a mass-change can
+// never accidentally blank out unique per-destination free text like Hotel or Notes.
+const ROUTE_FULL_BULK_FIELDS=[{k:'act',l:'Act'},{k:'status',l:'Status'},{k:'priority',l:'Priority'},{k:'country',l:'Country'},{k:'mot',l:'Transport Mode'},{k:'t_paid',l:'Transport Paid'},{k:'visa_type',l:'Visa Type'},{k:'visa_status',l:'Visa Status'}];
 
 // Used both to snapshot the initial draft AND to build a blank row for a freshly-inserted
 // destination (via the row menu's Add Above/Below) — one source of truth for the row shape.
@@ -3214,12 +3228,25 @@ function buildRouteFullDraftRow(d){
   ROUTE_FULL_FIELDS.forEach(f=>{row[f.k]=f.t==='checkbox'?!!d[f.k]:(d[f.k]!=null?d[f.k]:'');});
   return row;
 }
+let routeFullSelected=new Set(); // ids ticked for Bulk Edit
+let routeFullEditingCell=null; // {id,key} of the single cell currently live, or null
+function fullFieldMeta(key){
+  if(key==='act')return{t:'act'};
+  if(key==='status')return{t:'select',opts:ROUTE_FULL_STATUS_OPTS};
+  if(key==='country')return{t:'country'};
+  if(key==='city')return{t:'text'};
+  if(key==='priority')return{t:'select',opts:ROUTE_FULL_PRIORITY_OPTS};
+  if(key==='arrival'||key==='departure')return{t:'date'};
+  if(key==='nights')return{t:'nights'};
+  return ROUTE_FULL_FIELDS.find(f=>f.k===key)||{t:'text'};
+}
 function toggleRouteFullEditMode(){
   if(!routeFullEditMode){
     if(blockIfReadOnly())return;
     // Entering Edit All Fields — snapshot every field into a draft. Nothing here touches the
     // real destinations until Save Changes is clicked.
     routeFullDraft=sDests().map(buildRouteFullDraftRow);
+    routeFullSelected=new Set();routeFullEditingCell=null;
     routeFullEditMode=true;
   }else{
     // Leaving via the back button without an explicit Save/Cancel — treat it the same as
@@ -3227,7 +3254,7 @@ function toggleRouteFullEditMode(){
     if(routeFullDraft&&draftFullHasChanges()){
       if(!confirm('You have unsaved changes. Leave without saving?\n\nThis will discard your draft changes — everything will stay as it was before you started editing.\n\nAre you sure?'))return;
     }
-    routeFullEditMode=false;routeFullDraft=null;
+    routeFullEditMode=false;routeFullDraft=null;routeFullSelected=new Set();routeFullEditingCell=null;
   }
   renderContent();
 }
@@ -3249,8 +3276,6 @@ function updateRouteFullCountry(id,code){
   const entry=COUNTRIES.find(c=>c[0]===code);
   r.country=entry?entry[1]:'';
   r.flag=entry?codeToFlag(code):'';
-  const flagSpan=document.getElementById('rfflag_'+id);
-  if(flagSpan)flagSpan.innerHTML=flagHtml(r.flag);
 }
 function updateRouteFullField(id,key,value){
   const r=routeFullDraft?.find(x=>x.id===id);if(!r)return;
@@ -3261,9 +3286,7 @@ function updateRouteFullField(id,key,value){
     if(!isNaN(nights)&&r.arrival){
       const nd=new Date(r.arrival+'T12:00:00');nd.setDate(nd.getDate()+nights);
       r.departure=nd.toISOString().split('T')[0];
-      const tr=document.querySelector(`#routeFullEditTbl tr[data-id="${id}"]`);
-      const depInput=tr?.querySelector('input[data-field="departure"]');
-      if(depInput&&document.activeElement!==depInput)depInput.value=r.departure;
+      refreshStaticFullCell(id,'departure'); // the Departure cell is (almost always) static right now — keep it in sync
     }
     return;
   }
@@ -3275,52 +3298,184 @@ function updateRouteFullField(id,key,value){
   else if(fieldDef&&fieldDef.t==='checkbox')r[key]=!!value;
   else r[key]=value; // text/select/date/datetime-local/textarea/act/status — plain string as-is
 }
-function renderFullFieldCell(r,f){
-  const val=r[f.k];
-  if(f.t==='select'){
-    const opts=f.opts.map(([v,l])=>`<option value="${esc(v)}"${String(v)===String(val)?' selected':''}>${esc(l)}</option>`).join('');
-    return`<td><select class="fi" style="min-width:120px;font-size:12px" onchange="updateRouteFullField('${r.id}','${f.k}',this.value)">${opts}</select></td>`;
+
+// ── Spreadsheet cell rendering: static (cheap, default) vs. live (only the active cell) ────────
+function staticFullCellHTML(r,key){
+  const meta=fullFieldMeta(key);
+  let text;
+  if(meta.t==='select'){
+    const found=meta.opts.find(([v])=>String(v)===String(r[key]));
+    text=found?esc(found[1]):(r[key]?esc(String(r[key])):'<span style="color:var(--t3)">—</span>');
+  }else if(meta.t==='act'){
+    const a=cActs().find(x=>x.id===r.act);
+    text=a?esc(a.name):'<span style="color:var(--t3)">—</span>';
+  }else if(meta.t==='country'){
+    text=r.country?`${flagHtml(r.flag)} ${esc(r.country)}`:'<span style="color:var(--t3)">— Select —</span>';
+  }else if(meta.t==='nights'){
+    const n=dBtw(r.arrival,r.departure);
+    text=n>=0?String(n):'<span style="color:var(--t3)">—</span>';
+  }else if(key==='notes'||key==='todo'){
+    const s=(r[key]||'').toString();
+    text=s?esc(s.length>36?s.slice(0,36)+'…':s):'<span style="color:var(--t3)">—</span>';
+  }else{
+    text=(r[key]!==''&&r[key]!=null)?esc(String(r[key])):'<span style="color:var(--t3)">—</span>';
   }
-  if(f.t==='checkbox'){
-    return`<td style="text-align:center"><input type="checkbox" ${val?'checked':''} style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer" onchange="updateRouteFullField('${r.id}','${f.k}',this.checked)"/></td>`;
-  }
-  if(f.t==='textarea'){
-    return`<td><textarea class="fi" style="min-width:170px;min-height:40px;font-size:12px;resize:vertical" onblur="updateRouteFullField('${r.id}','${f.k}',this.value)">${esc(val)}</textarea></td>`;
-  }
-  const w=f.t==='datetime-local'?155:(f.t==='number'?90:130);
-  return`<td><input class="fi" type="${f.t}" value="${esc(String(val))}" onblur="updateRouteFullField('${r.id}','${f.k}',this.value)" style="min-width:${w}px;font-size:12px"/></td>`;
+  return`<div class="rfc-static" onclick="activateFullCell('${r.id}','${key}')" title="Click to edit">${text}</div>`;
 }
+function liveFullCellHTML(r,key){
+  const meta=fullFieldMeta(key);
+  if(meta.t==='act'){
+    const opts=cActs().map(a=>`<option value="${a.id}"${a.id===r.act?' selected':''}>${esc(a.name)}</option>`).join('');
+    return`<select class="fi" style="font-size:12px;min-width:110px" onchange="commitAndDeactivateFullCell('${r.id}','act',this.value)">${opts}</select>`;
+  }
+  if(meta.t==='select'){
+    const opts=meta.opts.map(([v,l])=>`<option value="${esc(v)}"${String(v)===String(r[key])?' selected':''}>${esc(l)}</option>`).join('');
+    return`<select class="fi" style="font-size:12px;min-width:120px" onchange="commitAndDeactivateFullCell('${r.id}','${key}',this.value)">${opts}</select>`;
+  }
+  if(meta.t==='country'){
+    return`<div style="display:flex;align-items:center;gap:4px"><span style="font-size:14px;flex-shrink:0">${flagHtml(r.flag)}</span><select class="fi re-country-sel" onchange="commitAndDeactivateFullCountry('${r.id}',this.value)">${countryOptionsHTML(r.country)}</select></div>`;
+  }
+  if(key==='notes'||key==='todo'){
+    return`<textarea class="fi" style="min-width:170px;min-height:44px;font-size:12px" onblur="commitAndDeactivateFullCell('${r.id}','${key}',this.value)">${esc(r[key])}</textarea>`;
+  }
+  if(meta.t==='nights'){
+    const n=dBtw(r.arrival,r.departure);
+    return`<input class="fi" type="number" min="0" value="${n>=0?n:''}" style="width:60px;font-size:12px" onblur="commitAndDeactivateFullCell('${r.id}','nights',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>`;
+  }
+  if(meta.t==='date'){
+    return`<input class="fi" type="date" value="${r[key]||''}" style="font-size:12px;min-width:130px" onblur="commitAndDeactivateFullCell('${r.id}','${key}',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>`;
+  }
+  if(meta.t==='datetime-local'){
+    return`<input class="fi" type="datetime-local" value="${esc(String(r[key]||''))}" style="font-size:12px;min-width:155px" onblur="commitAndDeactivateFullCell('${r.id}','${key}',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>`;
+  }
+  if(meta.t==='number'){
+    return`<input class="fi" type="number" value="${esc(String(r[key]!=null?r[key]:''))}" style="font-size:12px;min-width:90px" onblur="commitAndDeactivateFullCell('${r.id}','${key}',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>`;
+  }
+  return`<input class="fi" type="text" value="${esc(String(r[key]!=null?r[key]:''))}" style="font-size:12px;min-width:120px" onblur="commitAndDeactivateFullCell('${r.id}','${key}',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>`;
+}
+function refreshStaticFullCell(id,key){
+  if(routeFullEditingCell&&routeFullEditingCell.id===id&&routeFullEditingCell.key===key)return; // being actively edited right now — leave it alone
+  const td=document.getElementById(`rfc_${key}_${id}`);
+  if(!td)return;
+  const r=routeFullDraft.find(x=>x.id===id);
+  if(r)td.innerHTML=staticFullCellHTML(r,key);
+}
+function activateFullCell(id,key){
+  if(blockIfReadOnly())return;
+  if(routeFullEditingCell)refreshStaticFullCell(routeFullEditingCell.id,routeFullEditingCell.key); // revert whatever was live before
+  routeFullEditingCell={id,key};
+  const td=document.getElementById(`rfc_${key}_${id}`);
+  if(!td)return;
+  const r=routeFullDraft.find(x=>x.id===id);
+  if(!r)return;
+  td.innerHTML=liveFullCellHTML(r,key);
+  const el=td.querySelector('input,select,textarea');
+  if(el){el.focus();if(el.select)try{el.select();}catch(e){}}
+}
+function commitAndDeactivateFullCell(id,key,value){
+  updateRouteFullField(id,key,value);
+  routeFullEditingCell=null;
+  refreshStaticFullCell(id,key);
+}
+function commitAndDeactivateFullCountry(id,code){
+  updateRouteFullCountry(id,code);
+  routeFullEditingCell=null;
+  refreshStaticFullCell(id,'country');
+}
+
+// ── Row selection + Bulk Edit ────────────────────────────────────────────────────────────────
+function toggleFullRowSelect(id,checked){
+  if(checked)routeFullSelected.add(id);else routeFullSelected.delete(id);
+  // Patch just the toolbar button + "select all" checkbox — keeps single-row selection instant
+  // even with hundreds of rows, no full re-render needed for this.
+  const btn=document.getElementById('fullBulkEditBtn');
+  if(btn){
+    const n=routeFullSelected.size;
+    btn.disabled=n===0;
+    btn.style.opacity=n===0?'.4':'1';
+    btn.style.cursor=n===0?'not-allowed':'pointer';
+    btn.innerHTML=`<i class="ti ti-list-check"></i> Bulk Edit${n?` (${n} selected)`:''}`;
+  }
+  const allCb=document.getElementById('fullSelectAllCb');
+  if(allCb&&routeFullDraft)allCb.checked=routeFullDraft.length>0&&routeFullDraft.every(r=>routeFullSelected.has(r.id));
+}
+function toggleFullSelectAll(checked){
+  routeFullSelected=new Set(checked&&routeFullDraft?routeFullDraft.map(r=>r.id):[]);
+  renderContent(); // needs to check/uncheck every row's box — fine for this explicit, infrequent action
+}
+function openBulkEditModal(){
+  if(routeFullSelected.size===0)return;
+  const n=routeFullSelected.size;
+  const fieldOpts=ROUTE_FULL_BULK_FIELDS.map(f=>`<option value="${f.k}">${esc(f.l)}</option>`).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Bulk Edit — ${n} destination${n===1?'':'s'}</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">Field to change</div>
+      <select id="bulkFieldSel" class="auth-input" onchange="renderBulkValueInput()" style="margin-bottom:.6rem">${fieldOpts}</select>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem">New value</div>
+      <div id="bulkValueWrap" style="margin-bottom:.8rem"></div>
+      <button class="btnp" style="width:100%;justify-content:center" onclick="applyBulkEdit()">Apply to ${n} destination${n===1?'':'s'}</button>
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
+  renderBulkValueInput();
+}
+function renderBulkValueInput(){
+  const field=document.getElementById('bulkFieldSel')?.value;
+  const wrap=document.getElementById('bulkValueWrap');
+  if(!wrap||!field)return;
+  if(field==='act'){
+    wrap.innerHTML=`<select id="bulkValueInp" class="auth-input">${cActs().map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select>`;
+  }else if(field==='country'){
+    wrap.innerHTML=`<select id="bulkValueInp" class="auth-input">${countryOptionsHTML('')}</select>`;
+  }else{
+    const meta=fullFieldMeta(field);
+    const opts=(meta.opts||[]).map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('');
+    wrap.innerHTML=`<select id="bulkValueInp" class="auth-input">${opts}</select>`;
+  }
+}
+function applyBulkEdit(){
+  const field=document.getElementById('bulkFieldSel')?.value;
+  const valueInp=document.getElementById('bulkValueInp');
+  if(!field||!valueInp)return;
+  const value=valueInp.value;
+  routeFullSelected.forEach(id=>{
+    if(field==='country')updateRouteFullCountry(id,value);
+    else updateRouteFullField(id,field,value);
+  });
+  calClosePopup();
+  renderContent(); // many rows changed at once — one full re-render is correct here
+}
+
 function renderRouteFullEdit(){
   if(!routeFullDraft)routeFullDraft=sDests().map(buildRouteFullDraftRow);
   const rows=routeFullDraft.map(r=>{
     const d=dBy(r.id);if(!d)return'';
-    const n=dBtw(r.arrival,r.departure);
-    const coreCells=`
-      <td class="re-drag-handle" onpointerdown="routeDragStart(event,'${r.id}','routeFullEditTbl',()=>routeFullDraft)" title="Drag to reorder"><i class="ti ti-grip-vertical"></i></td>
-      <td><select class="fi" style="min-width:110px;font-size:12px" onchange="updateRouteFullField('${r.id}','act',this.value)">${cActs().map(a=>`<option value="${a.id}"${a.id===r.act?' selected':''}>${esc(a.name)}</option>`).join('')}</select></td>
-      <td><select class="fi" style="min-width:130px;font-size:12px" onchange="updateRouteFullField('${r.id}','status',this.value)">${ROUTE_FULL_STATUS_OPTS.map(([v,l])=>`<option value="${v}"${v===r.status?' selected':''}>${esc(l)}</option>`).join('')}</select></td>
-      <td><div style="display:flex;align-items:center;gap:4px"><span id="rfflag_${r.id}" style="font-size:14px;flex-shrink:0">${flagHtml(r.flag)}</span><select class="fi re-country-sel" onchange="updateRouteFullCountry('${r.id}',this.value)">${countryOptionsHTML(r.country)}</select></div></td>
-      <td><input class="fi re-city-inp" type="text" value="${esc(r.city)}" placeholder="City / Region" onblur="updateRouteFullField('${r.id}','city',this.value)" style="font-size:12px"/></td>
-      <td><select class="fi" style="min-width:110px;font-size:12px" onchange="updateRouteFullField('${r.id}','priority',this.value)">${ROUTE_FULL_PRIORITY_OPTS.map(([v,l])=>`<option value="${v}"${v===String(r.priority)?' selected':''}>${esc(l)}</option>`).join('')}</select></td>
-      <td><input class="fi" type="date" value="${r.arrival||''}" data-field="arrival" onblur="updateRouteFullField('${r.id}','arrival',this.value)" style="font-size:12px;min-width:130px"/></td>
-      <td><input class="fi" type="date" value="${r.departure||''}" data-field="departure" onblur="updateRouteFullField('${r.id}','departure',this.value)" style="font-size:12px;min-width:130px"/></td>
-      <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onblur="updateRouteFullField('${r.id}','nights',this.value)" style="font-size:12px;width:56px"/></td>`;
-    const restCells=ROUTE_FULL_FIELDS.map(f=>renderFullFieldCell(r,f)).join('');
+    const selCb=`<td style="text-align:center;padding:.4rem .3rem"><input type="checkbox" ${routeFullSelected.has(r.id)?'checked':''} onchange="toggleFullRowSelect('${r.id}',this.checked)" style="width:15px;height:15px;accent-color:var(--gold);cursor:pointer"/></td>`;
+    const fieldCells=ROUTE_FULL_ALL_COLS.map(f=>{
+      if(f.k==='visa_required'||f.k==='vaccines_required'){
+        // Checkboxes stay always-live — cheap regardless (just 2 per row), and a click IS the
+        // whole interaction, no separate "activate to edit" step needed.
+        return`<td style="text-align:center"><input type="checkbox" ${r[f.k]?'checked':''} onchange="updateRouteFullField('${r.id}','${f.k}',this.checked)" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer"/></td>`;
+      }
+      return`<td id="rfc_${f.k}_${r.id}">${staticFullCellHTML(r,f.k)}</td>`;
+    }).join('');
     const actionsCell=`<td style="padding:.4rem .3rem;text-align:center"><button class="abtn" onclick="showRouteRowMenu(event,'${r.id}','full')" title="Row actions"><i class="ti ti-dots-vertical"></i></button></td>`;
-    return`<tr data-id="${r.id}">${coreCells}${restCells}${actionsCell}</tr>`;
+    return`<tr data-id="${r.id}">${selCb}${fieldCells}${actionsCell}</tr>`;
   }).join('');
-  const headerLabels=['','Act','Status','Country','City','Priority','Arrival','Departure','Nights',...ROUTE_FULL_FIELDS.map(f=>f.l),''];
-  const headerCells=headerLabels.map(l=>`<th>${esc(l)}</th>`).join('');
-  const totalCols=headerLabels.length;
+  const allChecked=routeFullDraft.length>0&&routeFullDraft.every(r=>routeFullSelected.has(r.id));
+  const headerCells=`<th style="text-align:center"><input type="checkbox" id="fullSelectAllCb" ${allChecked?'checked':''} onchange="toggleFullSelectAll(this.checked)" style="width:15px;height:15px;accent-color:var(--gold);cursor:pointer"/></th>`+
+    ROUTE_FULL_ALL_COLS.map(f=>`<th>${esc(f.l)}</th>`).join('')+'<th></th>';
+  const totalCols=ROUTE_FULL_ALL_COLS.length+2;
+  const selCount=routeFullSelected.size;
   return`<div class="panel">
     <div class="frow">
       <button class="fbtn" onclick="toggleRouteFullEditMode()"><i class="ti ti-arrow-left"></i> Back to Route</button>
       <button class="abtn del" onclick="confirmCancelRouteFullChanges()" style="padding:5px 10px;font-size:12px"><i class="ti ti-x"></i> Cancel Changes</button>
       <button class="add-btn" onclick="confirmSaveRouteFullChanges()"><i class="ti ti-check"></i> Save Changes</button>
-      <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${routeFullDraft.length} destinations · drag the grip to reorder</span>
+      <button class="fbtn" id="fullBulkEditBtn" onclick="openBulkEditModal()" ${selCount?'':'disabled'} style="${selCount?'':'opacity:.4;cursor:not-allowed'}"><i class="ti ti-list-check"></i> Bulk Edit${selCount?` (${selCount} selected)`:''}</button>
+      <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${routeFullDraft.length} destinations</span>
     </div>
     <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin:-.5rem 0 .75rem;line-height:1.5">
-      <i class="ti ti-info-circle"></i> Everything here is a <strong>draft</strong> — your real itinerary is untouched until you click <strong>Save Changes</strong>. Custom fields aren't shown in this grid; edit those from a destination's own Edit form. Scroll right for more columns, and down for more destinations.
+      <i class="ti ti-info-circle"></i> Click any cell to edit it, like a spreadsheet. Tick rows on the left and use <strong>Bulk Edit</strong> to change one field across many destinations at once. Everything here is a <strong>draft</strong> until you click <strong>Save Changes</strong>. Custom fields aren't shown here — edit those from a destination's own Edit form.
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:auto;max-height:75vh;box-shadow:var(--shadow)">
       <table class="rtbl" id="routeFullEditTbl" style="min-width:max-content">
@@ -3339,7 +3494,7 @@ function confirmSaveRouteFullChanges(){
       ALL.forEach(k=>{d[k]=r[k];});
       d.flag=r.flag||'📍';
     });
-    routeFullEditMode=false;routeFullDraft=null;
+    routeFullEditMode=false;routeFullDraft=null;routeFullSelected=new Set();routeFullEditingCell=null;
     renderSB();renderContent();
     alert('✓ Changes saved to your itinerary.');
   }
@@ -3350,7 +3505,7 @@ function confirmCancelRouteFullChanges(){
     ?'Discard your draft changes?\n\nEverything you\'ve edited in this grid will revert to what it was before you started editing. This cannot be undone.\n\nAre you sure?'
     :'Exit Edit All Fields without any changes to discard. Continue?';
   if(confirm(msg)){
-    routeFullEditMode=false;routeFullDraft=null;
+    routeFullEditMode=false;routeFullDraft=null;routeFullSelected=new Set();routeFullEditingCell=null;
     renderContent();
   }
 }
