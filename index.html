@@ -411,6 +411,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 /* Edit All Fields scrolls within its own capped-height container (both directions), so the
    header needs position:sticky to stay visible while scrolling down through many rows. */
 #routeFullEditTbl thead th{position:sticky;top:0;z-index:2;background:var(--card-bg);white-space:nowrap}
+#bktFullEditTbl thead th{position:sticky;top:0;z-index:2;background:var(--card-bg);white-space:nowrap}
+#bktFullEditTbl td{white-space:nowrap}
 /* Frozen columns: selection checkbox, Country, City — stay put horizontally so it's always
    clear which destination a scrolled-right cell belongs to. Fixed pixel widths (rather than
    auto) are what make sticky "left" offsets reliable here. */
@@ -2184,7 +2186,7 @@ function handleLostSharedAccess(tourId){
   }
   if(S.cur===SHARED_PREFIX+tourId){
     S.cur=Object.keys(S.tours)[0];
-    curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();
+    curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();bktFullDraft=null;
     renderSB();renderContent();
     alert('Access to this tour has been revoked by its owner.');
   }else if(hadRef){
@@ -2215,7 +2217,7 @@ function cleanupRevokedSharedRefs(){
     scheduleCloudSave();
     if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX)&&toRemove.includes(S.cur.slice(SHARED_PREFIX.length))){
       S.cur=Object.keys(S.tours)[0];
-      curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();
+      curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();bktFullDraft=null;
     }
     renderSB();renderContent();
   });
@@ -2349,7 +2351,7 @@ function switchTour(id){
       budgetDateMode='custom';budgetCustomStart=start;budgetCustomEnd=today;
       AF=['completed'];
       BF=['achieved'];
-      curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
+      curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();bktFullDraft=null;routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
       renderSB();renderContent();
     });
     return;
@@ -2358,7 +2360,7 @@ function switchTour(id){
     S.cur=id;
     if(enteringShared)attachSharedTourListener(id.slice(SHARED_PREFIX.length));
   }
-  curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
+  curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();bktFullDraft=null;routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
   renderSB();renderContent();
 }
 function viewDestSB(id){if(tab==='map'&&typeof teardownGlobe==='function')teardownGlobe();curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t)=>t.classList.toggle('active',t.dataset.tab==='dashboard'));closeSB();renderSB();renderContent();}
@@ -6540,6 +6542,7 @@ function toggleBktCatMgmtMode(){bktCatMgmtMode=!bktCatMgmtMode;renderContent();}
 
 function renderBucket(){
   if(bktCatMgmtMode)return renderBktCatMgmt();
+  if(bktFullEditMode)return renderBktFullEdit();
   const catOrderIdx=id=>{const i=cBktCats().findIndex(c=>c.id===id);return i<0?9999:i;};
 
   // Collect items visible in the current tour context.
@@ -6703,6 +6706,8 @@ function renderBucket(){
         <div class="fmenu" id="bktSortMenu">${sortMenuItems}</div>
       </div>
       ${cur().readOnly?'':'<button class="fbtn" onclick="toggleBktCatMgmtMode()" title="Create, rename, or remove Bucket List categories"><i class="ti ti-tag"></i> Manage Categories</button>'}
+      ${cur().readOnly?'':'<button class="fbtn" onclick="openBktFixActYearModal()" title="Match each item\'s Journey Act and Year to where that country actually falls in your Route"><i class="ti ti-wand"></i> Fix Act &amp; Year from Route</button>'}
+      ${cur().readOnly?'':'<button class="fbtn" onclick="toggleBktFullEditMode()" title="Edit every field for every experience in one spreadsheet-style grid"><i class="ti ti-table"></i> Edit All Fields</button>'}
       <div style="position:relative">
         <button class="fbtn" onclick="toggleIOMenu('bktIOMenu')" title="Template, Import, Export"><i class="ti ti-arrow-up"></i></button>
         <div class="fmenu" id="bktIOMenu">
@@ -7104,6 +7109,254 @@ function renderVisas(){
     </div>
     <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-top:.5rem;line-height:1.5">
       <i class="ti ti-info-circle"></i> The Schengen 90/180 rule applies to short-stay visits by most non-EU/EEA passport holders. Some nationalities (EU/EEA/Swiss citizens, holders of long-stay visas or residence permits) are exempt or follow different rules — this calculator assumes the standard short-stay limit applies to your trip.
+    </div>
+  </div>`;
+}
+
+// ── Fix Act & Year from Route ────────────────────────────────────────────────
+// For each bucket list item with a Country set, finds that country's earliest destination
+// in Route and syncs the item's Journey Act + Year to match it — the country is the anchor
+// (what the person actually typed), Act/Year are treated as derived facts that can drift out
+// of sync as the itinerary gets reordered/rescheduled.
+function openBktFixActYearModal(){
+  if(blockIfReadOnly())return;
+  const visibleBkt=visibleBktItems();
+  const dests=cDests().filter(d=>d.country&&d.status!=='cancelled');
+  const preview=[]; // {item, newAct, newActName, oldActName, newYear, oldYear}
+  const noMatch=[];
+  visibleBkt.forEach(b=>{
+    if(!b.country||!b.country.trim()){noMatch.push(b);return;}
+    const matches=dests.filter(d=>d.country.toLowerCase()===b.country.trim().toLowerCase())
+      .sort((x,y)=>(x.arrival||'9999').localeCompare(y.arrival||'9999'));
+    if(!matches.length){noMatch.push(b);return;}
+    const match=matches[0];
+    const newYear=match.arrival?parseInt(match.arrival.slice(0,4)):b.year;
+    if(match.act!==b.act||newYear!==b.year){
+      preview.push({item:b,newAct:match.act,newActName:aM(match.act)?.name||'—',oldActName:aM(b.act)?.name||'—',newYear,oldYear:b.year});
+    }
+  });
+  window._pendingBktFix=preview;
+  if(!preview.length&&!noMatch.length){
+    alert('No experiences with a Country set yet — add a country to your bucket list items first so they can be matched against Route.');
+    return;
+  }
+  const rows=preview.slice(0,12).map(p=>`
+    <div style="display:flex;justify-content:space-between;gap:8px;padding:.4rem 0;border-bottom:1px solid rgba(128,128,128,.12);font-size:12px">
+      <span style="color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(p.item.text)}</span>
+      <span style="color:var(--t3);flex-shrink:0;text-align:right">${esc(p.oldActName)}${p.oldYear!=p.newYear?' · '+(p.oldYear||'Future'):''} → <strong style="color:var(--gold)">${esc(p.newActName)}${p.oldYear!=p.newYear?' · '+(p.newYear||'Future'):''}</strong></span>
+    </div>`).join('');
+  document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Fix Act &amp; Year from Route</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
+    <div class="mbody" style="text-align:left">
+      <div style="font-size:12.5px;color:var(--t2);line-height:1.6;margin-bottom:.8rem">
+        Checked <strong>${visibleBkt.length}</strong> experience${visibleBkt.length===1?'':'s'}.<br/>
+        <strong style="color:var(--gold)">${preview.length}</strong> will be updated to match Route${noMatch.length?`<br/><span style="color:var(--t3)">${noMatch.length} skipped — no Country set, or that country isn't in your Route</span>`:''}
+      </div>
+      ${preview.length?`<div style="max-height:220px;overflow-y:auto;background:var(--sf2);border-radius:8px;padding:.3rem .6rem;margin-bottom:.9rem">${rows}${preview.length>12?`<div style="padding:.4rem 0;color:var(--t3);font-size:11px">+ ${preview.length-12} more…</div>`:''}</div>`:''}
+      <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-bottom:.9rem;line-height:1.5"><i class="ti ti-info-circle"></i> When a country appears more than once in Route (visited twice, in different Acts), the earliest visit is used. This cannot be undone automatically.</div>
+      ${preview.length?`<button class="btnp" style="width:100%;justify-content:center" onclick="commitBktFixActYear()">Apply to ${preview.length} experience${preview.length===1?'':'s'}</button>`:''}
+    </div>`;
+  document.getElementById('calPopModal').style.display='flex';
+}
+function commitBktFixActYear(){
+  const preview=window._pendingBktFix;
+  if(!preview)return;
+  preview.forEach(({item,newAct,newYear})=>{item.act=newAct;item.year=newYear;});
+  window._pendingBktFix=null;
+  calClosePopup();
+  renderContent();
+}
+// ── BUCKET LIST — EDIT ALL FIELDS (spreadsheet-style grid) ─────────────────────────────────────
+// Same click-to-edit pattern as Route's Edit All Fields: cells render as plain static text and
+// only become a live input/select for the one cell just clicked — keeps this fast even with a
+// long bucket list, and reads like a spreadsheet rather than a wall of open form fields.
+const BKT_FULL_COLS=[
+  {k:'text',l:'Experience'},{k:'country',l:'Country'},{k:'act',l:'Act'},
+  {k:'category',l:'Category'},{k:'rating',l:'Rating'},{k:'tourId',l:'Tour'},{k:'year',l:'Year'},
+];
+let bktFullEditMode=false;
+let bktFullDraft=null;
+let bktFullEditingCell=null; // {id,key} of the single cell currently live, or null
+function visibleBktItems(){
+  const isMTL=S.cur===MY_TOUR_LIFE_ID;
+  return[...cur().bucket].filter(b=>{
+    if(!b.tourId)return true;
+    if(isMTL)return true;
+    return b.tourId===S.cur;
+  });
+}
+function buildBktFullDraftRow(b){
+  return{id:b.id,text:b.text||'',country:b.country||'',act:b.act||'',category:b.category||'',rating:b.rating||0,tourId:b.tourId||'',year:b.year!=null?b.year:'',done:!!b.done};
+}
+function toggleBktFullEditMode(){
+  if(!bktFullEditMode){
+    if(blockIfReadOnly())return;
+    bktFullDraft=visibleBktItems().map(buildBktFullDraftRow);
+    bktFullEditingCell=null;
+    bktFullEditMode=true;
+  }else{
+    if(bktFullDraft&&draftBktFullHasChanges()){
+      if(!confirm('You have unsaved changes. Leave without saving?\n\nThis will discard your draft changes — everything will stay as it was before you started editing.\n\nAre you sure?'))return;
+    }
+    bktFullEditMode=false;bktFullDraft=null;bktFullEditingCell=null;
+  }
+  renderContent();
+}
+function draftBktFullHasChanges(){
+  if(!bktFullDraft)return false;
+  const keys=['text','country','act','category','rating','tourId','year','done'];
+  return bktFullDraft.some(r=>{
+    const b=cur().bucket.find(x=>x.id===r.id);if(!b)return false;
+    return keys.some(k=>{
+      const rv=r[k];
+      const bv=k==='year'?(b.year!=null?b.year:''):(b[k]!=null?b[k]:(typeof rv==='boolean'?false:''));
+      return String(rv)!==String(bv);
+    });
+  });
+}
+function bktFullFieldMeta(key){
+  if(key==='act')return{t:'act'};
+  if(key==='category')return{t:'bktcat'};
+  if(key==='rating')return{t:'select',opts:[['0','No rating'],['1','★'],['2','★★'],['3','★★★'],['4','★★★★'],['5','★★★★★']]};
+  if(key==='tourId')return{t:'tour'};
+  if(key==='year')return{t:'year'};
+  return{t:'text'};
+}
+function staticBktCellHTML(r,key){
+  const meta=bktFullFieldMeta(key);
+  let text;
+  if(meta.t==='act'){const a=cActs().find(x=>x.id===r.act);text=a?esc(a.name):'<span style="color:var(--t3)">—</span>';}
+  else if(meta.t==='bktcat'){const c=cBktCats().find(x=>x.id===r.category);text=c?`<span style="color:${c.color}">${esc(c.name)}</span>`:'<span style="color:var(--t3)">—</span>';}
+  else if(meta.t==='select'){const found=meta.opts.find(([v])=>v===String(r.rating||0));text=found?found[1]:'—';}
+  else if(meta.t==='tour'){text=r.tourId?esc(S.tours[r.tourId]?.name||'—'):'All Tours';}
+  else if(meta.t==='year'){text=r.year?String(r.year):'Future';}
+  else{text=r[key]?esc(String(r[key])):'<span style="color:var(--t3)">—</span>';}
+  return`<div class="rfc-static" onclick="activateBktCell('${r.id}','${key}')" title="Click to edit">${text}</div>`;
+}
+function liveBktCellHTML(r,key){
+  const meta=bktFullFieldMeta(key);
+  if(meta.t==='act'){
+    const opts=cActs().map(a=>`<option value="${a.id}"${a.id===r.act?' selected':''}>${esc(a.name)}</option>`).join('');
+    return`<select class="fi" style="font-size:12px;min-width:110px" onchange="commitAndDeactivateBktCell('${r.id}','act',this.value)">${opts}</select>`;
+  }
+  if(meta.t==='bktcat'){
+    const opts='<option value="">— None —</option>'+cBktCats().map(c=>`<option value="${c.id}"${c.id===r.category?' selected':''}>${esc(c.name)}</option>`).join('');
+    return`<select class="fi" style="font-size:12px;min-width:120px" onchange="commitAndDeactivateBktCell('${r.id}','category',this.value)">${opts}</select>`;
+  }
+  if(meta.t==='select'){
+    const opts=meta.opts.map(([v,l])=>`<option value="${v}"${v===String(r.rating||0)?' selected':''}>${esc(l)}</option>`).join('');
+    return`<select class="fi" style="font-size:12px;min-width:100px" onchange="commitAndDeactivateBktCell('${r.id}','rating',this.value)">${opts}</select>`;
+  }
+  if(meta.t==='tour'){
+    const opts='<option value="">All Tours</option>'+Object.entries(S.tours).map(([id,t])=>`<option value="${id}"${id===r.tourId?' selected':''}>${esc(t.name)}</option>`).join('');
+    return`<select class="fi" style="font-size:12px;min-width:140px" onchange="commitAndDeactivateBktCell('${r.id}','tourId',this.value)">${opts}</select>`;
+  }
+  if(meta.t==='year'){
+    return`<input class="fi" type="number" min="1900" max="2199" value="${r.year||''}" placeholder="Future" style="font-size:12px;min-width:90px" onblur="commitAndDeactivateBktCell('${r.id}','year',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>`;
+  }
+  return`<input class="fi" type="text" value="${esc(String(r[key]||''))}" style="font-size:12px;min-width:${key==='text'?'200':'130'}px" onblur="commitAndDeactivateBktCell('${r.id}','${key}',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>`;
+}
+function refreshStaticBktCell(id,key){
+  if(bktFullEditingCell&&bktFullEditingCell.id===id&&bktFullEditingCell.key===key)return;
+  const td=document.getElementById(`bfc_${key}_${id}`);
+  if(!td)return;
+  const r=bktFullDraft.find(x=>x.id===id);
+  if(r)td.innerHTML=staticBktCellHTML(r,key);
+}
+function activateBktCell(id,key){
+  if(blockIfReadOnly())return;
+  if(bktFullEditingCell)refreshStaticBktCell(bktFullEditingCell.id,bktFullEditingCell.key);
+  bktFullEditingCell={id,key};
+  const td=document.getElementById(`bfc_${key}_${id}`);
+  if(!td)return;
+  const r=bktFullDraft.find(x=>x.id===id);
+  if(!r)return;
+  td.innerHTML=liveBktCellHTML(r,key);
+  const el=td.querySelector('input,select,textarea');
+  if(el){el.focus();if(el.select)try{el.select();}catch(e){}}
+}
+function commitAndDeactivateBktCell(id,key,value){
+  const r=bktFullDraft?.find(x=>x.id===id);if(!r)return;
+  if(key==='year')r.year=value?(parseInt(value)||null):null;
+  else if(key==='rating')r.rating=parseInt(value)||0;
+  else if(key==='text')r.text=value.trim();
+  else if(key==='country')r.country=value.trim();
+  else r[key]=value;
+  bktFullEditingCell=null;
+  refreshStaticBktCell(id,key);
+}
+function updateBktFullCheckbox(id,checked){
+  const r=bktFullDraft?.find(x=>x.id===id);if(!r)return;
+  r.done=checked;
+}
+function bktFullDeleteRow(id){
+  if(blockIfReadOnly())return;
+  const r=bktFullDraft?.find(x=>x.id===id);
+  if(!confirm(`Delete "${r?.text||'this experience'}"?\n\nThis removes it from your bucket list immediately — it does not wait for Save Changes and cannot be undone automatically.`))return;
+  cur().bucket=cur().bucket.filter(b=>b.id!==id);
+  bktFullDraft=bktFullDraft.filter(x=>x.id!==id);
+  renderContent();
+}
+function bktFullAddRow(){
+  if(blockIfReadOnly())return;
+  const newItem={id:uid(),text:'New experience',country:'',act:cActs()[0]?.id||'',category:'',rating:0,done:false,tourId:'',year:null,order:cur().bucket.length};
+  cur().bucket.push(newItem);
+  bktFullDraft.push(buildBktFullDraftRow(newItem));
+  renderContent();
+  setTimeout(()=>{
+    document.querySelector(`#bktFullEditTbl tr[data-id="${newItem.id}"]`)?.scrollIntoView({block:'center',behavior:'smooth'});
+    activateBktCell(newItem.id,'text'); // jump straight into naming the new row
+  },50);
+}
+function confirmSaveBktFullChanges(){
+  if(!bktFullDraft)return;
+  if(confirm('Save these changes?\n\nThis will overwrite Experience, Country, Act, Category, Rating, Tour, Year, and Achieved status for every item in this draft. This cannot be undone automatically.\n\nAre you sure?')){
+    const keys=['text','country','act','category','rating','tourId','year','done'];
+    bktFullDraft.forEach(r=>{
+      const b=cur().bucket.find(x=>x.id===r.id);if(!b)return;
+      keys.forEach(k=>{b[k]=r[k];});
+    });
+    bktFullEditMode=false;bktFullDraft=null;bktFullEditingCell=null;
+    renderContent();
+    alert('✓ Changes saved.');
+  }
+}
+function confirmCancelBktFullChanges(){
+  const hasChanges=draftBktFullHasChanges();
+  const msg=hasChanges
+    ?'Discard your draft changes?\n\nEverything you\'ve edited in this grid will revert to what it was before you started editing. This cannot be undone.\n\nAre you sure?'
+    :'Exit Edit All Fields without any changes to discard. Continue?';
+  if(confirm(msg)){
+    bktFullEditMode=false;bktFullDraft=null;bktFullEditingCell=null;
+    renderContent();
+  }
+}
+function renderBktFullEdit(){
+  if(!bktFullDraft)bktFullDraft=visibleBktItems().map(buildBktFullDraftRow);
+  const rows=bktFullDraft.map(r=>{
+    const b=cur().bucket.find(x=>x.id===r.id);if(!b)return'';
+    const fieldCells=BKT_FULL_COLS.map(f=>`<td id="bfc_${f.k}_${r.id}">${staticBktCellHTML(r,f.k)}</td>`).join('');
+    const doneCell=`<td style="text-align:center"><input type="checkbox" ${r.done?'checked':''} onchange="updateBktFullCheckbox('${r.id}',this.checked)" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer" title="Achieved"/></td>`;
+    const deleteCell=`<td style="text-align:center"><button class="abtn del" onclick="bktFullDeleteRow('${r.id}')" title="Delete"><i class="ti ti-trash"></i></button></td>`;
+    return`<tr data-id="${r.id}">${fieldCells}${doneCell}${deleteCell}</tr>`;
+  }).join('');
+  const headerCells=BKT_FULL_COLS.map(f=>`<th>${esc(f.l)}</th>`).join('')+'<th>Achieved</th><th></th>';
+  const totalCols=BKT_FULL_COLS.length+2;
+  return`<div class="panel">
+    <div class="frow">
+      <button class="fbtn" onclick="toggleBktFullEditMode()"><i class="ti ti-arrow-left"></i> Back to Bucket List</button>
+      <button class="abtn del" onclick="confirmCancelBktFullChanges()" style="padding:5px 10px;font-size:12px"><i class="ti ti-x"></i> Cancel Changes</button>
+      <button class="add-btn" onclick="confirmSaveBktFullChanges()"><i class="ti ti-check"></i> Save Changes</button>
+      <button class="abtn" onclick="bktFullAddRow()" style="font-size:12px;padding:4px 9px"><i class="ti ti-plus"></i> Add Item</button>
+      <span style="font-family:var(--font-ui);font-size:12px;color:var(--t3)">${bktFullDraft.length} experiences</span>
+    </div>
+    <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin:-.5rem 0 .75rem;line-height:1.5">
+      <i class="ti ti-info-circle"></i> Click any cell to edit it, like a spreadsheet. Everything here is a <strong>draft</strong> until you click <strong>Save Changes</strong> — but adding or deleting a row happens immediately.
+    </div>
+    <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:auto;max-height:75vh;box-shadow:var(--shadow)">
+      <table class="rtbl" id="bktFullEditTbl" style="min-width:max-content">
+        <thead><tr>${headerCells}</tr></thead>
+        <tbody>${rows||`<tr><td colspan="${totalCols}" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No experiences yet</td></tr>`}</tbody>
+      </table>
     </div>
   </div>`;
 }
@@ -8502,7 +8755,7 @@ function executeDuplicateTour(){
   calClosePopup();
   restoreFiltersIfLeavingLife();
   if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX))detachSharedTourListener(S.cur.slice(SHARED_PREFIX.length));
-  S.cur=newId;curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();bktCatFilter=null;
+  S.cur=newId;curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();bktFullDraft=null;bktCatFilter=null;
   renderSB();renderContent();
   scheduleCloudSave();
 }
@@ -8536,7 +8789,7 @@ function createTour(){
   S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],gearCategories:makeDefaultGearCats(),gear:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
   restoreFiltersIfLeavingLife();
   if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX))detachSharedTourListener(S.cur.slice(SHARED_PREFIX.length));
-  S.cur=id;curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();bktCatFilter=null;closeTourModal();renderSB();renderContent();
+  S.cur=id;curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();bktFullDraft=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
 function openTourEditModal(forId){
