@@ -405,6 +405,11 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
    desktop/iPad; the table's own overflow-x:auto wrapper is still there as a fallback. */
 .re-country-sel{max-width:180px;text-overflow:ellipsis}
 .re-city-inp{max-width:160px}
+.re-drag-handle{padding:.4rem .3rem;text-align:center;color:var(--t3);cursor:grab;touch-action:none;font-size:14px}
+.re-drag-handle:hover{color:var(--gold)}
+#routeEditTbl tr.re-dragging{opacity:.35}
+#routeEditTbl tr.re-drop-above td{box-shadow:inset 0 2px 0 var(--gold)}
+#routeEditTbl tr.re-drop-below td{box-shadow:inset 0 -2px 0 var(--gold)}
 .rt-mobile-dates{display:none;font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px;white-space:nowrap}
 .wd{font-size:11px;color:var(--t3);margin-left:2px}
 /* FILTER ROW */
@@ -643,8 +648,10 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   .cal-chip-dots{display:none}
   .cal-resize-handle{width:8px}
   #routeEditTbl{table-layout:fixed;width:100%}
-  /* Row-number column dropped on phone — it wasn't worth the width it cost. */
-  #routeEditTbl th:first-child,#routeEditTbl td:first-child{width:0;padding:0!important;border:none;overflow:hidden}
+  /* The row-number column is now the drag handle — must stay visible (and touchable) on
+     phone, unlike before when it was just a decorative number and not worth the width. */
+  #routeEditTbl th:first-child,#routeEditTbl td:first-child{width:30px;padding:.4rem .1rem!important}
+  #routeEditTbl td.re-drag-handle{font-size:15px}
   #routeEditTbl th:nth-child(2),#routeEditTbl td:nth-child(2){width:15%}
   #routeEditTbl th:nth-child(3),#routeEditTbl td:nth-child(3){width:16%}
   #routeEditTbl th:nth-child(4),#routeEditTbl td:nth-child(4),
@@ -2852,7 +2859,7 @@ function renderRouteEdit(){
     const d=dBy(r.id);if(!d)return'';
     const n=dBtw(r.arrival,r.departure);
     return`<tr data-id="${r.id}">
-      <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:11px">${i+1}</td>
+      <td class="re-drag-handle" onpointerdown="routeDragStart(event,'${r.id}')" title="Drag to reorder"><i class="ti ti-grip-vertical"></i></td>
       <td style="padding:.4rem .4rem"><div style="display:flex;align-items:center;gap:4px"><span id="reflag_${r.id}" style="font-size:15px;flex-shrink:0">${flagHtml(r.flag)}</span><select class="fi re-country-sel" onchange="updateRouteCountry('${r.id}',this.value)">${countryOptionsHTML(r.country)}</select></div></td>
       <td style="padding:.4rem .4rem"><input class="fi re-city-inp" type="text" value="${esc(r.city)}" placeholder="City / Region" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteCity('${r.id}',this.value)"/></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_a_${r.id}">${wS(r.arrival)}</span></div></td>
@@ -3023,6 +3030,66 @@ function insertBlankRouteRow(offset){
 }
 function routeRowAddAbove(){insertBlankRouteRow(0);}
 function routeRowAddBelow(){insertBlankRouteRow(1);}
+
+// ── Edit Route: drag-to-reorder rows (mouse + touch, via Pointer Events) ───────────────────────
+// Purely reorders routeDraft's array — never touches any row's own arrival/departure/country/city.
+// The point is to let the person physically reshuffle rows into the sequence they want, then
+// either retype dates by hand or run Fix Dates Gaps afterward to chain them in that new order —
+// dragging itself is never allowed to silently change a date.
+let routeDragState=null;
+function routeDragStart(e,id){
+  if(blockIfReadOnly())return;
+  if(e.button!==undefined&&e.button!==0)return; // left mouse button only; ignore right/middle click
+  e.preventDefault();
+  const tbody=document.querySelector('#routeEditTbl tbody');
+  if(!tbody)return;
+  const rowEls=[...tbody.querySelectorAll('tr[data-id]')];
+  routeDragState={draggedId:id,rowEls,lastOverId:null,lastOverBefore:false};
+  const draggedEl=rowEls.find(tr=>tr.dataset.id===id);
+  if(draggedEl)draggedEl.classList.add('re-dragging');
+  document.body.style.userSelect='none';
+  window.addEventListener('pointermove',routeDragMove);
+  window.addEventListener('pointerup',routeDragEnd,{once:true});
+  window.addEventListener('pointercancel',routeDragEnd,{once:true});
+}
+function routeDragMove(e){
+  if(!routeDragState)return;
+  const y=e.clientY;
+  // Auto-scroll the page when dragging near the top/bottom edge of the viewport — needed since
+  // the table can easily run to hundreds of rows, far taller than one screen.
+  const edge=60;
+  if(y<edge)window.scrollBy(0,-16);
+  else if(y>window.innerHeight-edge)window.scrollBy(0,16);
+  let overRow=null,overRect=null;
+  for(const tr of routeDragState.rowEls){
+    const rect=tr.getBoundingClientRect(); // re-measured live since auto-scroll keeps shifting row positions
+    if(y>=rect.top&&y<=rect.bottom){overRow=tr;overRect=rect;break;}
+  }
+  routeDragState.rowEls.forEach(tr=>tr.classList.remove('re-drop-above','re-drop-below'));
+  if(overRow&&overRow.dataset.id!==routeDragState.draggedId){
+    const before=y<overRect.top+overRect.height/2;
+    overRow.classList.add(before?'re-drop-above':'re-drop-below');
+    routeDragState.lastOverId=overRow.dataset.id;
+    routeDragState.lastOverBefore=before;
+  }
+}
+function routeDragEnd(){
+  if(!routeDragState)return;
+  window.removeEventListener('pointermove',routeDragMove);
+  document.body.style.userSelect='';
+  routeDragState.rowEls.forEach(tr=>tr.classList.remove('re-dragging','re-drop-above','re-drop-below'));
+  const{draggedId,lastOverId,lastOverBefore}=routeDragState;
+  routeDragState=null;
+  if(!lastOverId||lastOverId===draggedId||!routeDraft)return; // dropped on itself or nowhere valid — no-op
+  const fromIdx=routeDraft.findIndex(r=>r.id===draggedId);
+  if(fromIdx<0)return;
+  const[moved]=routeDraft.splice(fromIdx,1);
+  let toIdx=routeDraft.findIndex(r=>r.id===lastOverId);
+  if(toIdx<0){routeDraft.splice(fromIdx,0,moved);return;} // safety net — shouldn't happen
+  if(!lastOverBefore)toIdx+=1;
+  routeDraft.splice(toIdx,0,moved);
+  renderContent();
+}
 // Core gap/overlap-closing algorithm, generalized to work on any array of rows shaped like
 // {arrival,departure} in a given order — used identically whether operating on the live
 // destinations (main Route view) or on the in-memory draft (Edit Route preview). Walks the rows
