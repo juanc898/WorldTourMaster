@@ -1541,6 +1541,15 @@ const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const fD=s=>{if(!s)return'';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});};
 const wS=s=>{if(!s)return'';return WD[new Date(s+'T12:00:00').getDay()];};
 const dBtw=(a,b)=>{if(!a||!b)return 0;return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5);};
+// True when a destination is the person's Base City/Country (set in Settings → Account
+// Management), used to exclude time spent at home from "tour day" counts when the
+// "Include base in calculations" toggle is off. Requires both country AND city to match
+// (so other cities in the same home country still count normally as real tour stops).
+function isBaseDestination(d){
+  if(S.includeBaseInCalcs)return false; // toggle is ON — base days count like any other, nothing to exclude
+  if(!S.baseCountry||!S.baseCity)return false; // no base configured — nothing to exclude
+  return d.country===S.baseCountry&&(d.city||'').trim().toLowerCase()===S.baseCity.trim().toLowerCase();
+}
 
 // Overnight travel detection: true when departure date < arrival date (e.g.
 // departs Mon night, lands Tue morning). Used to show red arrival date
@@ -1680,6 +1689,12 @@ function openAccountModal(){
     const parts=currentUser.displayName.trim().split(' ');
     firstName=parts[0]||'';lastName=parts.slice(1).join(' ')||'';
   }
+  const baseCountry=S.baseCountry||'';
+  const baseCity=S.baseCity||'';
+  // Default OFF: as soon as someone fills in a base, its days stop counting as "tour days"
+  // until they explicitly opt back in — matches the toggle's own "Include base…" phrasing.
+  const includeBase=S.includeBaseInCalcs===true;
+  const countryOpts='<option value="">— Select country —</option>'+COUNTRIES.map(([code,name])=>`<option value="${esc(name)}"${baseCountry===name?' selected':''}>${esc(name)}</option>`).join('');
   document.getElementById('calPopBody').innerHTML=`<div class="mhdr"><div class="mttl">Account Management</div><button class="mx" onclick="calClosePopup()">&#x2715;</button></div>
     <div class="mbody">
       <div style="font-size:12px;color:var(--t3);margin-bottom:.2rem;text-align:left">Signed in as</div>
@@ -1687,26 +1702,52 @@ function openAccountModal(){
       <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem;text-align:left">First name</div>
       <input id="accountFirstNameInput" class="auth-input" type="text" placeholder="e.g. Juan" value="${esc(firstName)}" style="margin-bottom:.5rem"/>
       <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem;text-align:left">Last name</div>
-      <input id="accountLastNameInput" class="auth-input" type="text" placeholder="e.g. Carlos Angel" value="${esc(lastName)}" style="margin-bottom:.4rem"/>
+      <input id="accountLastNameInput" class="auth-input" type="text" placeholder="e.g. Carlos Angel" value="${esc(lastName)}" style="margin-bottom:.9rem"/>
+      <div style="border-top:1px solid var(--bd);margin-bottom:.9rem"></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem;text-align:left">Base Country <span style="opacity:.6">(where you live)</span></div>
+      <select id="accountBaseCountryInput" class="auth-input" style="margin-bottom:.5rem">${countryOpts}</select>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:.3rem;text-align:left">Base City</div>
+      <input id="accountBaseCityInput" class="auth-input" type="text" placeholder="e.g. Chicago" value="${esc(baseCity)}" style="margin-bottom:.6rem"/>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:.2rem">
+        <label style="font-size:12.5px;color:var(--t2);text-align:left">Include base in calculations</label>
+        <input type="hidden" id="accountIncludeBaseInput" value="${includeBase?'1':'0'}"/>
+        <button onclick="toggleAccountIncludeBase()" style="border:none;background:none;padding:0;cursor:pointer;display:flex;align-items:center" title="${includeBase?'Base days DO count toward each Act\'s total':'Base days are EXCLUDED from each Act\'s total'}">
+          <span id="accountIncludeBaseTrack" style="width:30px;height:17px;border-radius:9px;background:${includeBase?'var(--gold)':'var(--bd2)'};position:relative;display:inline-block;transition:background .15s">
+            <span id="accountIncludeBaseKnob" style="width:13px;height:13px;border-radius:50%;background:#fff;position:absolute;top:2px;left:${includeBase?'15px':'2px'};transition:left .15s"></span>
+          </span>
+        </button>
+      </div>
+      <div style="font-size:10.5px;color:var(--t3);margin-bottom:.7rem;text-align:left;line-height:1.4">When off, time spent at your Base City/Country doesn't count toward each Act's day total in the left sidebar.</div>
       <div id="accountNameMsg" style="font-size:11.5px;min-height:14px;margin-bottom:.7rem;text-align:left"></div>
-      <button class="btnp" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="saveAccountName()">Save Name</button>
+      <button class="btnp" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="saveAccountName()">Save</button>
       <button class="btng" style="width:100%;justify-content:center" onclick="authForgotPassword()">Send password reset email</button>
     </div>`;
   document.getElementById('calPopModal').style.display='flex';
+}
+function toggleAccountIncludeBase(){
+  const input=document.getElementById('accountIncludeBaseInput');
+  const on=input.value!=='1';
+  input.value=on?'1':'0';
+  document.getElementById('accountIncludeBaseTrack').style.background=on?'var(--gold)':'var(--bd2)';
+  document.getElementById('accountIncludeBaseKnob').style.left=on?'15px':'2px';
 }
 function saveAccountName(){
   if(!currentUser)return;
   const firstName=document.getElementById('accountFirstNameInput').value.trim();
   const lastName=document.getElementById('accountLastNameInput').value.trim();
+  const baseCountry=document.getElementById('accountBaseCountryInput').value;
+  const baseCity=document.getElementById('accountBaseCityInput').value.trim();
+  const includeBase=document.getElementById('accountIncludeBaseInput').value==='1';
   const msgEl=document.getElementById('accountNameMsg');
   S.firstName=firstName;S.lastName=lastName;
+  S.baseCountry=baseCountry;S.baseCity=baseCity;S.includeBaseInCalcs=includeBase;
   // displayName stays the full combined name — other features (invitation
   // "from" labels, the Report an Issue form, etc.) read the full name from it.
   // Only the Home greeting specifically uses S.firstName on its own.
   currentUser.updateProfile({displayName:[firstName,lastName].filter(Boolean).join(' ')}).then(()=>{
     msgEl.textContent='Saved.';msgEl.style.color='#4BC896';
     scheduleCloudSave();
-    renderContent(); // refreshes the Home greeting if it's the active tab
+    renderSB();renderContent(); // refreshes Act day-counts (base toggle) and the Home greeting
   }).catch(err=>{
     msgEl.textContent=err.message||'Could not save right now — try again.';msgEl.style.color='#C84B4B';
   });
@@ -2055,7 +2096,7 @@ function renderSB(){
   cActs().forEach(act=>{
     const dd=sDests().filter(d=>d.act===act.id);
     const isA=curActId===act.id;
-    const td=dd.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
+    const td=dd.reduce((s,d)=>s+(isBaseDestination(d)?0:dBtw(d.arrival,d.departure)),0);
     h+=`<div class="act-row${isA?' active':''}" onclick="selAct('${act.id}')" style="border-left-color:${isA?act.color:'transparent'}">
       <div style="flex:1;min-width:0"><div class="act-nm" style="${isA?'color:'+act.color:''}">${esc(act.name)}</div><div class="act-sub">${esc(act.subtitle)}</div></div>
       ${cur().readOnly?'':`<button class="abtn" onclick="event.stopPropagation();openActModal('${act.id}')" style="font-size:11px;padding:1px 4px"><i class="ti ti-edit"></i></button>
@@ -5258,7 +5299,7 @@ function renderMap(){
   // country itself counts. This mirrors the same (non-cancelled) definition used in Tour Overview.
   const statsDests=sDests().filter(d=>d.status!=='cancelled');
   const visited=new Set(statsDests.map(d=>d.country));
-  const totalDays=dests.reduce((s,d)=>s+dBtw(d.arrival,d.departure),0);
+  const totalDays=dests.reduce((s,d)=>s+(isBaseDestination(d)?0:dBtw(d.arrival,d.departure)),0);
   const continents=new Set();
   dests.forEach(d=>{const c=continentOf(d.country);if(c)continents.add(c);});
   const legend=cActs().filter(a=>dests.some(d=>d.act===a.id)).map(a=>`<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:${a.color};font-family:var(--font-ui)"><div style="width:7px;height:7px;border-radius:50%;background:${a.color};box-shadow:0 0 4px ${a.color}"></div>${esc(a.name)}</div>`).join('');
