@@ -6738,11 +6738,17 @@ function mapVisaStatus(status){
   return null; // 'no admission' and anything unrecognized — deliberately not auto-mapped, flagged separately
 }
 function applyVisaDataLookup(data){
-  const nationalityData=data[userNationality.toLowerCase()];
+  // Build a case-insensitive index of the data's own top-level keys once, rather than assuming
+  // they're lowercase — protects against this source (or a future replacement) using a different
+  // casing convention than documented, which is exactly what caused this lookup to fail before.
+  const topKeyIndex={};Object.keys(data).forEach(k=>{topKeyIndex[k.toLowerCase()]=k;});
+  const realNatKey=topKeyIndex[userNationality.toLowerCase()];
+  const nationalityData=realNatKey?data[realNatKey]:null;
   if(!nationalityData){
-    alert('This data source doesn\'t have an entry for the selected nationality. Nothing was changed.');
+    alert(`This data source doesn't have an entry for the selected nationality (looked for "${userNationality}" among ${Object.keys(data).length} entries). Nothing was changed.`);
     return;
   }
+  const subKeyIndex={};Object.keys(nationalityData).forEach(k=>{subKeyIndex[k.toLowerCase()]=k;});
   const nameByCode={};COUNTRIES.forEach(([code,name])=>{nameByCode[code.toLowerCase()]=name;});
   const codeByName={};COUNTRIES.forEach(([code,name])=>{codeByName[name.toLowerCase()]=code.toLowerCase();});
   const dests=cDests().filter(d=>d.status!=='cancelled'&&d.country);
@@ -6754,7 +6760,8 @@ function applyVisaDataLookup(data){
     const key=d.country.toLowerCase();
     if(!byCountry.has(key)){
       const code=codeByName[key];
-      const entry=code?nationalityData[code]:null;
+      const realDestKey=code?subKeyIndex[code]:null;
+      const entry=realDestKey?nationalityData[realDestKey]:null;
       byCountry.set(key,{code,entry});
     }
     const{code,entry}=byCountry.get(key);
