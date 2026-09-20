@@ -400,6 +400,11 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 .rtbl tr:hover td{background:rgba(201,168,76,.04);cursor:pointer}
 .rtbl tr.cancelled td{opacity:.45}
 .rtbl tr.past td{opacity:.45}
+/* Edit Route's inline Country select / City input — capped so a long country name
+   (e.g. "Bosnia and Herzegovina") can't stretch the table wider than intended on
+   desktop/iPad; the table's own overflow-x:auto wrapper is still there as a fallback. */
+.re-country-sel{max-width:180px;text-overflow:ellipsis}
+.re-city-inp{max-width:160px}
 .rt-mobile-dates{display:none;font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px;white-space:nowrap}
 .wd{font-size:11px;color:var(--t3);margin-left:2px}
 /* FILTER ROW */
@@ -640,10 +645,11 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
   #routeEditTbl{table-layout:fixed;width:100%}
   /* Row-number column dropped on phone — it wasn't worth the width it cost. */
   #routeEditTbl th:first-child,#routeEditTbl td:first-child{width:0;padding:0!important;border:none;overflow:hidden}
-  #routeEditTbl th:nth-child(2),#routeEditTbl td:nth-child(2){width:22%}
-  #routeEditTbl th:nth-child(3),#routeEditTbl td:nth-child(3),
-  #routeEditTbl th:nth-child(4),#routeEditTbl td:nth-child(4){width:32%}
-  #routeEditTbl th:nth-child(5),#routeEditTbl td:nth-child(5){width:14%}
+  #routeEditTbl th:nth-child(2),#routeEditTbl td:nth-child(2){width:15%}
+  #routeEditTbl th:nth-child(3),#routeEditTbl td:nth-child(3){width:16%}
+  #routeEditTbl th:nth-child(4),#routeEditTbl td:nth-child(4),
+  #routeEditTbl th:nth-child(5),#routeEditTbl td:nth-child(5){width:27%}
+  #routeEditTbl th:nth-child(6),#routeEditTbl td:nth-child(6){width:15%}
   #routeEditTbl td{padding-left:.25rem!important;padding-right:.25rem!important}
   /* Top-align every cell — with the weekday label now stacked under the date, the date/destination
      cells are taller than the single-line Nights cell, so center-aligning (the table default)
@@ -651,15 +657,18 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
      top keeps every input box starting at the same height regardless of how many lines sit below it. */
   #routeEditTbl td{vertical-align:top}
   /* Headers were overflowing into each other at these column widths — letting them wrap onto a
-     second line (instead of forcing one line that spills sideways) keeps "Destination" and
-     "Arrival" each inside their own column. */
+     second line (instead of forcing one line that spills sideways) keeps every header word
+     inside its own column. */
   #routeEditTbl th{white-space:normal;line-height:1.15;padding:.4rem .3rem;font-size:9px!important}
-  #routeEditTbl td:nth-child(2) span:first-child{font-size:13px}
-  #routeEditTbl td:nth-child(2) span:nth-child(2){font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #routeEditTbl td:nth-child(2) div{font-size:10px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Country cell: flag glyph + select, both shrunk and clipped so a long country name never
+     forces the column wider than its share of the row. */
+  #routeEditTbl td:nth-child(2) span{font-size:12px!important;flex-shrink:0}
+  #routeEditTbl td:nth-child(2) select{font-size:9.5px!important;padding:.3rem .15rem!important;text-overflow:ellipsis}
+  /* City cell: same compact treatment as the country select right next to it. */
+  #routeEditTbl td:nth-child(3) input{font-size:9.5px!important;padding:.3rem .2rem!important}
   /* Weekday label moves underneath the date instead of squeezing in beside it, freeing
      that horizontal space for the date itself so it's never clipped. */
-  #routeEditTbl td:nth-child(3)>div,#routeEditTbl td:nth-child(4)>div{flex-direction:column;align-items:stretch;gap:1px}
+  #routeEditTbl td:nth-child(4)>div,#routeEditTbl td:nth-child(5)>div{flex-direction:column;align-items:stretch;gap:1px}
   #routeEditTbl input[type="date"]{font-size:12px!important;padding:.3rem .15rem!important;width:100%!important;min-width:0!important}
   /* The native calendar icon was eating into the same cramped width as the date text itself —
      shrinking its own padding gives the date a few extra px so it's never chopped off. */
@@ -2820,12 +2829,12 @@ function toggleRouteEditMode(){
 // Compares the draft against live data to know whether there's actually anything unsaved.
 function draftHasChanges(){
   if(!routeDraft)return false;
-  return routeDraft.some(r=>{const live=dBy(r.id);return live&&(live.arrival!==r.arrival||live.departure!==r.departure);});
+  return routeDraft.some(r=>{const live=dBy(r.id);return live&&(live.arrival!==r.arrival||live.departure!==r.departure||live.country!==r.country||live.city!==r.city);});
 }
 
 // ── EDIT ROUTE (inline-editable date/nights grid, drafted until explicitly saved) ─────────────
 function renderRouteEdit(){
-  if(!routeDraft)routeDraft=sDests().map(d=>({id:d.id,arrival:d.arrival,departure:d.departure}));
+  if(!routeDraft)routeDraft=sDests().map(d=>({id:d.id,arrival:d.arrival,departure:d.departure,country:d.country||'',city:d.city||'',flag:d.flag||''}));
   // Draft rows are kept in the order they were snapshotted in (chronological at the time Edit
   // Route was opened) — re-sorting live while editing would make rows jump around under the
   // user's cursor as they type, which is disorienting. Fix Dates Gaps / Save Changes both work
@@ -2835,7 +2844,8 @@ function renderRouteEdit(){
     const n=dBtw(r.arrival,r.departure);
     return`<tr data-id="${r.id}">
       <td style="padding:.4rem .4rem .4rem .6rem;color:var(--t3);font-family:var(--font-ui);font-size:11px">${i+1}</td>
-      <td style="padding:.4rem .6rem"><span style="font-size:15px;margin-right:4px">${flagHtml(d.flag)}</span><span class="re-dest-name" style="font-size:14px;color:var(--t1)">${esc(d.city)}</span></td>
+      <td style="padding:.4rem .4rem"><div style="display:flex;align-items:center;gap:4px"><span id="reflag_${r.id}" style="font-size:15px;flex-shrink:0">${flagHtml(r.flag)}</span><select class="fi re-country-sel" onchange="updateRouteCountry('${r.id}',this.value)">${countryOptionsHTML(r.country)}</select></div></td>
+      <td style="padding:.4rem .4rem"><input class="fi re-city-inp" type="text" value="${esc(r.city)}" placeholder="City / Region" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteCity('${r.id}',this.value)"/></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.arrival||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','arrival',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_a_${r.id}">${wS(r.arrival)}</span></div></td>
       <td><div style="display:flex;align-items:center;gap:4px"><input class="fi" type="date" value="${r.departure||''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','departure',this.value)" style="font-size:12px;padding:.3rem .4rem;min-width:0;flex:1"/><span style="color:var(--t3);font-family:var(--font-ui);font-size:11px;flex-shrink:0;width:26px" id="rwd_d_${r.id}">${wS(r.departure)}</span></div></td>
       <td><input class="fi" type="number" min="0" value="${n>=0?n:''}" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="updateRouteField('${r.id}','nights',this.value)" style="font-size:12px;padding:.3rem .4rem;width:56px"/></td>
@@ -2865,8 +2875,8 @@ function renderRouteEdit(){
     </div>
     <div style="background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;overflow-x:auto;box-shadow:var(--shadow)">
       <table class="rtbl" id="routeEditTbl">
-        <thead><tr><th></th><th>Destination</th><th>Arrival</th><th>Departure</th><th>Nights</th></tr></thead>
-        <tbody>${rows||'<tr><td colspan="5" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations yet</td></tr>'}</tbody>
+        <thead><tr><th></th><th>Country</th><th>City</th><th>Arrival</th><th>Departure</th><th>Nights</th></tr></thead>
+        <tbody>${rows||'<tr><td colspan="6" style="padding:1.5rem;text-align:center;color:var(--t3);font-family:var(--font-ui)">No destinations yet</td></tr>'}</tbody>
       </table>
     </div>
   </div>`;
@@ -2918,14 +2928,46 @@ function updateRouteField(id,field,value){
   const tr=document.querySelector(`#routeEditTbl tr[data-id="${id}"]`);
   if(tr){
     const n=dBtw(r.arrival,r.departure);
-    const depInput=tr.children[3].querySelector('input');
-    const nightsInput=tr.children[4].querySelector('input');
+    const depInput=tr.children[4].querySelector('input');
+    const nightsInput=tr.children[5].querySelector('input');
     if(document.activeElement!==depInput)depInput.value=r.departure||'';
     if(document.activeElement!==nightsInput)nightsInput.value=n>=0?n:'';
     const awd=document.getElementById('rwd_a_'+id),dwd=document.getElementById('rwd_d_'+id);
     if(awd)awd.textContent=wS(r.arrival);
     if(dwd)dwd.textContent=wS(r.departure);
   }
+}
+// Builds the <option> list for a Country <select> inline (string, not DOM mutation) — same
+// source list and same "keep an unrecognized legacy name as a one-off option" fallback that
+// populateCountryDropdown() uses for the main Add/Edit Destination form, just usable per-row
+// across however many rows the Edit Route grid has without one JS call per row after render.
+function countryOptionsHTML(selectedCountryName){
+  const entry=selectedCountryName?COUNTRIES.find(c=>c[1]===selectedCountryName):null;
+  let html='<option value="">— Select country —</option>'+
+    COUNTRIES.map(([code,name])=>`<option value="${code}"${name===selectedCountryName?' selected':''}>${esc(name)}</option>`).join('');
+  if(selectedCountryName&&!entry){
+    // Legacy/custom country name not in the list — keep it as a one-off selected option so
+    // editing never silently discards it. value is a marker (not ''), so it's never confused
+    // with the blank "— Select country —" option above.
+    html+=`<option value="__legacy__" selected>${esc(selectedCountryName)}</option>`;
+  }
+  return html;
+}
+// Country/City edits only ever touch this one row's own draft entry — unlike date edits, they
+// never affect any other row's dates, so (regardless of the Auto-calculate toggle) there's never
+// a need for fixDateGapsOn or a full renderContent() here; just patch this row's flag in place.
+function updateRouteCountry(id,code){
+  const r=routeDraft?.find(x=>x.id===id);if(!r)return;
+  if(code==='__legacy__')return; // re-selecting the already-set custom name — nothing actually changed
+  const entry=COUNTRIES.find(c=>c[0]===code);
+  r.country=entry?entry[1]:'';
+  r.flag=entry?codeToFlag(code):'';
+  const flagSpan=document.getElementById('reflag_'+id);
+  if(flagSpan)flagSpan.innerHTML=flagHtml(r.flag);
+}
+function updateRouteCity(id,value){
+  const r=routeDraft?.find(x=>x.id===id);if(!r)return;
+  r.city=value.trim();
 }
 // Core gap/overlap-closing algorithm, generalized to work on any array of rows shaped like
 // {arrival,departure} in a given order — used identically whether operating on the live
@@ -2960,8 +3002,8 @@ function confirmFixDateGaps(){
 }
 function confirmSaveRouteChanges(){
   if(!routeDraft)return;
-  if(confirm('Save these date changes to your itinerary?\n\nThis will commit every arrival/departure date shown in the draft to your real destinations. This cannot be undone automatically.\n\nAre you sure?')){
-    routeDraft.forEach(r=>{const d=dBy(r.id);if(d){d.arrival=r.arrival;d.departure=r.departure;}});
+  if(confirm('Save these changes to your itinerary?\n\nThis will commit every country, city, arrival, and departure date shown in the draft to your real destinations. This cannot be undone automatically.\n\nAre you sure?')){
+    routeDraft.forEach(r=>{const d=dBy(r.id);if(d){d.arrival=r.arrival;d.departure=r.departure;d.country=r.country;d.city=r.city;d.flag=r.flag||'📍';}});
     routeEditMode=false;routeDraft=null;
     renderSB();renderContent();
     alert('✓ Changes saved to your itinerary.');
