@@ -4564,6 +4564,35 @@ function calcSchengenUsage(ranges){
   });
   return{maxUsed,violation:!!violationDate,violationDate,totalDays:allDays.length};
 }
+// Per-country max-stay check: merges a country's destinations into continuous "visit blocks"
+// (destinations that chain back-to-back or overlap, with no time spent outside the country in
+// between) and flags a violation if any single continuous block runs longer than that country's
+// Allowed Stay (visa_days). Two SEPARATE visits to the same country, with a gap where the
+// traveler was elsewhere, are NOT summed together — each is checked independently. This is
+// deliberately simpler than the Schengen calculator's rolling-window rule (which sums multiple
+// separate visits over 180 days) since most single-country visas work on a per-visit basis, not
+// a rolling window — Schengen-area countries are excluded here since they already have their own
+// dedicated, correct calculator above.
+function calcCountryStayViolations(visaCountries){
+  return visaCountries
+    .filter(c=>!SCHENGEN_COUNTRIES.has(c.country))
+    .map(c=>{
+      const withDays=c.dests.filter(d=>d.arrival&&d.departure);
+      const limitDays=c.dests.find(d=>d.visa_days!=null)?.visa_days??null;
+      if(!withDays.length||limitDays==null)return{country:c.country,flag:c.flag,limitDays:null,maxConsecutive:null,violated:null};
+      const sorted=[...withDays].sort((a,b)=>a.arrival.localeCompare(b.arrival));
+      const blocks=[];
+      let cur=null;
+      sorted.forEach(d=>{
+        if(!cur){cur={start:d.arrival,end:d.departure};}
+        else if(d.arrival<=cur.end){if(d.departure>cur.end)cur.end=d.departure;}
+        else{blocks.push(cur);cur={start:d.arrival,end:d.departure};}
+      });
+      if(cur)blocks.push(cur);
+      const maxConsecutive=Math.max(...blocks.map(b=>dBtw(b.start,b.end)));
+      return{country:c.country,flag:c.flag,limitDays,maxConsecutive,violated:maxConsecutive>limitDays};
+    });
+}
 
 // World landmass outline as lat/lng polygon rings (simplified but recognizable continents)
 const LAND_RINGS=[
@@ -6832,6 +6861,20 @@ function renderVisas(){
   const vaccineCountries=groupByCountry(vaccineDests);
   const visaCountriesObtained=visaCountries.filter(c=>c.obtained).length;
 
+  // Schengen calculator: every destination whose country is in the Schengen Area, using its
+  // actual arrival/departure dates from the itinerary. Computed here (rather than lower down,
+  // where it's actually displayed) because the summary cards above also need the result.
+  const schengenDests=dests.filter(d=>SCHENGEN_COUNTRIES.has(d.country)&&d.arrival&&d.departure);
+  const schengenRanges=schengenDests.map(d=>({start:d.arrival,end:d.departure}));
+  const schengenResult=calcSchengenUsage(schengenRanges);
+  const pct=Math.min(100,(schengenResult.maxUsed/90)*100);
+  const barColor=schengenResult.violation?'var(--red)':pct>75?'#D4A84C':'var(--green)';
+
+  // Non-Schengen max-stay check, per country that requires a visa.
+  const stayViolations=calcCountryStayViolations(visaCountries);
+  const stayViolationByCountry=new Map(stayViolations.map(v=>[v.country,v]));
+  const violatingCountries=stayViolations.filter(v=>v.violated===true);
+
   const natOptions='<option value="">— Select your passport/nationality —</option>'+
     COUNTRIES.map(([code,name])=>`<option value="${code}"${userNationality===code?' selected':''}>${esc(name)}</option>`).join('');
   const natEntry=COUNTRIES.find(c=>c[0]===userNationality);
@@ -6841,12 +6884,19 @@ function renderVisas(){
     const acts=[...new Set(c.dests.map(d=>aM(d.act).name))];
     const cityList=c.dests.map(d=>d.city).join(', ');
     const types=[...new Set(c.dests.map(d=>d.visa_type||'Physical'))];
+    const sv=stayViolationByCountry.get(c.country);
+    const daysText=sv&&sv.limitDays!=null?` · ${sv.limitDays} day${sv.limitDays===1?'':'s'} max`:'';
+    const dotColor=!sv||sv.violated==null?'var(--t3)':sv.violated?'var(--red)':'var(--green)';
+    const dotTitle=!sv||sv.violated==null?'No max-stay data entered for this country':
+      sv.violated?`⚠ Longest continuous stay is ${sv.maxConsecutive} days — exceeds the ${sv.limitDays}-day limit`:
+      `Longest continuous stay is ${sv.maxConsecutive} days — within the ${sv.limitDays}-day limit`;
     return`<div class="ev-item" onclick="openDestModal('${c.dests[0].id}')">
+      <span style="width:9px;height:9px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-top:6px" title="${esc(dotTitle)}"></span>
       <span style="font-size:22px;flex-shrink:0">${flagHtml(c.flag)}</span>
       <div style="flex:1;min-width:0">
         <div class="ev-name">${esc(c.country)}</div>
         <div class="ev-loc">${esc(cityList)}</div>
-        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(types.join(', '))} visa · ${c.dests.length} destination${c.dests.length===1?'':'s'}</div>
+        <div style="font-size:12px;color:var(--t3);font-family:var(--font-ui);margin-top:2px">${esc(types.join(', '))} visa · ${c.dests.length} destination${c.dests.length===1?'':'s'}${daysText}</div>
       </div>
       <span class="sbadge ${c.obtained?'sb-confirmed':'sb-planned'}" style="flex-shrink:0">${c.obtained?'✓ Obtained':'⏳ Pending'}</span>
     </div>`;
@@ -6893,14 +6943,6 @@ function renderVisas(){
     </div>`;
   }).join('');
 
-  // Schengen calculator: every destination whose country is in the Schengen Area, using its
-  // actual arrival/departure dates from the itinerary.
-  const schengenDests=dests.filter(d=>SCHENGEN_COUNTRIES.has(d.country)&&d.arrival&&d.departure);
-  const schengenRanges=schengenDests.map(d=>({start:d.arrival,end:d.departure}));
-  const schengenResult=calcSchengenUsage(schengenRanges);
-  const pct=Math.min(100,(schengenResult.maxUsed/90)*100);
-  const barColor=schengenResult.violation?'var(--red)':pct>75?'#D4A84C':'var(--green)';
-
   return`<div class="panel">
     <div class="sec-ttl">Your Passport / Nationality</div>
     <div class="scard" style="margin-bottom:1rem;cursor:default">
@@ -6926,6 +6968,8 @@ function renderVisas(){
       <div class="scard"><div class="sval" style="color:var(--green)">${visaCountriesObtained}</div><div class="slbl">Obtained</div></div>
       <div class="scard"><div class="sval" style="color:#D4A84C">${visaCountries.length-visaCountriesObtained}</div><div class="slbl">Pending</div></div>
       <div class="scard"><div class="sval">${vaccineCountries.length}</div><div class="slbl">Countries Needing Vaccines</div></div>
+      <div class="scard"><div class="sval" style="color:${schengenResult.violation?'var(--red)':'var(--green)'}">${schengenResult.violation?'Yes':'No'}</div><div class="slbl">Schengen Violation</div></div>
+      <div class="scard"><div class="sval" style="color:${violatingCountries.length?'var(--red)':'var(--green)'}">${violatingCountries.length?`Yes (${violatingCountries.length})`:'No'}</div><div class="slbl">Other Countries Violation</div></div>
     </div>
 
     <div class="sec-ttl">Countries Requiring a Visa</div>
@@ -6933,7 +6977,7 @@ function renderVisas(){
       ${visaCountryRows||'<div style="padding:1rem;color:var(--t3);font-family:var(--font-ui);font-size:13px">No countries currently flagged as needing a visa. Mark "Visa required" in the Add/Edit Destination form to have them appear here.</div>'}
     </div>
     <div style="font-size:11px;color:var(--t3);font-family:var(--font-ui);margin-bottom:1.25rem;line-height:1.5">
-      <i class="ti ti-info-circle"></i> This list reflects what you've marked per-destination in the form, grouped by country — it is not a live lookup of current visa rules for your selected passport. A country shows "Obtained" once any one of its destinations is marked Obtained. Visa requirements and maximum stay durations change over time and vary by passport; always verify directly with the destination country's official immigration authority or embassy before you travel.
+      <i class="ti ti-info-circle"></i> This list reflects what you've marked per-destination in the form, grouped by country — it is not a live lookup of current visa rules for your selected passport. A country shows "Obtained" once any one of its destinations is marked Obtained. The colored dot checks your longest <em>continuous</em> stay in that country against its Allowed Stay (days), where entered — gray means no Allowed Stay was entered. "Other Countries Violation" above counts these (Schengen countries are excluded there since they use the dedicated rolling-window calculator below instead). Visa requirements and maximum stay durations change over time and vary by passport; always verify directly with the destination country's official immigration authority or embassy before you travel.
     </div>
 
     <div class="sec-ttl">Countries Requiring Vaccines / Paperwork</div>
