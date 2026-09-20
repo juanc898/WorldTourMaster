@@ -411,6 +411,14 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font-body)}
 /* Edit All Fields scrolls within its own capped-height container (both directions), so the
    header needs position:sticky to stay visible while scrolling down through many rows. */
 #routeFullEditTbl thead th{position:sticky;top:0;z-index:2;background:var(--card-bg);white-space:nowrap}
+/* Frozen columns: selection checkbox, Country, City — stay put horizontally so it's always
+   clear which destination a scrolled-right cell belongs to. Fixed pixel widths (rather than
+   auto) are what make sticky "left" offsets reliable here. */
+#routeFullEditTbl th:nth-child(1),#routeFullEditTbl td:nth-child(1){position:sticky;left:0;z-index:1;width:34px;min-width:34px;max-width:34px;background:var(--card-bg)}
+#routeFullEditTbl th:nth-child(2),#routeFullEditTbl td:nth-child(2){position:sticky;left:34px;z-index:1;width:190px;min-width:190px;max-width:190px;background:var(--card-bg)}
+#routeFullEditTbl th:nth-child(3),#routeFullEditTbl td:nth-child(3){position:sticky;left:224px;z-index:1;width:140px;min-width:140px;max-width:140px;background:var(--card-bg);box-shadow:2px 0 4px rgba(0,0,0,.25)}
+#routeFullEditTbl thead th:nth-child(1),#routeFullEditTbl thead th:nth-child(2),#routeFullEditTbl thead th:nth-child(3){z-index:3}
+#routeFullEditTbl td:nth-child(2) .rfc-static,#routeFullEditTbl td:nth-child(3) .rfc-static{overflow:hidden;text-overflow:ellipsis}
 #routeFullEditTbl td{white-space:nowrap;padding:0}
 #routeFullEditTbl td textarea{white-space:normal}
 .rfc-static{padding:.45rem .5rem;font-size:12.5px;color:var(--t1);cursor:pointer;min-height:1.2em;border-radius:4px}
@@ -3215,7 +3223,7 @@ const ROUTE_FULL_FIELDS=[
 const ROUTE_FULL_STATUS_OPTS=[['planned','Planned'],['partial','Partially Confirmed'],['confirmed','Confirmed'],['wishlist','Wishlist'],['completed','Completed'],['cancelled','Cancelled']];
 const ROUTE_FULL_PRIORITY_OPTS=[['5','★★★★★ Must do'],['4','★★★★ High'],['3','★★★ Medium'],['2','★★ Low'],['1','★ Someday']];
 const ROUTE_FULL_CORE_KEYS=['act','status','country','city','priority','arrival','departure'];
-const ROUTE_FULL_CORE_COLS=[{k:'act',l:'Act'},{k:'status',l:'Status'},{k:'country',l:'Country'},{k:'city',l:'City'},{k:'priority',l:'Priority'},{k:'arrival',l:'Arrival'},{k:'departure',l:'Departure'},{k:'nights',l:'Nights'}];
+const ROUTE_FULL_CORE_COLS=[{k:'country',l:'Country'},{k:'city',l:'City'},{k:'act',l:'Act'},{k:'status',l:'Status'},{k:'priority',l:'Priority'},{k:'arrival',l:'Arrival'},{k:'departure',l:'Departure'},{k:'nights',l:'Nights'}];
 const ROUTE_FULL_ALL_COLS=[...ROUTE_FULL_CORE_COLS,...ROUTE_FULL_FIELDS];
 // Bulk Edit is deliberately limited to select-backed (unambiguous) fields, so a mass-change can
 // never accidentally blank out unique per-destination free text like Hotel or Notes.
