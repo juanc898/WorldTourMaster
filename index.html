@@ -1035,6 +1035,7 @@ textarea.fi{min-height:76px;resize:vertical;line-height:1.5}
     </div></div>
     <div class="f2"><div class="fg"><label class="flbl">Event Start Date</label><input class="fi" id="f_event_start" type="date"/></div><div class="fg"><label class="flbl">Event End Date <span style="opacity:.6">(optional)</span></label><input class="fi" id="f_event_end" type="date"/></div></div>
     <div class="f2"><div class="fg"><label class="flbl">Event Cost ($)</label><input class="fi" id="f_event_cost" type="number" min="0" step="0.01" placeholder="0.00"/></div><div class="fg"><label class="flbl">Persons Sharing</label><input class="fi" id="f_event_persons" type="number" min="1" value="2"/></div></div>
+    <div class="fg"><label class="flbl">Event Paid?</label><select class="fi" id="f_event_paid"><option value="no">Not paid</option><option value="partial">Partially paid</option><option value="yes">Fully paid</option></select></div>
   </div></div>
   <div class="msect"><div class="msttl">Visa Requirements</div><div class="mflds">
     <div class="fg" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="f_visa_required" onchange="toggleVisaFields()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer"/><label class="flbl" for="f_visa_required" style="cursor:pointer">Visa required for this destination?</label></div>
@@ -2183,7 +2184,7 @@ function handleLostSharedAccess(tourId){
   }
   if(S.cur===SHARED_PREFIX+tourId){
     S.cur=Object.keys(S.tours)[0];
-    curActId=null;curDestId=null;selBudCat=null;
+    curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();
     renderSB();renderContent();
     alert('Access to this tour has been revoked by its owner.');
   }else if(hadRef){
@@ -2214,7 +2215,7 @@ function cleanupRevokedSharedRefs(){
     scheduleCloudSave();
     if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX)&&toRemove.includes(S.cur.slice(SHARED_PREFIX.length))){
       S.cur=Object.keys(S.tours)[0];
-      curActId=null;curDestId=null;selBudCat=null;
+      curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();
     }
     renderSB();renderContent();
   });
@@ -2348,7 +2349,7 @@ function switchTour(id){
       budgetDateMode='custom';budgetCustomStart=start;budgetCustomEnd=today;
       AF=['completed'];
       BF=['achieved'];
-      curActId=null;curDestId=null;selBudCat=null;routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
+      curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
       renderSB();renderContent();
     });
     return;
@@ -2357,7 +2358,7 @@ function switchTour(id){
     S.cur=id;
     if(enteringShared)attachSharedTourListener(id.slice(SHARED_PREFIX.length));
   }
-  curActId=null;curDestId=null;selBudCat=null;routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
+  curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();routeFilterAct=null;statsCatFilter=null;bktCatFilter=null;
   renderSB();renderContent();
 }
 function viewDestSB(id){if(tab==='map'&&typeof teardownGlobe==='function')teardownGlobe();curDestId=id;curActId=dBy(id)?.act||curActId;tab='dashboard';document.querySelectorAll('.nav-tab').forEach((t)=>t.classList.toggle('active',t.dataset.tab==='dashboard'));closeSB();renderSB();renderContent();}
@@ -2723,7 +2724,7 @@ const FIELDS=[
   {k:'departure',l:'Departure Date (YYYY-MM-DD)',t:'date'},{k:'event',l:'Event Name',t:'text'},
   {k:'event_start',l:'Event Start Date (YYYY-MM-DD)',t:'date'},{k:'event_end',l:'Event End Date (YYYY-MM-DD)',t:'date'},
   {k:'event_type',l:'Event Type',t:'text'},
-  {k:'event_cost',l:'Event Cost ($)',t:'number'},{k:'event_persons',l:'Event Persons Sharing',t:'number'},{k:'hotel',l:'Hotel/Property',t:'text'},
+  {k:'event_cost',l:'Event Cost ($)',t:'number'},{k:'event_persons',l:'Event Persons Sharing',t:'number'},{k:'event_paid',l:'Event Paid (yes/no/partial)',t:'text'},{k:'hotel',l:'Hotel/Property',t:'text'},
   {k:'hotel_ref',l:'Hotel Booking Ref',t:'text'},{k:'cost',l:'Hotel Total Cost ($)',t:'number'},
   {k:'persons',l:'Persons Sharing',t:'number'},{k:'paid',l:'Hotel Amount Paid ($)',t:'number'},
   {k:'mot',l:'Transport Mode',t:'text'},{k:'t_company',l:'Transport Company',t:'text'},{k:'t_num',l:'Flight/Train Number',t:'text'},
@@ -4148,6 +4149,11 @@ function processImportedRows(rows,input){
           const resolved=fuzzyMatch(v,TPAID_OPTS)||'no';
           obj.t_paid=resolved;
           if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Transport Paid "${resolved}" (${rowLabel()})`);
+        }
+        else if(k==='event_paid'){
+          const resolved=fuzzyMatch(v,TPAID_OPTS)||'no';
+          obj.event_paid=resolved;
+          if(resolved.toLowerCase()!==v.toLowerCase())correctionNotes.push(`"${v}" → Event Paid "${resolved}" (${rowLabel()})`);
         }
         else if(k==='visa_type'){
           const resolved=fuzzyMatch(v,VISA_OPTS);
@@ -5975,6 +5981,28 @@ document.addEventListener('click',e=>{const fm=document.getElementById('fmenu');
 let budgetViewMode=localStorage.getItem('ae_budget_view')||'per';
 function setBudgetViewMode(mode){budgetViewMode=mode;localStorage.setItem('ae_budget_view',mode);renderContent();}
 let budgetBreakdownMode=false; // toggles Budget between the main summary and the monthly Planned vs Actual sub-section
+let budgetBdExpanded=new Set(); // "<catId>|<monthKey>" strings currently expanded to show individual expenses
+function toggleBudgetBdCell(key){
+  if(budgetBdExpanded.has(key))budgetBdExpanded.delete(key);
+  else budgetBdExpanded.add(key);
+  renderContent();
+}
+// Builds the individual (linked + manual) expense rows for one category within one month —
+// reuses the exact same date-matching function the parent total already filtered with, so the
+// expanded detail always adds up to the same Planned/Paid numbers shown in the collapsed row.
+function budgetDetailItemsFor(cat,mKeyMatch){
+  const perPerson=budgetViewMode==='per';
+  const lk=getLinked(cat);
+  const linkedItems=lk.budg.filter(e=>mKeyMatch(e.date)).map(e=>{
+    const paidAmt=lk.spent.find(s=>s.id===e.id)?.amt||0;
+    return{type:'linked',destId:e.destId,lbl:e.lbl,planned:e.amt,paid:paidAmt,isPaid:e.isPaid,date:e.date};
+  });
+  const manualItems=(cat.expenses||[]).filter(e=>mKeyMatch(budgetParsedDate(e.date))).map(e=>{
+    const persons=e.persons>0?e.persons:1;
+    return{type:'manual',expId:e.id,catId:cat.id,lbl:e.label,planned:perPerson?(e.planned||0)/persons:(e.planned||0),paid:perPerson?e.amount/persons:e.amount,date:budgetParsedDate(e.date)};
+  });
+  return[...linkedItems,...manualItems].sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
+}
 function toggleBudgetBreakdownMode(){budgetBreakdownMode=!budgetBreakdownMode;renderContent();}
 let budgetBdStartMonth=null,budgetBdEndMonth=null; // 'YYYY-MM' — null means "let the mode below decide"
 let budgetBdMode=localStorage.getItem('ae_budget_bd_mode')||'current-end'; // 'current-end' | 'total-tour' | 'custom'
@@ -6005,11 +6033,11 @@ function getLinked(cat){
     const budg=dd.filter(d=>d.cost>0).map(d=>{
       const persons=d.persons>0?d.persons:1;
       const amt=perPerson?d.cost/persons:d.cost,paid=perPerson?(d.paid||0)/persons:(d.paid||0);
-      return{id:'ah_'+d.id,lbl:`Hotel: ${d.city} — ${d.hotel||'TBD'}`,amt,paid,isPaid:paid>=amt,persons,date:d.arrival,endDate:d.departure,nights:dBtw(d.arrival,d.departure)};
+      return{id:'ah_'+d.id,destId:d.id,lbl:`Hotel: ${d.city} — ${d.hotel||'TBD'}`,amt,paid,isPaid:paid>=amt,persons,date:d.arrival,endDate:d.departure,nights:dBtw(d.arrival,d.departure)};
     });
     const spent=dd.filter(d=>d.cost>0&&(d.paid||0)>0).map(d=>{
       const persons=d.persons>0?d.persons:1;
-      return{id:'ah_'+d.id,lbl:`Hotel: ${d.city}`,amt:perPerson?(d.paid||0)/persons:(d.paid||0),date:d.arrival,endDate:d.departure};
+      return{id:'ah_'+d.id,destId:d.id,lbl:`Hotel: ${d.city}`,amt:perPerson?(d.paid||0)/persons:(d.paid||0),date:d.arrival,endDate:d.departure};
     });
     return{budg,spent};
   }
@@ -6018,25 +6046,31 @@ function getLinked(cat){
       const persons=d.t_persons>0?d.t_persons:1;
       const amt=perPerson?d.t_cost/persons:d.t_cost;
       const paid=d.t_paid==='yes'?amt:0;
-      return{id:'at_'+d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt,paid,isPaid:d.t_paid==='yes',persons,date:d.arrival};
+      return{id:'at_'+d.id,destId:d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt,paid,isPaid:d.t_paid==='yes',persons,date:d.arrival};
     });
     const spent=dd.filter(d=>d.t_cost>0&&d.t_paid==='yes').map(d=>{
       const persons=d.t_persons>0?d.t_persons:1;
-      return{id:'at_'+d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt:perPerson?d.t_cost/persons:d.t_cost,date:d.arrival};
+      return{id:'at_'+d.id,destId:d.id,lbl:`${d.mot||'Transport'}: ${d.city}`,amt:perPerson?d.t_cost/persons:d.t_cost,date:d.arrival};
     });
     return{budg,spent};
   }
   if(cat.linked==='events'){
     const budg=dd.filter(d=>d.event_cost>0).map(d=>{
       const persons=d.event_persons>0?d.event_persons:1;
-      return{id:'ae_'+d.id,lbl:`${d.event||'Event'}: ${d.city}`,amt:perPerson?d.event_cost/persons:d.event_cost,paid:0,isPaid:false,persons,date:d.event_start||d.arrival};
+      const amt=perPerson?d.event_cost/persons:d.event_cost;
+      const paid=d.event_paid==='yes'?amt:0;
+      return{id:'ae_'+d.id,destId:d.id,lbl:`${d.event||'Event'}: ${d.city}`,amt,paid,isPaid:d.event_paid==='yes',persons,date:d.event_start||d.arrival};
     });
-    return{budg,spent:[]};
+    const spent=dd.filter(d=>d.event_cost>0&&d.event_paid==='yes').map(d=>{
+      const persons=d.event_persons>0?d.event_persons:1;
+      return{id:'ae_'+d.id,destId:d.id,lbl:`${d.event||'Event'}: ${d.city}`,amt:perPerson?d.event_cost/persons:d.event_cost,date:d.event_start||d.arrival};
+    });
+    return{budg,spent};
   }
   if(cat.linked==='visas'){
     const budg=dd.filter(d=>d.visa_required&&d.visa_cost>0).map(d=>{
       const persons=d.visa_persons>0?d.visa_persons:1;
-      return{id:'av_'+d.id,lbl:`Visa (${d.visa_type||'Physical'}): ${d.city}`,amt:perPerson?d.visa_cost/persons:d.visa_cost,paid:0,isPaid:false,persons,date:d.arrival};
+      return{id:'av_'+d.id,destId:d.id,lbl:`Visa (${d.visa_type||'Physical'}): ${d.city}`,amt:perPerson?d.visa_cost/persons:d.visa_cost,paid:0,isPaid:false,persons,date:d.arrival};
     });
     return{budg,spent:[]};
   }
@@ -6189,19 +6223,20 @@ function renderBudget(){
     if(cat){
       const lk=getLinked(cat);
       const linkedBudgInRange=lk.budg.filter(e=>budgetItemInRange(e,range.start,range.end));
-      const manExp=[...(cat.expenses||[])].filter(e=>budgetItemInRange({date:budgetParsedDate(e.date)},range.start,range.end)).sort((a,b)=>b.amount-a.amount);
+      const manExp=[...(cat.expenses||[])].filter(e=>budgetItemInRange({date:budgetParsedDate(e.date)},range.start,range.end)).sort((a,b)=>(budgetParsedDate(a.date)||'9999').localeCompare(budgetParsedDate(b.date)||'9999'));
       const hasLk=linkedBudgInRange.length>0;
       let rows='';
       if(hasLk){
         rows+=`<div style="padding:.4rem .75rem;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:${cat.color};font-family:var(--font-ui);background:rgba(255,255,255,.02)">Linked from destinations</div>`;
-        linkedBudgInRange.sort((a,b)=>b.amt-a.amt).forEach(e=>{
+        linkedBudgInRange.sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).forEach(e=>{
           const paidAmt=lk.spent.find(s=>s.id===e.id)?.amt||0;
           const personsNote=e.persons>1?`<div style="font-size:11px;color:var(--t3);margin-top:1px">${perPerson?`Split ${e.persons} ways`:`${e.persons} people total`}</div>`:'';
-          rows+=`<div class="bexp" style="opacity:.85">
-            <div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.lbl)}</div><div style="font-size:11px;color:var(--t3)">From destination record</div>${personsNote}</div>
+          rows+=`<div class="bexp" style="opacity:.85;cursor:pointer" onclick="openDestModal('${e.destId}')" title="Click to edit this destination's record">
+            <div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.lbl)}</div><div style="font-size:11px;color:var(--t3)">${e.date?fD(e.date):'No date'} · From destination record</div>${personsNote}</div>
             <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
               <span style="font-size:12px;color:${paidAmt>=e.amt?'var(--green)':'var(--t3)'}">$${paidAmt.toFixed(0)} / $${e.amt.toFixed(0)}</span>
               ${e.isPaid?'<span class="pyes" style="font-size:10px">✓ Paid</span>':'<span class="pno" style="font-size:10px">Unpaid</span>'}
+              <i class="ti ti-edit" style="font-size:12px;color:var(--t3)"></i>
             </div>
           </div>`;
         });
@@ -6214,7 +6249,7 @@ function renderBudget(){
         const shownPlanned=perPerson?(e.planned||0)/persons:(e.planned||0);
         const personsNote=persons>1?`<div style="font-size:11px;color:var(--t3)">${perPerson?`Split ${persons} ways`:`${persons} people`}</div>`:'';
         const recurNote=e.recurId?`<div style="font-size:11px;color:var(--t3)"><i class="ti ti-repeat" style="font-size:10px"></i> Recurring</div>`:'';
-        rows+=`<div class="bexp"><div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--t2)">${esc(e.label)}</div><div style="font-size:11px;color:var(--t3)">${esc(e.date||'')}</div>${personsNote}${recurNote}</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-size:12px;color:var(--t3)">Planned $${shownPlanned.toFixed(0)}</span><span style="font-size:13px;color:var(--gold)">Paid $${shownAmt.toFixed(2)}</span><button class="abtn" onclick="openBudExpModal('${cat.id}','${e.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button><button class="abtn del" onclick="removeBudExp('${cat.id}','${e.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button></div></div>`;
+        rows+=`<div class="bexp" style="cursor:pointer" onclick="openBudExpModal('${cat.id}','${e.id}')" title="Click to edit"><div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--t2)">${esc(e.label)}</div><div style="font-size:11px;color:var(--t3)">${e.date?fD(e.date):'No date'}</div>${personsNote}${recurNote}</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-size:12px;color:var(--t3)">Planned $${shownPlanned.toFixed(0)}</span><span style="font-size:13px;color:var(--gold)">Paid $${shownAmt.toFixed(2)}</span><button class="abtn" onclick="event.stopPropagation();openBudExpModal('${cat.id}','${e.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-edit"></i></button><button class="abtn del" onclick="event.stopPropagation();removeBudExp('${cat.id}','${e.id}')" style="font-size:11px;padding:1px 5px"><i class="ti ti-trash"></i></button></div></div>`;
       });
       detHTML=`<div style="margin-top:1rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
         <div style="padding:.5rem .75rem;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
@@ -6328,19 +6363,35 @@ function renderBudgetBreakdown(){
     const owe=planned-paid;
     return`<span class="dval-bd">Planned $${fmtM(planned)} · Paid $<span style="color:${paid>=0?'var(--green)':'var(--red)'}">${fmtM(paid)}</span> · Still Owe $<span style="color:${owe>0?'var(--red)':'var(--green)'}">${fmtM(owe)}</span></span>`;
   };
-  const catRowsFor=(mKeyMatch)=>{
+  const catRowsFor=(mKeyMatch,mKeyId)=>{
     let planned=0,actual=0;
     const rows=data.map(({cat,plannedItems,actualItems})=>{
       const p=plannedItems.filter(i=>mKeyMatch(i.date)).reduce((s,i)=>s+i.amt,0);
       const a=actualItems.filter(i=>mKeyMatch(i.date)).reduce((s,i)=>s+i.amt,0);
       if(p===0&&a===0)return'';
       planned+=p;actual+=a;
-      return`<div class="drow"><span class="dlbl" style="color:${cat.color}">${esc(cat.name)}</span><span class="dval">${oweHTML(p,a)}</span></div>`;
+      const cellKey=`${cat.id}|${mKeyId}`;
+      const isOpen=budgetBdExpanded.has(cellKey);
+      let detailHTML='';
+      if(isOpen){
+        const items=budgetDetailItemsFor(cat,mKeyMatch);
+        detailHTML=`<div style="padding:.2rem 0 .35rem .5rem;border-left:2px solid ${cat.color}55;margin:0 0 .4rem .3rem">`+
+          (items.length?items.map(it=>{
+            const owe=it.planned-it.paid;
+            const editOnclick=it.type==='linked'?`openDestModal('${it.destId}')`:`openBudExpModal('${it.catId}','${it.expId}')`;
+            return`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.3rem .5rem;cursor:pointer;border-radius:4px" onclick="event.stopPropagation();${editOnclick}" title="Click to edit" onmouseover="this.style.background='var(--sf2)'" onmouseout="this.style.background='transparent'">
+              <span style="font-size:11.5px;color:var(--t2);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.date?fD(it.date):'No date')} · ${esc(it.lbl)}</span>
+              <span style="font-size:11px;color:${owe>0?'var(--t3)':'var(--green)'};flex-shrink:0;white-space:nowrap"><i class="ti ti-edit" style="font-size:10px;margin-right:2px"></i>$${it.paid.toFixed(0)} / $${it.planned.toFixed(0)}</span>
+            </div>`;
+          }).join(''):'<div style="padding:.3rem .5rem;font-size:11px;color:var(--t3);font-family:var(--font-ui)">No individual items</div>')+
+        `</div>`;
+      }
+      return`<div class="drow" style="cursor:pointer" onclick="toggleBudgetBdCell('${cellKey}')" title="Click to ${isOpen?'collapse':'expand'} individual expenses"><span class="dlbl" style="color:${cat.color}"><i class="ti ti-chevron-${isOpen?'down':'right'}" style="font-size:9px;margin-right:4px;transition:transform .15s"></i>${esc(cat.name)}</span><span class="dval">${oweHTML(p,a)}</span></div>${detailHTML}`;
     }).join('');
     return{rows,planned,actual};
   };
   const monthSections=months.map(mKey=>{
-    const{rows,planned,actual}=catRowsFor(d=>budgetMonthKey(d)===mKey);
+    const{rows,planned,actual}=catRowsFor(d=>budgetMonthKey(d)===mKey,mKey);
     if(!rows)return'';
     const[y,m]=mKey.split('-');
     const label=new Date(parseInt(y),parseInt(m)-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
@@ -6352,7 +6403,7 @@ function renderBudgetBreakdown(){
       <div style="padding:.3rem .75rem">${rows}</div>
     </div>`;
   }).join('');
-  const noDate=catRowsFor(d=>!d);
+  const noDate=catRowsFor(d=>!d,'nodate');
   const noDateHTML=noDate.rows?`<div style="margin-bottom:.75rem;background:var(--card-bg);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
       <div style="padding:.5rem .75rem;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
         <div style="font-size:13px;color:var(--t1);font-family:var(--font-ui);font-weight:600">No Date Defined</div>
@@ -7150,7 +7201,7 @@ function budgetLinkedRawRows(cat){
   }).map(d=>{
     if(cat.linked==='hotels')return{label:`Hotel: ${d.city} — ${d.hotel||'TBD'}`,planned:d.cost,paid:d.paid||0,date:d.arrival,destId:d.id};
     if(cat.linked==='transport')return{label:`${d.mot||'Transport'}: ${d.city}`,planned:d.t_cost,paid:d.t_paid==='yes'?d.t_cost:0,date:d.arrival,destId:d.id};
-    if(cat.linked==='events')return{label:`${d.event||'Event'}: ${d.city}`,planned:d.event_cost,paid:0,date:d.event_start||d.arrival,destId:d.id};
+    if(cat.linked==='events')return{label:`${d.event||'Event'}: ${d.city}`,planned:d.event_cost,paid:d.event_paid==='yes'?d.event_cost:0,date:d.event_start||d.arrival,destId:d.id};
     return{label:`Visa (${d.visa_type||'Physical'}): ${d.city}`,planned:d.visa_cost,paid:0,date:d.arrival,destId:d.id};
   });
 }
@@ -7217,7 +7268,7 @@ function processImportedBudgetRows(rows,input){
       let livePlanned=0,livePaid=0;
       if(cat.linked==='hotels'){livePlanned=d.cost||0;livePaid=d.paid||0;}
       else if(cat.linked==='transport'){livePlanned=d.t_cost||0;livePaid=d.t_paid==='yes'?d.t_cost:0;}
-      else if(cat.linked==='events'){livePlanned=d.event_cost||0;}
+      else if(cat.linked==='events'){livePlanned=d.event_cost||0;livePaid=d.event_paid==='yes'?(d.event_cost||0):0;}
       else if(cat.linked==='visas'){livePlanned=d.visa_cost||0;}
       if(Math.abs(importedPlanned-livePlanned)>0.01||Math.abs(importedPaid-livePaid)>0.01){
         linkedConflicts.push({destId:d.id,label:obj.label,linked:cat.linked,importedPlanned,importedPaid,livePlanned,livePaid});
@@ -7246,7 +7297,7 @@ function processImportedBudgetRows(rows,input){
         const d=dBy(c.destId);if(!d)return;
         if(c.linked==='hotels'){d.cost=c.importedPlanned;d.paid=c.importedPaid;}
         else if(c.linked==='transport'){d.t_cost=c.importedPlanned;d.t_paid=c.importedPaid>0?'yes':'no';}
-        else if(c.linked==='events')d.event_cost=c.importedPlanned;
+        else if(c.linked==='events'){d.event_cost=c.importedPlanned;d.event_paid=c.importedPaid>0?'yes':'no';}
         else if(c.linked==='visas')d.visa_cost=c.importedPlanned;
       });
       alert('Done — destination records updated with the imported amounts.');
@@ -8243,7 +8294,7 @@ function openDestModal(editId){if(blockIfReadOnly())return;
   document.getElementById('destModalTitle').textContent=editId?'Edit Destination':'Add Destination';
   const as=document.getElementById('f_act');
   as.innerHTML=cActs().map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
-  const flds=['status','city','flag','priority','arrival','departure','nights','event','event_type','event_start','event_end','event_cost','event_persons','hotel','hotel_ref','cost','persons','paid_hotel','mot','t_company','t_ref','t_persons','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','visa_type','visa_cost','visa_status','visa_persons','visa_days','vaccines_detail','notes','todo'];
+  const flds=['status','city','flag','priority','arrival','departure','nights','event','event_type','event_start','event_end','event_cost','event_persons','event_paid','hotel','hotel_ref','cost','persons','paid_hotel','mot','t_company','t_ref','t_persons','t_dep_port','t_arr_port','t_dep_dt','t_arr_dt','t_connection','t_cost','t_paid','t_num','visa_type','visa_cost','visa_status','visa_persons','visa_days','vaccines_detail','notes','todo'];
   flds.forEach(f=>{const el=document.getElementById('f_'+f);if(el){if(el.tagName==='SELECT')el.selectedIndex=0;else el.value='';}});
   document.getElementById('f_persons').value='2';document.getElementById('f_t_paid').value='no';
   document.getElementById('f_event_persons').value='2';document.getElementById('f_t_persons').value='2';document.getElementById('f_visa_persons').value='2';
@@ -8257,7 +8308,7 @@ function openDestModal(editId){if(blockIfReadOnly())return;
       const sv=(fid,val)=>{const el=document.getElementById('f_'+fid);if(el&&val!=null)el.value=val;};
       as.value=d.act;sv('status',d.status);populateCountryDropdown(d.country);sv('city',d.city);sv('flag',d.flag);
       sv('priority',d.priority||3);sv('arrival',d.arrival);sv('departure',d.departure);
-      sv('event',d.event);sv('event_start',d.event_start||'');sv('event_end',d.event_end||'');populateEventCatDropdown(d.event_type);sv('event_cost',d.event_cost||'');sv('event_persons',d.event_persons||2);
+      sv('event',d.event);sv('event_start',d.event_start||'');sv('event_end',d.event_end||'');populateEventCatDropdown(d.event_type);sv('event_cost',d.event_cost||'');sv('event_persons',d.event_persons||2);sv('event_paid',d.event_paid||'no');
       sv('hotel',d.hotel);sv('hotel_ref',d.hotel_ref);sv('cost',d.cost||'');sv('persons',d.persons||2);sv('paid_hotel',d.paid||'');
       sv('mot',d.mot);sv('t_company',d.t_company);sv('t_ref',d.t_ref);sv('t_dep_port',d.t_dep_port);sv('t_arr_port',d.t_arr_port);
       sv('t_dep_dt',d.t_dep_dt);sv('t_arr_dt',d.t_arr_dt);sv('t_connection',d.t_connection);
@@ -8305,7 +8356,7 @@ function saveDest(){if(blockIfReadOnly())return;
     id:editDestId||uid(),act:document.getElementById('f_act').value||cActs()[0]?.id,
     status:gv('status')||'planned',country:countryName,city:gv('city'),flag:gv('flag')||'📍',
     priority:parseInt(gv('priority'))||3,arrival:gv('arrival'),departure:gv('departure'),
-    event:gv('event'),event_start:gv('event_start'),event_end:gv('event_end'),event_type:eventType,event_cost:gn('event_cost'),event_persons:parseInt(gv('event_persons'))||2,
+    event:gv('event'),event_start:gv('event_start'),event_end:gv('event_end'),event_type:eventType,event_cost:gn('event_cost'),event_persons:parseInt(gv('event_persons'))||2,event_paid:gv('event_paid')||'no',
     hotel:gv('hotel'),hotel_ref:gv('hotel_ref'),cost:gn('cost'),persons:parseInt(gv('persons'))||2,paid:gn('paid_hotel'),
     mot:gv('mot'),t_company:gv('t_company'),t_ref:gv('t_ref'),t_dep_port:gv('t_dep_port'),t_arr_port:gv('t_arr_port'),
     t_dep_dt:gv('t_dep_dt'),t_arr_dt:gv('t_arr_dt'),t_connection:gv('t_connection'),
@@ -8451,7 +8502,7 @@ function executeDuplicateTour(){
   calClosePopup();
   restoreFiltersIfLeavingLife();
   if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX))detachSharedTourListener(S.cur.slice(SHARED_PREFIX.length));
-  S.cur=newId;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;
+  S.cur=newId;curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();bktCatFilter=null;
   renderSB();renderContent();
   scheduleCloudSave();
 }
@@ -8485,7 +8536,7 @@ function createTour(){
   S.tours[id]={name,desc,acts:[],destinations:[],bktCategories:defaultBktCats,eventCategories:defaultEventCats,bucket:[],statsCategories:[],stats:[],gearCategories:makeDefaultGearCats(),gear:[],budget:defaultBudget,budgetOrder:defaultBudget.map(c=>c.id)};
   restoreFiltersIfLeavingLife();
   if(typeof S.cur==='string'&&S.cur.startsWith(SHARED_PREFIX))detachSharedTourListener(S.cur.slice(SHARED_PREFIX.length));
-  S.cur=id;curActId=null;curDestId=null;selBudCat=null;bktCatFilter=null;closeTourModal();renderSB();renderContent();
+  S.cur=id;curActId=null;curDestId=null;selBudCat=null;budgetBdExpanded=new Set();bktCatFilter=null;closeTourModal();renderSB();renderContent();
 }
 function deleteTour(id){if(Object.keys(S.tours).length<=1){alert('Cannot delete the only tour.');return;}if(!confirm('Delete this tour and ALL its data?'))return;delete S.tours[id];if(S.cur===id)S.cur=Object.keys(S.tours)[0];closeTourModal();renderSB();renderContent();}
 function openTourEditModal(forId){
