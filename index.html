@@ -6546,6 +6546,7 @@ function renderBucket(){
   if(bktCatMgmtMode)return renderBktCatMgmt();
   if(bktFullEditMode)return renderBktFullEdit();
   const catOrderIdx=id=>{const i=cBktCats().findIndex(c=>c.id===id);return i<0?9999:i;};
+  const actOrderIdx=id=>{const i=cActs().findIndex(a=>a.id===id);return i<0?9999:i;};
 
   // Collect items visible in the current tour context.
   // My Tour Life and owned tours: all items are accessible.
@@ -6560,23 +6561,27 @@ function renderBucket(){
 
   const allBkt=[...visibleBkt].sort((a,b)=>{
     if(bktSortMode==='custom')return(a.order||0)-(b.order||0);
-    // For all named sort modes: primary sort by the chosen key, secondary alphabetically by experience text
+    // For all named sort modes: primary sort by the chosen key, secondary by experience text
+    // (Act and Category additionally sort by Year first, as their secondary key).
     const strCmp=(x,y)=>(x||'').localeCompare(y||'');
+    const yearCmp=(x,y)=>(x.year||9999)-(y.year||9999);
     if(bktSortMode==='category'){
       const ca=catOrderIdx(a.category),cb=catOrderIdx(b.category);
       if(ca!==cb)return ca-cb;
+      const yc=yearCmp(a,b);if(yc!==0)return yc;
     }else if(bktSortMode==='act'){
-      const na=aM(a.act)?.name||'',nb=aM(b.act)?.name||'';
-      const c=strCmp(na,nb);if(c!==0)return c;
+      // Same order as the Journey Acts list in the left sidebar, not alphabetical.
+      const aa=actOrderIdx(a.act),ab=actOrderIdx(b.act);
+      if(aa!==ab)return aa-ab;
+      const yc=yearCmp(a,b);if(yc!==0)return yc;
     }else if(bktSortMode==='tour'){
       const ta=a.tourId&&S.tours[a.tourId]?S.tours[a.tourId].name:'';
       const tb=b.tourId&&S.tours[b.tourId]?S.tours[b.tourId].name:'';
       const c=strCmp(ta,tb);if(c!==0)return c;
     }else if(bktSortMode==='year'){
-      const ya=a.year||9999,yb=b.year||9999;
-      if(ya!==yb)return ya-yb;
+      const yc=yearCmp(a,b);if(yc!==0)return yc;
     }
-    return strCmp(a.text,b.text); // alphabetical secondary always
+    return strCmp(a.text,b.text); // alphabetical final tiebreaker
   });
   const done=allBkt.filter(b=>b.done).length;
 
