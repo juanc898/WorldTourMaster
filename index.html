@@ -6534,6 +6534,8 @@ function saveBudgetCat(){if(blockIfReadOnly())return;
 // ── BUCKET LIST (with categories + achieved/pending filter) ──────────────────
 let bktCatFilter=null; // null = all categories, or specific category id
 let bktYearFilter=null; // null = all years, 'future' = no year set, or a specific year number
+let bktActFilter=null; // null = all acts, or a specific act id
+let bktCountryFilter=null; // null = all countries, or a specific country name
 let bktSearch=''; // free-text search across experience name, country, category name
 let bktSortMode=localStorage.getItem('ae_bkt_sort')||'category'; // 'category' (default) | 'custom' (after a manual drag)
 function setBktSortMode(mode){bktSortMode=mode;localStorage.setItem('ae_bkt_sort',mode);renderContent();}
@@ -6591,6 +6593,10 @@ function renderBucket(){
   if(bktCatFilter)bkt=bkt.filter(b=>(b.category||'')===bktCatFilter);
   // apply year filter
   if(bktYearFilter)bkt=bkt.filter(b=>bktYearFilter==='future'?!b.year:b.year===bktYearFilter);
+  // apply act filter
+  if(bktActFilter)bkt=bkt.filter(b=>(b.act||'')===bktActFilter);
+  // apply country filter
+  if(bktCountryFilter)bkt=bkt.filter(b=>(b.country||'')===bktCountryFilter);
   // apply text search
   if(bktSearch){
     const q=bktSearch.toLowerCase();
@@ -6612,6 +6618,15 @@ function renderBucket(){
   const yearMenuItems=`<div class="fmi" onclick="setBktYearFilter(null)" style="${!bktYearFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!bktYearFilter?'-check-filled':''}" style="font-size:13px"></i> All Years</div>`+
     `<div class="fmi" onclick="setBktYearFilter('future')" style="${bktYearFilter==='future'?'color:var(--gold)':''}">Future</div>`+
     allYears.map(y=>`<div class="fmi" onclick="setBktYearFilter(${y})" style="${bktYearFilter===y?'color:var(--gold)':''}">${y}</div>`).join('');
+
+  const actFilterLabel=bktActFilter?(aM(bktActFilter)?.name||'Act'):'All Acts';
+  const actMenuItems=`<div class="fmi" onclick="setBktActFilter(null)" style="${!bktActFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!bktActFilter?'-check-filled':''}" style="font-size:13px"></i> All Acts</div>`+
+    cActs().map(a=>`<div class="fmi" onclick="setBktActFilter('${a.id}')" style="${bktActFilter===a.id?'color:'+a.color:''}"><div style="width:8px;height:8px;border-radius:50%;background:${a.color};flex-shrink:0"></div> ${esc(a.name)}</div>`).join('');
+
+  const allCountries=[...new Set(allBkt.map(b=>b.country).filter(Boolean))].sort();
+  const countryFilterLabel=bktCountryFilter||'All Countries';
+  const countryMenuItems=`<div class="fmi" onclick="setBktCountryFilter(null)" style="${!bktCountryFilter?'color:var(--gold)':''}"><i class="ti ti-circle${!bktCountryFilter?'-check-filled':''}" style="font-size:13px"></i> All Countries</div>`+
+    (allCountries.length?allCountries.map(c=>`<div class="fmi" onclick="setBktCountryFilter('${esc(c).replace(/'/g,"\\'")}')" style="${bktCountryFilter===c?'color:var(--gold)':''}">${esc(c)}</div>`).join(''):'<div style="padding:.5rem .75rem;font-size:12px;color:var(--t3);font-family:var(--font-ui)">No countries set yet</div>');
 
   const statusItems=['pending','achieved'].map(s=>`<label class="fmi"><input type="checkbox" ${BF.includes(s)?'checked':''} onchange="toggleBF('${s}')"/> ${s==='achieved'?'Achieved':'Pending'}</label>`).join('');
 
@@ -6702,6 +6717,14 @@ function renderBucket(){
         <div class="fmenu" id="bymenu">${yearMenuItems}</div>
       </div>
       <div style="position:relative">
+        <button class="fbtn" onclick="toggleBktActMenu()"><i class="ti ti-theater-mask"></i> ${esc(actFilterLabel)} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="bktActMenu">${actMenuItems}</div>
+      </div>
+      <div style="position:relative">
+        <button class="fbtn" onclick="toggleBktCountryMenu()"><i class="ti ti-map-pin"></i> ${esc(countryFilterLabel)} <i class="ti ti-chevron-down"></i></button>
+        <div class="fmenu" id="bktCountryMenu">${countryMenuItems}</div>
+      </div>
+      <div style="position:relative">
         <button class="fbtn" onclick="toggleBktSortMenu()"><i class="ti ti-arrows-sort"></i> ${esc(sortLabel)} <i class="ti ti-chevron-down"></i></button>
         <div class="fmenu" id="bktSortMenu">${sortMenuItems}</div>
       </div>
@@ -6757,22 +6780,26 @@ function renderBktCatMgmt(){
   </div>`;
 }
 
-function toggleBFMenu(){['bcmenu','bymenu','bktSortMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bfmenu')?.classList.toggle('open');}
-function toggleBCMenu(){['bfmenu','bymenu','bktSortMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bcmenu')?.classList.toggle('open');}
-function toggleBYMenu(){['bfmenu','bcmenu','bktSortMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bymenu')?.classList.toggle('open');}
-function toggleBktSortMenu(){['bfmenu','bcmenu','bymenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bktSortMenu')?.classList.toggle('open');}
+function toggleBFMenu(){['bcmenu','bymenu','bktSortMenu','bktActMenu','bktCountryMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bfmenu')?.classList.toggle('open');}
+function toggleBCMenu(){['bfmenu','bymenu','bktSortMenu','bktActMenu','bktCountryMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bcmenu')?.classList.toggle('open');}
+function toggleBYMenu(){['bfmenu','bcmenu','bktSortMenu','bktActMenu','bktCountryMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bymenu')?.classList.toggle('open');}
+function toggleBktSortMenu(){['bfmenu','bcmenu','bymenu','bktActMenu','bktCountryMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bktSortMenu')?.classList.toggle('open');}
+function toggleBktActMenu(){['bfmenu','bcmenu','bymenu','bktSortMenu','bktCountryMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bktActMenu')?.classList.toggle('open');}
+function toggleBktCountryMenu(){['bfmenu','bcmenu','bymenu','bktSortMenu','bktActMenu'].forEach(id=>document.getElementById(id)?.classList.remove('open'));document.getElementById('bktCountryMenu')?.classList.toggle('open');}
 function setBktCatFilter(id){bktCatFilter=id;document.getElementById('bcmenu')?.classList.remove('open');renderContent();}
 function setBktYearFilter(y){bktYearFilter=y;document.getElementById('bymenu')?.classList.remove('open');renderContent();}
+function setBktActFilter(id){bktActFilter=id;document.getElementById('bktActMenu')?.classList.remove('open');renderContent();}
+function setBktCountryFilter(c){bktCountryFilter=c;document.getElementById('bktCountryMenu')?.classList.remove('open');renderContent();}
 function onBktSearch(v){bktSearch=v;renderContent();}
 function clearBucketList(){
   if(blockIfReadOnly())return;
   const n=cur().bucket.length;if(!n)return;
   if(!confirm(`Remove all ${n} experience${n===1?'':'s'} from the Bucket List? This cannot be undone.`))return;
-  cur().bucket=[];bktSearch='';bktCatFilter=null;bktYearFilter=null;renderContent();
+  cur().bucket=[];bktSearch='';bktCatFilter=null;bktYearFilter=null;bktActFilter=null;bktCountryFilter=null;renderContent();
 }
 function toggleBF(s){if(BF.includes(s))BF=BF.filter(x=>x!==s);else BF.push(s);saveBF();renderContent();}
 document.addEventListener('click',e=>{
-  ['bfmenu','bcmenu','bymenu','bktSortMenu'].forEach(id=>{
+  ['bfmenu','bcmenu','bymenu','bktSortMenu','bktActMenu','bktCountryMenu'].forEach(id=>{
     const el=document.getElementById(id);if(el&&!el.parentElement?.contains(e.target))el.classList.remove('open');
   });
 });
